@@ -1,0 +1,41 @@
+.wrapper {
+  background-color: #f7f7f7;
+}
+.container {
+  padding: 20px 0px;
+}
+
+.address {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: #b4b4b4;
+}
+
+.mail {
+  color: #989898;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+  img {
+    margin-right: 10px !important;
+  }
+}
+
+.buy {
+  color: #989898;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  padding-bottom: 20px;
+}
+.certs {
+  margin-top: 20px;
+  img {
+    margin: 0px 10px;
+    height: 24px;
+  }
+}

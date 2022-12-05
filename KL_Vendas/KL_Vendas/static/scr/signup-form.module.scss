@@ -1,0 +1,139 @@
+@import '../../config/breakpoints.scss';
+form {
+  background-color: #f7f7f7;
+  padding-bottom: 30px;
+}
+
+.fieldWrapper {
+  padding: 5px 30px;
+}
+.mainTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 25px;
+  color: #707070;
+  margin: 0;
+  padding: 0;
+}
+.mainSubTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 18px;
+  color: #707070;
+}
+.helperText {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  color: #b4b4b4;
+}
+.title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  color: #707070;
+  text-align: center;
+  display: none;
+}
+.subTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 27px;
+  color: #4898c9;
+  text-align: center;
+}
+.price {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  text-align: center;
+  line-height: 25px;
+  color: #707070;
+}
+.titleWrapper {
+  padding: 30px;
+}
+.detailParagraph {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  text-align: justify;
+  line-height: 14px;
+  color: #707070;
+  font-weight: 400;
+  span {
+    color: #23c6a3;
+  }
+}
+@media screen and (max-width: $sm) {
+  form {
+    background-color: #fff;
+  }
+
+  .fieldWrapper {
+    padding: 0;
+  }
+  .title {
+    display: inherit;
+  }
+  .titleWrapper {
+    padding: 30px 0px;
+  }
+}
+
+@media screen and (max-width: $sm) {
+  .titleWrapper {
+    padding: 30px 0px;
+  }
+}
+
+.thanksTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  line-height: 25px;
+  color: #707070;
+  font-weight: 700;
+}
+.thanksSubTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  line-height: 23px;
+  color: #707070;
+  font-weight: 500;
+}
+
+.thanksPara {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #707070;
+  font-weight: 300;
+}
+.transferLink {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #23c6a3;
+  font-weight: 500;
+  a {
+    color: #23c6a3;
+    transition: all 0.5s ease-out;
+    &:hover {
+      color: #4898c9;
+    }
+  }
+}
+.transferDesc {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #707070;
+  font-weight: 300;
+}
+
+.downloadButton {
+  margin-top: 30px !important;
+}

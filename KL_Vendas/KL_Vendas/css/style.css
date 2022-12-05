@@ -1,0 +1,436 @@
+* {
+font-family: Century Gothic, Calibri;
+}
+
+.color-white {
+color: #FFFFFF !important;
+}
+
+.txt-nav-brand {
+font-size: 20px;
+padding-top: 20px;
+}
+
+.bg-footer {
+background-color: #003154;
+}
+
+.p-header {
+padding: 0px !important;
+}
+
+.buttons-header {
+position: absolute !important;
+top: 65%;
+left: 27%;
+}
+
+.btn-header {
+padding: 15px 45px 15px 45px;
+background: #4898C9;
+color: #FFFFFF;
+font-size: 22px;
+opacity: 0.9;
+text-decoration: none;
+margin-top: 350px;
+}
+
+.btn-header:hover {
+text-decoration: none;
+}
+
+.bg-content {
+background-color: #4898C9;
+}
+
+.p-70 {
+padding-top: 70px;
+}
+
+.p-50 {
+padding-top: 110px;
+}
+
+.p-r-l {
+padding-left:15px !important;
+padding-right:15px !important;
+}
+
+.m-top-10 {
+margin-top: 20px;
+}
+
+.txt-content {
+font-size: 23px;
+color: #FFFFFF;
+}
+
+.color-gray {
+color: #808080;
+}
+
+.image-content {
+width: 100%;
+height: 550px;
+background: #ddd;
+}
+
+.bg-left {
+background-image: url(../images/header/01.jpg);
+background-position: center;
+background-repeat: no-repeat
+}
+
+.bg-right {
+background-image: url(../images/header/02.jpg);
+background-position: center;
+background-repeat: no-repeat
+}
+
+/* CONFIG MOBILE */
+@media screen and (max-width: 1024px){
+.p-50 {
+padding-top: 50px !important;
+}
+}
+
+/* PAGINA DOIS */
+
+.bg-blue {
+background-color: #003154 !important;
+}
+
+.no-border {
+border: none !important;
+}
+
+.product-promo, .bg-whte {
+background-color: #FFFFFF;
+}
+
+.border-white {
+border: 2px solid #FFFFFF;
+}
+
+.desc{
+top: 0px;
+left: 0px;
+right: -1px;
+width: 100px;
+background-color: transparent;
+height: 120px !important;
+position: absolute;
+z-index: 5;
+}
+
+.porcent {
+width: 100px;
+height: 80px;
+background: #EB7E39;
+line-height: 22px;
+color:#FFFFFF;
+padding-top: 14px;
+}
+
+.highlight {
+font-size: 27px;
+}
+
+.recommended {
+width: 100px;
+height: 40px;
+background: #003154;
+display: block;
+font-size: 12px;
+line-height: 14px;
+color: #FFFFFF;
+text-align: left;
+padding-left: 8px;
+padding-top: 7px;
+}
+
+.about-product {
+padding-top: 30px;
+}
+
+.promoline.mm-promoline {
+top: -1em;
+left: 0px;
+right: -1px;
+width: 100%;
+background-color: #003154;
+height: 25px !important;
+position: absolute;
+}
+
+.product-item {
+position: relative;
+top: 1em;
+margin: -2em -1px 0;
+padding: .5em .2em .5em !important;
+}
+
+.separator {
+margin-top: 40px !important;
+margin-bottom: 40px !important;
+width: 90%;
+border: 0.5px solid #4898C9;
+margin: 0 auto;
+}
+
+.btn-product {
+color: #fff;
+background-color: #4898C9;
+border-color: #4898C9;
+padding-left: 35px;
+padding-right: 35px;
+}
+
+.select-plan {
+padding-left: 10px;
+}
+
+.form-element {
+text-align: left;
+}
+
+.form-element.radio {
+position: relative;
+margin-top: .75em;
+margin-bottom: .25em;
+padding: 4px 10px;
+}
+
+.form-element.radio input {
+position: absolute;
+top: 50%;
+margin-top: -.45em;
+float: left;
+}
+
+.form-element.radio label {
+display: flex;
+align-items: center;
+margin-bottom: 0;
+font-size: .8125em;
+color: #444;
+cursor: pointer;
+}
+
+.form-element.radio label span:last-child {
+border-right: 0;
+width: auto;
+white-space: nowrap;
+font-size: 13px;
+}
+
+.form-element.radio label .choose {
+white-space: nowrap;
+}
+
+.form-element.radio label .choose {
+padding-right: .5em;
+border-right: 1px solid #eee;
+border-color: rgba(0,0,0,.075);
+flex: 1;
+}
+
+.form-element.radio label span.price {
+flex: 1;
+white-space: nowrap;
+margin-bottom: 0;
+min-height: auto;
+}
+
+.form-element.radio label {
+padding-top: .15em;
+margin-left: 1.75em;
+}
+
+.price-new {
+padding-left: .5em;
+font-weight: 700;
+color: #444;
+display: inline-block;
+}
+
+.form-element.radio.active {
+position: relative;
+}
+
+.form-element.radio.active {
+background-color: #EB7E39;
+padding: 4px 10px;
+margin-right: 10px;
+}
+
+.active span.choose, .active span.price-new{
+color: #fff !important;
+}
+
+/* ARROW PLANO ATIVO */
+
+@media screen and (min-width: 1200px){
+.arrow {
+left: -170px;
+top: 0;
+}
+.arrow:before {
+left: 100%;
+border-left-color: #EB7E39;
+}
+}
+
+.arrow {
+display: none;
+background: #EB7E39;
+width: 140px;
+height: 26px;
+position: absolute;
+text-align: center;
+color: #fff;
+}
+
+.form-element.radio.active .arrow {
+display: block;
+}
+
+.arrow:before {
+border: solid transparent;
+content: " ";
+height: 0;
+width: 0;
+position: absolute;
+pointer-events: none;
+border-color: rgba(136, 183, 213, 0);
+border-width: 25px;
+}
+
+.form-element.radio.active .btn-cart {
+position: absolute;
+cursor: pointer;
+right: -25px;
+top: 0;
+display: block;
+}
+
+.form-element.radio.active .btn-cart img{
+width: 22px;
+}
+
+.form-buttons {
+text-align: left;
+}
+
+.ask p {
+font-size: 13px;
+}
+
+.carousel {
+color: #000000 !important;
+}
+
+
+/* KAV */
+
+.bg-orange {
+background-color: #EB7E39 !important;
+}
+
+.bold {
+font-weight: bold;
+}
+
+.desc-p {
+font-size: 15px;
+margin-top: 10px;
+}
+
+.divisor {
+border-right: 1.5px solid #808080 !important;
+}
+
+.fsize {
+font-size: 3em;
+color: #808080
+}
+.fsmall {
+font-size: 16px !important;
+display: block;
+}
+div.icon-active {
+color: #4898C9 !important
+}
+.icon {
+cursor: pointer;
+}
+.questions-selection .item label {
+color: #4898C9 !important
+}
+.questions-selection input[type="button"] {
+float: right;
+}
+.color-blue {
+color: #4898C9 !important;
+}
+
+.mtp-4 {
+margin-top: 20px;
+}
+
+.mg-reset-10{
+margin-bottom: 15px !important;
+margin-top: 15px !important;
+}
+
+.large {
+width: 100%;
+}
+
+.medium {
+width: 70%;
+padding: 10px !important;
+font-weight: bold;
+font-size: 18px;
+}
+
+.more {
+background-color: #FFFFFF !important; 
+color: #4898C9 !important; 
+border: 2px solid #4898C9;
+}
+
+.fsizemedium {
+font-size: 18px !important;
+}
+.mg-cesta {
+margin-top: 10px;
+}
+.license p, .license p span{
+display: block;
+}
+
+select.border-blue {
+border: 1.5px solid #4898C9;
+} 
+
+.btn-more {
+margin-top: 40px !important;
+}
+
+.confirmation {
+margin-top: 50px;
+}
+
+.confirmation p {
+margin: 5px
+}
+
+.confirmation p a {
+color: #4898C9 !important;
+}
+
+.space {
+margin-top: 15px !important;
+color: #003154;
+}

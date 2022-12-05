@@ -1,0 +1,995 @@
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{CA3891EE-1498-410C-8042-B494512CAF41}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KL_Vendas</RootNamespace>
+    <AssemblyName>KL_Vendas</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44356</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Amazon\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AboutUs.aspx" />
+    <Content Include="Admin\Avaliacao.aspx" />
+    <Content Include="Admin\cssB\bootstrap-grid.css" />
+    <Content Include="Admin\cssB\bootstrap-grid.min.css" />
+    <Content Include="Admin\cssB\bootstrap-reboot.css" />
+    <Content Include="Admin\cssB\bootstrap-reboot.min.css" />
+    <Content Include="Admin\cssB\bootstrap.css" />
+    <Content Include="Admin\cssB\bootstrap.min.css" />
+    <Content Include="Admin\css\bootstrap-3.3.7.min.css" />
+    <Content Include="Admin\css\bootstrap-table.css" />
+    <Content Include="Admin\css\bootstrap-theme.css" />
+    <Content Include="Admin\css\bootstrap-theme.min.css" />
+    <Content Include="Admin\css\bootstrap.css" />
+    <Content Include="Admin\css\bootstrap.min.css" />
+    <Content Include="Admin\css\conteudo.css" />
+    <Content Include="Admin\css\datepicker.css" />
+    <Content Include="Admin\css\datepicker3.css" />
+    <Content Include="Admin\css\font-awesome.min.css" />
+    <Content Include="Admin\css\FontFile\museosans-100-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-100italic-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-300-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-300italic-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-500-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-500italic-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-700-webfont.svg" />
+    <Content Include="Admin\css\FontFile\museosans-900-webfont.svg" />
+    <Content Include="Admin\css\FontMuseoSans.css" />
+    <Content Include="Admin\css\monkey.gif" />
+    <Content Include="Admin\css\respons.css" />
+    <Content Include="Admin\css\style - Copia.css" />
+    <Content Include="Admin\css\style-aux.css" />
+    <Content Include="Admin\css\style-mobile.css" />
+    <Content Include="Admin\css\style.css" />
+    <Content Include="Admin\css\styleC.css" />
+    <Content Include="Admin\css\styles.css" />
+    <Content Include="Admin\FabricanteEditar.aspx" />
+    <Content Include="Admin\fonts\fontawesome-webfont.svg" />
+    <Content Include="Admin\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Admin\jsB\bootstrap.bundle.js" />
+    <Content Include="Admin\jsB\bootstrap.bundle.min.js" />
+    <Content Include="Admin\jsB\bootstrap.js" />
+    <Content Include="Admin\jsB\bootstrap.min.js" />
+    <Content Include="Admin\js\bootstrap-datepicker.js" />
+    <Content Include="Admin\js\bootstrap.js" />
+    <Content Include="Admin\js\bootstrap.min.js" />
+    <Content Include="Admin\js\chart-data.js" />
+    <Content Include="Admin\js\chart.min.js" />
+    <Content Include="Admin\js\custom.js" />
+    <Content Include="Admin\js\easypiechart-data.js" />
+    <Content Include="Admin\js\easypiechart.js" />
+    <Content Include="Admin\js\html5shiv.min.js" />
+    <Content Include="Admin\js\jquery-1.11.1.min.js" />
+    <Content Include="Admin\js\jquery-1.3.2.min.js" />
+    <Content Include="Admin\js\jquery.maskedinput.js" />
+    <Content Include="Admin\js\jquery.overlay-1.1.min.js" />
+    <Content Include="Admin\js\lumino.glyphs.js" />
+    <Content Include="Admin\js\npm.js" />
+    <Content Include="Admin\js\respond.min.js" />
+    <Content Include="Admin\MelhorProduto.aspx" />
+    <Content Include="Admin\ProdutoEditar.aspx" />
+    <Content Include="Admin\ReenvioLicenca.aspx" />
+    <Content Include="Admin\RelatorioVendasToken.aspx" />
+    <Content Include="Admin\src\4300_gti_logo_vertical_fullcolor._brand.png" />
+    <Content Include="Admin\src\cloud.png" />
+    <Content Include="Admin\src\icon-find-the-right-product.png" />
+    <Content Include="Admin\src\Kaspersky_RGB_NEG.png" />
+    <Content Include="Admin\src\Kaspersky_RGB_POS_PNG.png" />
+    <Content Include="Admin\src\office-365.png" />
+    <Content Include="Admin\src\painel-item-first.jpg" />
+    <Content Include="Admin\src\painel-item-second.jpg" />
+    <Content Include="Admin\src\product-box-KAV.png" />
+    <Content Include="Admin\src\product-box-KISMD.png" />
+    <Content Include="Admin\src\product-box-KTS.png" />
+    <Content Include="Admin\src\product-icon-advanced.png" />
+    <Content Include="Admin\src\product-icon-KSOS.png" />
+    <Content Include="Admin\src\product-icon-select.png" />
+    <Content Include="Admin\src\security.jpg" />
+    <Content Include="Admin\SubProdutoEditar.aspx" />
+    <Content Include="Admin\Usuario.aspx" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\CSS\bootstrap.css" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\CSS\bootstrap.min.css" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\CSS\style.css" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\aviso-02.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\aviso.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\cuidado.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\cuidado2.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\KIS.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\KTS.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\logo.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\termos.png" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\IMG\voltar.png" />
+    <Content Include="ambiente-seguro\anti-phishing\Home.aspx" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\home.aspx" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\CSS\bootstrap.css" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\CSS\bootstrap.min.css" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\CSS\style.css" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\aviso-02.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\aviso.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\KIS.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\KTS.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\logo.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\termos.png" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\IMG\voltar.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\CSS\bootstrap.css" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\CSS\bootstrap.min.css" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\CSS\style.css" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\aviso-02.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\aviso.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\campanha_1610_350_405.jpg" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\KIS.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\KTS.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\logo.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\termos.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\IMG\voltar.png" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\Home.aspx" />
+    <Content Include="Email\Assinatura_Cancelada.html" />
+    <Content Include="Email\Ative_Licenca.html" />
+    <Content Include="Email\Ative_Licenca.jpg" />
+    <Content Include="Email\Logo_KL.jpg" />
+    <Content Include="Email\logo_kl.png" />
+    <Content Include="Email\Logo_Linktel.jpg" />
+    <Content Include="Email\logo_linktel.png" />
+    <Content Include="Email\Pagamento_Aprovado.html" />
+    <Content Include="Email\Pagamento_Aprovado.jpg" />
+    <Content Include="Email\Pagamento_Cancelado.html" />
+    <Content Include="Email\Pagamento_Confirmado.html" />
+    <Content Include="Email\Pedido_Analise.html" />
+    <Content Include="Email\Pedido_Cancelado.jpg" />
+    <Content Include="Email\Pedido_Analise.jpg" />
+    <Content Include="Email\Pedido_Recebido.html" />
+    <Content Include="Email\Pedido_Recebido.jpg" />
+    <Content Include="Email\Pedido_Recusado.jpg" />
+    <Content Include="Email\Pedido_Recusado.png" />
+    <Content Include="Email\Pedido_Recebido.htm" />
+    <Content Include="Email\Pedido_Recusado.html" />
+    <Content Include="Email\Wifi_Acesso.html" />
+    <Content Include="Empresa.aspx" />
+    <Content Include="BusinessSecurity.aspx" />
+    <Content Include="Cart.aspx" />
+    <Content Include="CartFinished.aspx" />
+    <Content Include="Admin\Close.aspx" />
+    <Content Include="Admin\ContatoFabricante.aspx" />
+    <Content Include="controls\BusinessProduct.ascx" />
+    <Content Include="controls\HomeProduct.ascx" />
+    <Content Include="cssB\bootstrap-grid.css" />
+    <Content Include="cssB\bootstrap-grid.min.css" />
+    <Content Include="cssB\bootstrap-reboot.css" />
+    <Content Include="cssB\bootstrap-reboot.min.css" />
+    <Content Include="cssB\bootstrap.css" />
+    <Content Include="cssB\bootstrap.min.css" />
+    <Content Include="css\bootstrap-3.3.7.min.css" />
+    <Content Include="css\font-awesome.min.css" />
+    <Content Include="css\FontFile\museosans-100-webfont.svg" />
+    <Content Include="css\FontFile\museosans-100italic-webfont.svg" />
+    <Content Include="css\FontFile\museosans-300-webfont.svg" />
+    <Content Include="css\FontFile\museosans-300italic-webfont.svg" />
+    <Content Include="css\FontFile\museosans-500-webfont.svg" />
+    <Content Include="css\FontFile\museosans-500italic-webfont.svg" />
+    <Content Include="css\FontFile\museosans-700-webfont.svg" />
+    <Content Include="css\FontFile\museosans-900-webfont.svg" />
+    <Content Include="css\FontFile\styles.css" />
+    <Content Include="css\FontMuseoSans.css" />
+    <Content Include="css\monkey.gif" />
+    <Content Include="css\scrolling-nav.css" />
+    <Content Include="css\style.css" />
+    <Content Include="css\styleC.css" />
+    <Content Include="css\styles_.css" />
+    <Content Include="Error.aspx" />
+    <Content Include="Admin\ExpirarLicenca.aspx" />
+    <Content Include="Admin\Fabricante.aspx" />
+    <Content Include="fonts\fontawesome-webfont.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Admin\Home.aspx" />
+    <Content Include="Home.aspx" />
+    <Content Include="HomeSecurity.aspx" />
+    <Content Include="images\cover\Antivirus_Android_Kaspersky.jpg" />
+    <Content Include="images\cover\Antivirus_Criancas_Kaspersky.jpg" />
+    <Content Include="images\cover\KAV.jpg" />
+    <Content Include="images\cover\KIS.jpg" />
+    <Content Include="images\cover\KSOS.jpg" />
+    <Content Include="images\cover\KTS.jpg" />
+    <Content Include="images\header\01.jpg" />
+    <Content Include="images\header\02.jpg" />
+    <Content Include="images\icons\btn-cart.png" />
+    <Content Include="images\icons\card.png" />
+    <Content Include="images\icons\cards.png" />
+    <Content Include="images\icons\cesta.png" />
+    <Content Include="images\icons\como-funciona.png" />
+    <Content Include="images\icons\network.png" />
+    <Content Include="images\icons\star.png" />
+    <Content Include="images\icons\user.png" />
+    <Content Include="images\nav\logo.png" />
+    <Content Include="images\nav\logo_b.png" />
+    <Content Include="images\products\KAV.png" />
+    <Content Include="images\products\KIS.png" />
+    <Content Include="images\products\KISA.png" />
+    <Content Include="images\products\KSK.png" />
+    <Content Include="images\products\KSOS.png" />
+    <Content Include="images\products\KTS.png" />
+    <Content Include="images\site\logo.png" />
+    <Content Include="images\site\promocao.png" />
+    <Content Include="images\site\wifi.png" />
+    <Content Include="img\Arrow.png" />
+    <Content Include="img\Beneficios_KSOS_Linktel.jpg" />
+    <Content Include="img\Boleto.png" />
+    <Content Include="img\Boxshot_KISA_2017.png" />
+    <Content Include="img\BR_KAV_2019.png" />
+    <Content Include="img\BR_KIS_2019.png" />
+    <Content Include="img\BR_KTS_2019.png" />
+    <Content Include="img\cc-securitycode-pp.jpg" />
+    <Content Include="img\cc_paypalExp_logo.gif" />
+    <Content Include="img\Check_img.png" />
+    <Content Include="img\close_pt_BR.gif" />
+    <Content Include="img\elo.gif" />
+    <Content Include="img\ELO_65_31.png" />
+    <Content Include="img\FavIcon_Linktel.ico" />
+    <Content Include="img\hiperCard.gif" />
+    <Content Include="img\icon-fast-card-amex.png" />
+    <Content Include="img\icon-fast-card-diners.png" />
+    <Content Include="img\Icon_Lock.png" />
+    <Content Include="img\icon_payment.png" />
+    <Content Include="img\info_icon.png" />
+    <Content Include="img\Linktel-logo.png" />
+    <Content Include="img\LINKTEL_LOGOS.png" />
+    <Content Include="img\lixeira.jpg" />
+    <Content Include="img\lixeira.png" />
+    <Content Include="img\Logo_KL.jpg" />
+    <Content Include="img\logo_kl.png" />
+    <Content Include="img\Logo_Linktel.jpg" />
+    <Content Include="img\logo_linktel.png" />
+    <Content Include="img\masterCard_pt_BR.gif" />
+    <Content Include="img\newkaspersky_logo_20100614063816_145_X.gif" />
+    <Content Include="img\PayPalNew.gif" />
+    <Content Include="img\processingAnim.gif" />
+    <Content Include="img\SecureConnection55x65.png" />
+    <Content Include="img\visa_pt_BR.gif" />
+    <Content Include="Index.aspx" />
+    <Content Include="Admin\InformacaoFabricante.aspx" />
+    <Content Include="jsB\bootstrap.bundle.js" />
+    <Content Include="jsB\bootstrap.bundle.min.js" />
+    <Content Include="jsB\bootstrap.js" />
+    <Content Include="jsB\bootstrap.min.js" />
+    <Content Include="js\bootstrap-datepicker.js" />
+    <Content Include="js\bootstrap.js" />
+    <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\chart-data.js" />
+    <Content Include="js\chart.min.js" />
+    <Content Include="js\custom.js" />
+    <Content Include="js\easypiechart-data.js" />
+    <Content Include="js\easypiechart.js" />
+    <Content Include="js\html5shiv.min.js" />
+    <Content Include="js\jquery-1.11.1.min.js" />
+    <Content Include="js\jquery-1.3.2.min.js" />
+    <Content Include="js\jquery.maskedinput.js" />
+    <Content Include="js\jquery.maskedinput_.js" />
+    <Content Include="js\lumino.glyphs.js" />
+    <Content Include="js\npm.js" />
+    <Content Include="js\respond.min.js" />
+    <Content Include="Admin\Links.aspx" />
+    <Content Include="Admin\Login.aspx" />
+    <Content Include="Admin\NovaLicenca.aspx" />
+    <Content Include="Admin\NovoPagamento.aspx" />
+    <Content Include="Admin\PagamentoPendente.aspx" />
+    <Content Include="Admin\PagamentoRecusado.aspx" />
+    <Content Include="js\scrolling-nav.js" />
+    <Content Include="KAV.aspx" />
+    <Content Include="KIS.aspx" />
+    <Content Include="KISA.aspx" />
+    <Content Include="KSK.aspx" />
+    <Content Include="KTS.aspx" />
+    <Content Include="Admin\Produto.aspx" />
+    <Content Include="Pedido.aspx" />
+    <Content Include="Seguranca.aspx" />
+    <Content Include="SmallBusinessSecurity.aspx" />
+    <Content Include="src\4300_gti_logo_vertical_fullcolor._brand.png" />
+    <Content Include="src\cloud.png" />
+    <Content Include="src\icon-find-the-right-product.png" />
+    <Content Include="src\Kaspersky_RGB_NEG.png" />
+    <Content Include="src\Kaspersky_RGB_POS_PNG.png" />
+    <Content Include="src\office-365.png" />
+    <Content Include="src\painel-item-first.jpg" />
+    <Content Include="src\painel-item-second.jpg" />
+    <Content Include="src\product-box-KAV.png" />
+    <Content Include="src\product-box-KISMD.png" />
+    <Content Include="src\product-box-KTS.png" />
+    <Content Include="src\product-icon-advanced.png" />
+    <Content Include="src\product-icon-KSOS.png" />
+    <Content Include="src\product-icon-select.png" />
+    <Content Include="src\security.jpg" />
+    <Content Include="Admin\SubProduto.aspx" />
+    <Content Include="static\config\theme.jsx" />
+    <Content Include="static\CSS\cart.css" />
+    <Content Include="static\js\data.js" />
+    <Content Include="static\js\JavaScript.js" />
+    <Content Include="static\js\jquery.mask.js" />
+    <Content Include="static\js\main.js" />
+    <Content Include="static\media\America.svg" />
+    <Content Include="static\media\Cadeado-1.svg" />
+    <Content Include="static\media\Cadeado.svg" />
+    <Content Include="static\media\card.svg" />
+    <Content Include="static\media\cartoes\America.svg" />
+    <Content Include="static\media\cartoes\Diners.svg" />
+    <Content Include="static\media\cartoes\elo.svg" />
+    <Content Include="static\media\cartoes\Hiper.svg" />
+    <Content Include="static\media\cartoes\master.svg" />
+    <Content Include="static\media\cartoes\Visa.svg" />
+    <Content Include="static\media\cert.png" />
+    <Content Include="static\media\Certisign.svg" />
+    <Content Include="static\media\check.svg" />
+    <Content Include="static\media\Diners.svg" />
+    <Content Include="static\media\elo.svg" />
+    <Content Include="static\media\Email.svg" />
+    <Content Include="static\media\google.png" />
+    <Content Include="static\media\Google.svg" />
+    <Content Include="static\media\Hiper.svg" />
+    <Content Include="static\media\ico00.svg" />
+    <Content Include="static\media\ico01.svg" />
+    <Content Include="static\media\ico02.svg" />
+    <Content Include="static\media\ico03.svg" />
+    <Content Include="static\media\logo-kaspersky.svg" />
+    <Content Include="static\media\logo-linktel.svg" />
+    <Content Include="static\media\master.svg" />
+    <Content Include="static\media\padlock-grey.svg" />
+    <Content Include="static\media\padlock.svg" />
+    <Content Include="static\media\Porquinho.svg" />
+    <Content Include="static\media\Produto.svg" />
+    <Content Include="static\media\ssl.png" />
+    <Content Include="static\media\SSL.svg" />
+    <Content Include="static\media\star.svg" />
+    <Content Include="static\media\Visa.svg" />
+    <Content Include="static\scr\detail-purchase.jsx" />
+    <Content Include="static\scr\footer.jsx" />
+    <Content Include="static\scr\header.jsx" />
+    <Content Include="static\scr\safe-purchase.jsx" />
+    <Content Include="static\scr\signup-form.jsx" />
+    <Content Include="static\scr\testimonials.jsx" />
+    <Content Include="Termos.aspx" />
+    <Content Include="TesteEnvio.aspx" />
+    <Content Include="Admin\TodasLicencas.aspx" />
+    <Content Include="vendor\bootstrap\css\bootstrap.css" />
+    <Content Include="vendor\bootstrap\css\bootstrap.min.css" />
+    <Content Include="vendor\bootstrap\js\bootstrap.bundle.js" />
+    <Content Include="vendor\bootstrap\js\bootstrap.bundle.min.js" />
+    <Content Include="vendor\bootstrap\js\bootstrap.js" />
+    <Content Include="vendor\bootstrap\js\bootstrap.min.js" />
+    <Content Include="vendor\jquery-easing\jquery.easing.compatibility.js" />
+    <Content Include="vendor\jquery-easing\jquery.easing.js" />
+    <Content Include="vendor\jquery-easing\jquery.easing.min.js" />
+    <Content Include="vendor\jquery\jquery.js" />
+    <Content Include="vendor\jquery\jquery.min.js" />
+    <Content Include="vendor\jquery\jquery.slim.js" />
+    <Content Include="vendor\jquery\jquery.slim.min.js" />
+    <Content Include="Voce.aspx" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutUs.aspx.cs">
+      <DependentUpon>AboutUs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AboutUs.aspx.designer.cs">
+      <DependentUpon>AboutUs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Avaliacao.aspx.cs">
+      <DependentUpon>Avaliacao.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Avaliacao.aspx.designer.cs">
+      <DependentUpon>Avaliacao.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\FabricanteEditar.aspx.cs">
+      <DependentUpon>FabricanteEditar.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\FabricanteEditar.aspx.designer.cs">
+      <DependentUpon>FabricanteEditar.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\MelhorProduto.aspx.cs">
+      <DependentUpon>MelhorProduto.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\MelhorProduto.aspx.designer.cs">
+      <DependentUpon>MelhorProduto.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ProdutoEditar.aspx.cs">
+      <DependentUpon>ProdutoEditar.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ProdutoEditar.aspx.designer.cs">
+      <DependentUpon>ProdutoEditar.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ReenvioLicenca.aspx.cs">
+      <DependentUpon>ReenvioLicenca.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ReenvioLicenca.aspx.designer.cs">
+      <DependentUpon>ReenvioLicenca.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\RelatorioVendasToken.aspx.cs">
+      <DependentUpon>RelatorioVendasToken.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\RelatorioVendasToken.aspx.designer.cs">
+      <DependentUpon>RelatorioVendasToken.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SubProdutoEditar.aspx.cs">
+      <DependentUpon>SubProdutoEditar.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SubProdutoEditar.aspx.designer.cs">
+      <DependentUpon>SubProdutoEditar.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Usuario.aspx.cs">
+      <DependentUpon>Usuario.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Usuario.aspx.designer.cs">
+      <DependentUpon>Usuario.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ambiente-seguro\anti-phishing\Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ambiente-seguro\anti-phishing\Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ambiente-seguro\arquivo-bloqueado\home.aspx.cs">
+      <DependentUpon>home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ambiente-seguro\arquivo-bloqueado\home.aspx.designer.cs">
+      <DependentUpon>home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ambiente-seguro\conteudo-inseguro\Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ambiente-seguro\conteudo-inseguro\Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Empresa.aspx.cs">
+      <DependentUpon>Empresa.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Empresa.aspx.designer.cs">
+      <DependentUpon>Empresa.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BusinessSecurity.aspx.cs">
+      <DependentUpon>BusinessSecurity.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BusinessSecurity.aspx.designer.cs">
+      <DependentUpon>BusinessSecurity.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Cart.aspx.cs">
+      <DependentUpon>Cart.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Cart.aspx.designer.cs">
+      <DependentUpon>Cart.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CartFinished.aspx.cs">
+      <DependentUpon>CartFinished.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CartFinished.aspx.designer.cs">
+      <DependentUpon>CartFinished.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Close.aspx.cs">
+      <DependentUpon>Close.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Close.aspx.designer.cs">
+      <DependentUpon>Close.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ContatoFabricante.aspx.cs">
+      <DependentUpon>ContatoFabricante.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ContatoFabricante.aspx.designer.cs">
+      <DependentUpon>ContatoFabricante.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="controls\BusinessProduct.ascx.cs">
+      <DependentUpon>BusinessProduct.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="controls\BusinessProduct.ascx.designer.cs">
+      <DependentUpon>BusinessProduct.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="controls\HomeProduct.ascx.cs">
+      <DependentUpon>HomeProduct.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="controls\HomeProduct.ascx.designer.cs">
+      <DependentUpon>HomeProduct.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Error.aspx.cs">
+      <DependentUpon>Error.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Error.aspx.designer.cs">
+      <DependentUpon>Error.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ExpirarLicenca.aspx.cs">
+      <DependentUpon>ExpirarLicenca.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ExpirarLicenca.aspx.designer.cs">
+      <DependentUpon>ExpirarLicenca.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Fabricante.aspx.cs">
+      <DependentUpon>Fabricante.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Fabricante.aspx.designer.cs">
+      <DependentUpon>Fabricante.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="HomeSecurity.aspx.cs">
+      <DependentUpon>HomeSecurity.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="HomeSecurity.aspx.designer.cs">
+      <DependentUpon>HomeSecurity.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Index.aspx.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Index.aspx.designer.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\InformacaoFabricante.aspx.cs">
+      <DependentUpon>InformacaoFabricante.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\InformacaoFabricante.aspx.designer.cs">
+      <DependentUpon>InformacaoFabricante.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Links.aspx.cs">
+      <DependentUpon>Links.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Links.aspx.designer.cs">
+      <DependentUpon>Links.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Login.aspx.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Login.aspx.designer.cs">
+      <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\MasterAdmin.Master.cs">
+      <DependentUpon>MasterAdmin.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\MasterAdmin.Master.designer.cs">
+      <DependentUpon>MasterAdmin.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\NovaLicenca.aspx.cs">
+      <DependentUpon>NovaLicenca.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\NovaLicenca.aspx.designer.cs">
+      <DependentUpon>NovaLicenca.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\NovoPagamento.aspx.cs">
+      <DependentUpon>NovoPagamento.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\NovoPagamento.aspx.designer.cs">
+      <DependentUpon>NovoPagamento.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\PagamentoPendente.aspx.cs">
+      <DependentUpon>PagamentoPendente.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\PagamentoPendente.aspx.designer.cs">
+      <DependentUpon>PagamentoPendente.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\PagamentoRecusado.aspx.cs">
+      <DependentUpon>PagamentoRecusado.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\PagamentoRecusado.aspx.designer.cs">
+      <DependentUpon>PagamentoRecusado.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KAV.aspx.cs">
+      <DependentUpon>KAV.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KAV.aspx.designer.cs">
+      <DependentUpon>KAV.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KIS.aspx.cs">
+      <DependentUpon>KIS.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KIS.aspx.designer.cs">
+      <DependentUpon>KIS.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KISA.aspx.cs">
+      <DependentUpon>KISA.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KISA.aspx.designer.cs">
+      <DependentUpon>KISA.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KSK.aspx.cs">
+      <DependentUpon>KSK.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KSK.aspx.designer.cs">
+      <DependentUpon>KSK.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="KTS.aspx.cs">
+      <DependentUpon>KTS.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="KTS.aspx.designer.cs">
+      <DependentUpon>KTS.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Produto.aspx.cs">
+      <DependentUpon>Produto.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Produto.aspx.designer.cs">
+      <DependentUpon>Produto.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pedido.aspx.cs">
+      <DependentUpon>Pedido.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pedido.aspx.designer.cs">
+      <DependentUpon>Pedido.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Seguranca.aspx.cs">
+      <DependentUpon>Seguranca.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Seguranca.aspx.designer.cs">
+      <DependentUpon>Seguranca.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SmallBusinessSecurity.aspx.cs">
+      <DependentUpon>SmallBusinessSecurity.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SmallBusinessSecurity.aspx.designer.cs">
+      <DependentUpon>SmallBusinessSecurity.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SubProduto.aspx.cs">
+      <DependentUpon>SubProduto.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SubProduto.aspx.designer.cs">
+      <DependentUpon>SubProduto.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Termos.aspx.cs">
+      <DependentUpon>Termos.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Termos.aspx.designer.cs">
+      <DependentUpon>Termos.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TesteEnvio.aspx.cs">
+      <DependentUpon>TesteEnvio.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TesteEnvio.aspx.designer.cs">
+      <DependentUpon>TesteEnvio.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\TodasLicencas.aspx.cs">
+      <DependentUpon>TodasLicencas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\TodasLicencas.aspx.designer.cs">
+      <DependentUpon>TodasLicencas.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Voce.aspx.cs">
+      <DependentUpon>Voce.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Voce.aspx.designer.cs">
+      <DependentUpon>Voce.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cssB\.DS_Store" />
+    <Content Include="cssB\bootstrap-grid.css.map" />
+    <Content Include="cssB\bootstrap-grid.min.css.map" />
+    <Content Include="cssB\bootstrap-reboot.css.map" />
+    <Content Include="cssB\bootstrap-reboot.min.css.map" />
+    <Content Include="cssB\bootstrap.css.map" />
+    <Content Include="cssB\bootstrap.min.css.map" />
+    <Content Include="jsB\bootstrap.bundle.js.map" />
+    <Content Include="jsB\bootstrap.bundle.min.js.map" />
+    <Content Include="jsB\bootstrap.js.map" />
+    <Content Include="jsB\bootstrap.min.js.map" />
+    <Content Include="fonts\fontawesome-webfont.eot" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="Admin\MasterAdmin.Master" />
+    <Content Include="css\FontFile\museosans-100-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-100-webfont.woff" />
+    <Content Include="css\FontFile\museosans-100-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-100-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-100italic-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-100italic-webfont.woff" />
+    <Content Include="css\FontFile\museosans-100italic-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-100italic-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-300-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-300-webfont.woff" />
+    <Content Include="css\FontFile\museosans-300-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-300-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-300italic-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-300italic-webfont.woff" />
+    <Content Include="css\FontFile\museosans-300italic-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-300italic-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-500-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-500-webfont.woff" />
+    <Content Include="css\FontFile\museosans-500-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-500-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-500italic-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-500italic-webfont.woff" />
+    <Content Include="css\FontFile\museosans-500italic-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-500italic-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-700-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-700-webfont.woff" />
+    <Content Include="css\FontFile\museosans-700-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-700-webfontd41d.eot" />
+    <Content Include="css\FontFile\museosans-900-webfont.ttf" />
+    <Content Include="css\FontFile\museosans-900-webfont.woff" />
+    <Content Include="css\FontFile\museosans-900-webfont.woff2" />
+    <Content Include="css\FontFile\museosans-900-webfontd41d.eot" />
+    <Content Include="css\FontFile\font-icons.woff" />
+    <Content Include="css\FontFile\font-icons_New.ttf" />
+    <Content Include="js\jquery.overlay-1.1.min.js" />
+    <Content Include="Admin\cssB\.DS_Store" />
+    <Content Include="Admin\cssB\bootstrap-grid.css.map" />
+    <Content Include="Admin\cssB\bootstrap-grid.min.css.map" />
+    <Content Include="Admin\cssB\bootstrap-reboot.css.map" />
+    <Content Include="Admin\cssB\bootstrap-reboot.min.css.map" />
+    <Content Include="Admin\cssB\bootstrap.css.map" />
+    <Content Include="Admin\cssB\bootstrap.min.css.map" />
+    <Content Include="Admin\css\bootstrap-theme.css.map" />
+    <Content Include="Admin\css\bootstrap-theme.min.css.map" />
+    <Content Include="Admin\css\bootstrap.css.map" />
+    <Content Include="Admin\css\bootstrap.min.css.map" />
+    <Content Include="Admin\css\FontFile\font-icons.woff" />
+    <Content Include="Admin\css\FontFile\font-icons_New.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-100-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-100-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-100-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-100-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-100italic-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-100italic-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-100italic-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-100italic-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-300-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-300-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-300-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-300-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-300italic-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-300italic-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-300italic-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-300italic-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-500-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-500-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-500-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-500-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-500italic-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-500italic-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-500italic-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-500italic-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-700-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-700-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-700-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-700-webfontd41d.eot" />
+    <Content Include="Admin\css\FontFile\museosans-900-webfont.ttf" />
+    <Content Include="Admin\css\FontFile\museosans-900-webfont.woff" />
+    <Content Include="Admin\css\FontFile\museosans-900-webfont.woff2" />
+    <Content Include="Admin\css\FontFile\museosans-900-webfontd41d.eot" />
+    <Content Include="Admin\css\style.css.old" />
+    <Content Include="Admin\fonts\fontawesome-webfont.eot" />
+    <Content Include="Admin\fonts\fontawesome-webfont.ttf" />
+    <Content Include="Admin\fonts\fontawesome-webfont.woff" />
+    <Content Include="Admin\fonts\fontawesome-webfont.woff2" />
+    <Content Include="Admin\fonts\FontAwesome.otf" />
+    <Content Include="Admin\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="Admin\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="Admin\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Admin\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="Admin\jsB\bootstrap.bundle.js.map" />
+    <Content Include="Admin\jsB\bootstrap.bundle.min.js.map" />
+    <Content Include="Admin\jsB\bootstrap.js.map" />
+    <Content Include="Admin\jsB\bootstrap.min.js.map" />
+    <Content Include="Admin\sass\.sass-cache\deff34d1f5b7167181b556002c25068d6adc024d\styles.scssc" />
+    <Content Include="Admin\sass\styles.scss" />
+    <Content Include="Admin\tables\data1.json" />
+    <Content Include="Admin\tables\data2.json" />
+    <Content Include="Email\Itailers.pfx" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\FONTS\GOTHIC.TTF" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\FONTS\GOTHICB.TTF" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\FONTS\GOTHICBI.TTF" />
+    <Content Include="ambiente-seguro\arquivo-bloqueado\assets\FONTS\GOTHICI.TTF" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\FONTS\GOTHIC.TTF" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\FONTS\GOTHICB.TTF" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\FONTS\GOTHICBI.TTF" />
+    <Content Include="ambiente-seguro\conteudo-inseguro\assets\FONTS\GOTHICI.TTF" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\FONTS\GOTHIC.TTF" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\FONTS\GOTHICB.TTF" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\FONTS\GOTHICBI.TTF" />
+    <Content Include="ambiente-seguro\anti-phishing\assets\FONTS\GOTHICI.TTF" />
+    <None Include="packages.config" />
+    <Content Include="sass\.sass-cache\deff34d1f5b7167181b556002c25068d6adc024d\styles.scssc" />
+    <Content Include="sass\styles.scss" />
+    <Content Include="tables\data1.json" />
+    <Content Include="tables\data2.json" />
+    <Content Include="pdf\KSOS6_Datasheet_BR.pdf" />
+    <Content Include="pdf\Material_Informativo_KSOS_Saiba_Mais.pdf" />
+    <Content Include="pdf\REQUISITOS_DO_SISTEMA_KSOS.pdf" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <Content Include="vendor\bootstrap\css\bootstrap.css.map" />
+    <Content Include="vendor\bootstrap\css\bootstrap.min.css.map" />
+    <Content Include="vendor\bootstrap\js\bootstrap.bundle.js.map" />
+    <Content Include="vendor\bootstrap\js\bootstrap.bundle.min.js.map" />
+    <Content Include="vendor\bootstrap\js\bootstrap.js.map" />
+    <Content Include="vendor\bootstrap\js\bootstrap.min.js.map" />
+    <Content Include="vendor\jquery\jquery.min.map" />
+    <Content Include="vendor\jquery\jquery.slim.min.map" />
+    <Content Include="static\config\breakpoints.scss" />
+    <Content Include="static\scr\detail-purchase.module.scss" />
+    <Content Include="static\scr\footer.module.scss" />
+    <Content Include="static\scr\header.scss" />
+    <Content Include="static\scr\safe-purchase.module.scss" />
+    <Content Include="static\scr\signup-form.module.scss" />
+    <Content Include="static\scr\testimonials.module.scss" />
+    <Content Include="static\CSS\cart.scss" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BLL\BLL.csproj">
+      <Project>{a9d7de8e-3bde-4a8f-92ee-bc3ca0e5c2c1}</Project>
+      <Name>BLL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DAL\DAL.csproj">
+      <Project>{f77ebe0a-1a8a-46ea-ab6e-a9a5fb2e3422}</Project>
+      <Name>DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objetos\Objetos.csproj">
+      <Project>{84d0d958-9956-4459-bd30-16c23766af30}</Project>
+      <Name>Objetos</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>59056</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>https://localhost:44356/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este projeto faz referência a pacotes do NuGet que não estão presentes neste computador. Use a Restauração de Pacotes do NuGet para baixá-los.  Para obter mais informações, consulte http://go.microsoft.com/fwlink/?LinkID=322105. O arquivo ausente é {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,28 @@
+  @font-face {
+    font-family:'MuseoSans-100';
+	src: url('FontFile/museosans-100-webfont.eot')format("embedded-opentype"), url('FontFile/museosans-100-webfont.ttf') format('truetype'), url('FontFile/museosans-100-webfont.woff')format("woff");
+  }
+	@font-face {
+    font-family:'MuseoSans-300';
+	src: url('FontFile/museosans-300-webfont.eot')format("embedded-opentype"), url('FontFile/museosans-300-webfont.ttf') format('truetype'), url('FontFile/museosans-300-webfont.woff')format("woff");
+  }
+	@font-face {
+		font-family:'MuseoSans-500';
+	src: url('FontFile/museosans-500-webfont.eot')format("embedded-opentype"), url('FontFile/museosans-500-webfont.ttf') format('truetype'), url('FontFile/museosans-500-webfont.woff')format("woff");
+  }
+	@font-face {
+    font-family:'MuseoSans-700';
+	src: url('FontFile/museosans-700-webfont.eot')format("embedded-opentype"), url('FontFile/museosans-700-webfont.ttf') format('truetype'), url('FontFile/museosans-700-webfont.woff')format("woff");
+  }	
+	@font-face {
+    font-family:'MuseoSans-900';
+	src: url('FontFile/museosans-900-webfont.eot')format("embedded-opentype"), url('FontFile/museosans-900-webfont.ttf') format('truetype'), url('FontFile/museosans-900-webfont.woff')format("woff");
+  }
+	@font-face {
+    font-family:'font-icons-New';
+	src: url('FontFile/font-icons_New.eot')format("embedded-opentype") ,url('FontFile/font-icons_New.ttf')format("truetype"), url('FontFile/font-icons_New.woff')format("woff");
+  }
+	@font-face {
+    font-family:'font-icons';
+	src: url('FontFile/font-icons.eot')format("embedded-opentype"), url('FontFile/font-icons.woff')format("woff");
+  }

@@ -1,0 +1,15 @@
+body, header {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+}
+
+div .notification-bar{
+    background-color: #006d5c;
+    height: 100px !important;
+}
+div .container p {
+    color: #fff !important;
+    font-size: .8em;
+    font-family: 'Raleway', sans-serif !important;
+}

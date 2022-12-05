@@ -1,0 +1,122 @@
+@font-face {
+  font-family: Gothic;
+  src: url(../FONTS/GOTHIC.TTF)
+}
+
+* {
+  font-family: Gothic;
+}
+
+.btn a {
+  border: none;
+}
+
+#container-main {
+  width: 100%;
+  height: auto;
+  border: 1px solid #CCC;
+  background-color: #003057;
+  font-family: Gothic;
+}
+
+header.header {
+  width:100%;
+  height: auto;
+  background-color: #0098CB;
+  padding: 20px;
+}
+
+.text-main {
+  width: 100%;
+  padding: 10px
+}
+
+.text-main h1 {
+  padding: 15px;
+}
+.color-white {
+  color: #FFFFFF;
+}
+
+.color-lightblue {
+  color: #0098CB;
+}
+
+.kts {
+  padding: 15px;
+}
+
+.highlight {
+  background-color: #EB7E39;
+}
+
+#container-main-alert{
+  width: 100%;
+  height: auto;
+  background-color: #FFFFFF;
+  font-family: Gothic;
+  margin: 0 auto;
+}
+
+.box {
+  width: 80%;
+  height: auto;
+  border: 1px solid rgb(100,100,100);
+  margin: 0 auto;
+}
+
+.header-aviso {
+  background: #000000;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+
+.fweight {
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.stop {
+  padding: 20px;
+}
+
+.text-main-alert {
+  padding: 20px;
+}
+
+.btn.alert {
+  color: rgb(100,100,100);
+  border: none;
+  font-weight: 600;
+}
+
+.btn.alert:hover {
+  color: rgb(50,50,50);
+  text-decoration: underline;
+
+}
+
+
+.psmall {
+  font-size: 13px !important;
+}
+
+@media screen and (max-width: 320px){
+  .price {
+    font-size: 21px;
+  }
+}
+
+@media screen and (max-width: 480px){
+  .buttons {
+    text-align: center;
+  }
+
+  .buttons a {
+    margin-top: 10px;
+  }
+
+  section {
+    margin-top: 20px;
+  }
+}

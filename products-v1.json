@@ -1,0 +1,82 @@
+{
+  "nm_subscribe_id": "wavemax_197",
+  "dv_ativo": 2,
+  "msg_erro": null,
+  "produto": [
+    {
+      "combo_id": null,
+      "id_produto_kl": 1,
+      "qtd_licencas": null,
+      "nm_produto_kl": "Kaspersky Antivírus",
+      "nm_link_dowload_android": "https://play.google.com/store/apps/details?id=com.kms.free&referrer=kisa_key%3DCRxqFWhrBRkJc2V-GA0BdRxrFgMdEhQ%3D",
+      "nm_link_dowload_windows": "https://products.america.kss.kaspersky-labs.com/download/282cc26b-54c7-49c2-958b-3ce14222b653",
+      "nm_link_dowload_mac": "https://products.america.kss.kaspersky-labs.com/download/95737602-d776-4d8a-a022-1db7696c2031",
+      "nm_link_dowload_ios": "",
+      "resource_id": "urn:sva:kaspersky:internetsecurity",
+      "id_status": "2",
+      "activation_code": "",
+      "dt_ativacao": "",
+      "link_image": "/images/kaspersky-antivirus.png"
+    },
+    {
+      "combo_id": 1,
+      "id_produto_kl": 1,
+      "qtd_licencas": null,
+      "nm_produto_kl": "Kaspersky Antivírus",
+      "nm_link_dowload_android": "https://play.google.com/store/apps/details?id=com.kms.free&referrer=kisa_key%3DCRxqFWhrBRkJc2V-GA0BdRxrFgMdEhQ%3D",
+      "nm_link_dowload_windows": "https://products.america.kss.kaspersky-labs.com/download/282cc26b-54c7-49c2-958b-3ce14222b653",
+      "nm_link_dowload_mac": "https://products.america.kss.kaspersky-labs.com/download/95737602-d776-4d8a-a022-1db7696c2031",
+      "nm_link_dowload_ios": "",
+      "resource_id": "urn:sva:kaspersky:internetsecurity",
+      "id_status": "2",
+      "activation_code": "",
+      "dt_ativacao": "",
+      "link_image": "/images/kaspersky-antivirus.png"
+    },
+    {
+      "combo_id": 1,
+      "id_produto_kl": 2,
+      "qtd_licencas": null,
+      "nm_produto_kl": "Kaspersky Internet Security for Android",
+      "nm_link_dowload_android": "https://play.google.com/store/apps/details?id=com.kms.free&referrer=kisa_key%3DCRxqFWhrBRkJc2V-GA0BdRxrFgMdEhQ%3D",
+      "nm_link_dowload_windows": "https://products.america.kss.kaspersky-labs.com/download/282cc26b-54c7-49c2-958b-3ce14222b653",
+      "nm_link_dowload_mac": "https://products.america.kss.kaspersky-labs.com/download/95737602-d776-4d8a-a022-1db7696c2031",
+      "nm_link_dowload_ios": "",
+      "resource_id": "urn:sva:kaspersky:internetsecurity",
+      "id_status": "2",
+      "activation_code": "",
+      "dt_ativacao": "",
+      "link_image": "/images/kaspersky-android.png"
+    },
+    {
+      "combo_id": 1,
+      "id_produto_kl": 3,
+      "qtd_licencas": null,
+      "nm_produto_kl": "Kaspersky Password Manager",
+      "nm_link_dowload_android": "https://play.google.com/store/apps/details?id=com.kms.free&referrer=kisa_key%3DCRxqFWhrBRkJc2V-GA0BdRxrFgMdEhQ%3D",
+      "nm_link_dowload_windows": "https://products.america.kss.kaspersky-labs.com/download/282cc26b-54c7-49c2-958b-3ce14222b653",
+      "nm_link_dowload_mac": "https://products.america.kss.kaspersky-labs.com/download/95737602-d776-4d8a-a022-1db7696c2031",
+      "nm_link_dowload_ios": "",
+      "resource_id": "urn:sva:kaspersky:internetsecurity",
+      "id_status": "2",
+      "activation_code": "",
+      "dt_ativacao": "",
+      "link_image": "/images/2.png"
+    },
+    {
+      "combo_id": null,
+      "id_produto_kl": 4,
+      "qtd_licencas": null,
+      "nm_produto_kl": "Kaspersky Safe Kids",
+      "nm_link_dowload_android": "https://play.google.com/store/apps/details?id=com.kms.free&referrer=kisa_key%3DCRxqFWhrBRkJc2V-GA0BdRxrFgMdEhQ%3D",
+      "nm_link_dowload_windows": "https://products.america.kss.kaspersky-labs.com/download/282cc26b-54c7-49c2-958b-3ce14222b653",
+      "nm_link_dowload_mac": "https://products.america.kss.kaspersky-labs.com/download/95737602-d776-4d8a-a022-1db7696c2031",
+      "nm_link_dowload_ios": "",
+      "resource_id": "urn:sva:kaspersky:internetsecurity",
+      "id_status": "2",
+      "activation_code": "",
+      "dt_ativacao": "",
+      "link_image": "/images/kaspersky-kids.png"
+    }
+  ]
+}

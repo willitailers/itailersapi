@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <clipPath id="clip-Cadeado">
+      <rect width="32" height="32"/>
+    </clipPath>
+  </defs>
+  <g id="Cadeado" clip-path="url(#clip-Cadeado)">
+    <rect width="32" height="32" fill="#fff"/>
+    <g id="padlock" transform="translate(11.008 8.526)">
+      <path id="Caminho_39" data-name="Caminho 39" d="M70.418,6.421h-.79V4.467a4.467,4.467,0,0,0-8.934,0V6.421H59.9a.462.462,0,0,0-.462.462V15.55a.462.462,0,0,0,.462.462H70.418a.462.462,0,0,0,.462-.462V6.883A.462.462,0,0,0,70.418,6.421ZM65.881,11.7v1.845a.292.292,0,0,1-.292.292h-.857a.292.292,0,0,1-.292-.292V11.7a1.247,1.247,0,1,1,1.441,0Zm1.614-5.275H62.826V4.467a2.334,2.334,0,0,1,4.668,0Z" transform="translate(-59.441)" fill="#989898"/>
+    </g>
+  </g>
+</svg>

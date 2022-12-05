@@ -1,0 +1,118 @@
+
+@font-face {
+  font-family: Gothic;
+  src: url(../FONTS/GOTHIC.TTF)
+}
+
+* {
+  font-family: Gothic;
+}
+
+.btn a {
+  border: none;
+}
+
+#container-main {
+  width: 100%;
+  height: auto;
+  border: 1px solid #CCC;
+  background-color: #003057;
+  font-family: Gothic;
+}
+
+header.header {
+  width:100%;
+  height: auto;
+  background-color: #0098CB;
+  padding: 10px;
+}
+
+.text-main {
+  width: 100%;
+  padding: 10px;
+}
+
+.text-main h1 {
+  padding: 15px;
+}
+.color-white {
+  color: #FFFFFF;
+}
+
+.color-lightblue {
+  color: #0098CB;
+}
+
+.kts {
+  padding: 15px;
+}
+
+.highlight {
+  background-color: #EB7E39;
+}
+
+.highlight-alert {
+  font-weight: 600;
+}
+
+#container-main-alert{
+  width: 100%;
+  height: auto;
+  border: 1px solid #CCC;
+  background-color: rgb(40,40,40);
+  font-family: Gothic;
+  margin: 0 auto;
+  padding-bottom: 20px;
+}
+
+.auto {
+  word-wrap: break-word;
+}
+
+.text-main-alert{
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: rgb(218,0,52);
+  border-color: rgb(218,0,52);
+  color: #FFF;
+  margin-right: 20px;
+  padding-left: 25px;
+  padding-right: 25px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: rgb(180,0,52);
+  border-color: rgb(180,0,52);
+  color: #FFF;
+}
+
+.buttons {
+  padding-top:25px;
+}
+
+.psmall {
+  font-size: 13px !important;
+}
+
+@media screen and (max-width: 320px){
+  .price {
+    font-size: 21px;
+  }
+}
+
+@media screen and (max-width: 480px){
+  .buttons {
+    text-align: center;
+  }
+
+  .buttons a {
+    margin-top: 10px;
+  }
+
+  section {
+    margin-top: 20px;
+  }
+}

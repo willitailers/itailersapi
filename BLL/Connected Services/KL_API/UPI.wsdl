@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://schemas.kaspersky.com/services/subscription/2.0/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://schemas.kaspersky.com/services/subscription/2.0/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://schemas.kaspersky.com/services/subscription/2.0/">
+      <s:element name="AccessInfo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Password" type="s:string" />
+          </s:sequence>
+          <s:anyAttribute />
+        </s:complexType>
+      </s:element>
+      <s:element name="SubscriptionRequestContainer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="Timestamp" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="TransactionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="SubscriptionRequest" type="tns:SubscriptionRequestItemCollection">
+              <s:unique name="uniqueUnitId">
+                <s:selector xpath="Activate|Renew|SoftCancel|HardCancel|Pause|Resume|GetInfo|GetDownloadLinks" />
+                <s:field xpath="@UnitId" />
+              </s:unique>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="SubscriptionRequestItemCollection">
+        <s:choice minOccurs="0" maxOccurs="unbounded">
+          <s:element name="Activate" type="tns:SubscriptionRequestActivateItem" />
+          <s:element name="Renew" type="tns:SubscriptionRequestRenewItem" />
+          <s:element name="SoftCancel" type="tns:SubscriptionRequestSoftCancelItem" />
+          <s:element name="HardCancel" type="tns:SubscriptionRequestHardCancelItem" />
+          <s:element name="Resume" type="tns:SubscriptionRequestResumeItem" />
+          <s:element name="Pause" type="tns:SubscriptionRequestPauseItem" />
+          <s:element name="GetInfo" type="tns:SubscriptionRequestGetInfoItem" />
+          <s:element name="GetDownloadLinks" type="tns:SubscriptionRequestGetDownloadLinksItem" />
+        </s:choice>
+      </s:complexType>
+      <s:simpleType name="EndTimeType">
+        <s:union memberTypes="s:dateTime">
+          <s:simpleType>
+            <s:restriction base="s:string">
+              <s:enumeration value="indefinite" />
+            </s:restriction>
+          </s:simpleType>
+        </s:union>
+      </s:simpleType>
+      <s:simpleType name="ActivationTypeEnum">
+        <s:restriction base="s:string">
+          <s:enumeration value="Standard" />
+          <s:enumeration value="Secondary" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="SubscriptionInfoType">
+        <s:restriction base="s:string">
+          <s:enumeration value="Subscription" />
+          <s:enumeration value="SubscriptionUsage" />
+          <s:enumeration value="Subscription, SubscriptionUsage" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="SubscriptionStatusEnum">
+        <s:restriction base="s:string">
+          <s:enumeration value="NotStarted" />
+          <s:enumeration value="Started" />
+          <s:enumeration value="Paused" />
+          <s:enumeration value="SoftCancelled" />
+          <s:enumeration value="HardCancelled" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="PlatformEnum">
+        <s:restriction base="s:string">
+          <s:enumeration value="Windows" />
+          <s:enumeration value="macOS" />
+          <s:enumeration value="Android" />
+          <s:enumeration value="iOS" />
+        </s:restriction>
+      </s:simpleType>
+      <s:attributeGroup name="UnitIdAndSubscriberIdGroup">
+        <s:attribute name="UnitId" type="s:nonNegativeInteger" use="required" />
+        <s:attribute name="SubscriberId" type="s:string" use="required" />
+      </s:attributeGroup>
+      <s:complexType name="SubscriptionRequestActivateItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="StartTime" type="s:dateTime" use="required" />
+        <s:attribute name="EndTime" type="tns:EndTimeType" use="required" />
+        <s:attribute default="1" name="LicenseCount" type="s:positiveInteger" use="optional" />
+        <s:attribute name="ProductId" type="s:string" use="required" />
+        <s:attribute default="Standard" name="ActivationType" type="tns:ActivationTypeEnum" use="optional" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestRenewItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="EndTime" type="tns:EndTimeType" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestHardCancelItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="EndTime" type="s:dateTime" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestSoftCancelItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="EndTime" type="s:dateTime" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestPauseItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="PauseTime" type="s:dateTime" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestResumeItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestGetInfoItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="InfoSection" type="tns:SubscriptionInfoType" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionRequestGetDownloadLinksItem">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+        <s:attribute name="Language" type="s:string" use="required" />
+        <s:attribute name="Alphabet" type="s:string" use="optional" />
+        <s:attribute name="Region" type="s:string" use="optional" />
+        <s:attribute name="RebrandingCode" type="s:string" use="optional" />
+        <s:attribute name="Platform" type="tns:PlatformEnum" use="required" />
+      </s:complexType>
+      <s:attributeGroup name="ErrorCodeAndMessageGroup">
+        <s:attribute name="ErrorCode" type="s:integer" use="required" />
+        <s:attribute name="ErrorMessage" type="s:string" use="optional" />
+      </s:attributeGroup>
+      <s:complexType name="ResponseItemErrorType">
+        <s:attribute name="UnitId" type="s:nonNegativeInteger" use="required" />
+        <s:attribute name="SubscriberId" type="s:string" use="optional" />
+        <s:attributeGroup ref="tns:ErrorCodeAndMessageGroup" />
+      </s:complexType>
+      <s:complexType name="TransactionErrorType">
+        <s:attributeGroup ref="tns:ErrorCodeAndMessageGroup" />
+      </s:complexType>
+      <s:complexType name="SubscriptionInfo">
+        <s:attribute name="Status" type="tns:SubscriptionStatusEnum" use="required" />
+        <s:attribute name="StatusChangeTime" type="s:dateTime" use="optional" />
+        <s:attribute name="StartTime" type="s:dateTime" use="optional" />
+        <s:attribute name="EndTime" type="tns:EndTimeType" use="optional" />
+        <s:attribute name="LicenseCount" type="s:positiveInteger" use="required" />
+        <s:attribute name="ProductId" type="s:string" use="required" />
+        <s:attribute name="ActivationCode" type="s:string" use="required" />
+      </s:complexType>
+      <s:complexType name="SubscriptionUsageInfo">
+        <s:attribute name="FirstActivationTime" type="s:dateTime" use="optional" />
+      </s:complexType>
+      <s:complexType name="GetDownloadLinksInfo">
+        <s:attribute name="Url" type="s:string" use="required" />
+        <s:attribute name="Language" type="s:string" use="required" />
+        <s:attribute name="Alphabet" type="s:string" use="optional" />
+        <s:attribute name="Region" type="s:string" use="optional" />
+        <s:attribute name="RebrandingCode" type="s:string" use="optional" />
+        <s:attribute name="ApplicationName" type="s:string" use="required" />
+      </s:complexType>
+      <s:element name="SubscriptionResponseContainer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="Timestamp" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="TransactionId" type="s:string" />
+            <s:choice>
+              <s:element minOccurs="1" maxOccurs="1" name="TransactionError" type="tns:TransactionErrorType" />
+              <s:sequence>
+                <s:element minOccurs="0" maxOccurs="1" name="SubscriptionResponse" type="tns:SubscriptionResponseItemCollection" />
+                <s:element minOccurs="0" maxOccurs="1" name="SubscriptionError" type="tns:SubscriptionResponseErrorCollection" />
+              </s:sequence>
+            </s:choice>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="BaseResponseItemType">
+        <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+      </s:complexType>
+      <s:complexType name="SubscriptionResponseItemCollection">
+        <s:choice minOccurs="0" maxOccurs="unbounded">
+          <s:element name="Activate">
+            <s:complexType>
+              <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+              <s:attribute name="ActivationCode" type="s:string" use="required" />
+            </s:complexType>
+          </s:element>
+          <s:element name="Renew" type="tns:BaseResponseItemType" />
+          <s:element name="SoftCancel" type="tns:BaseResponseItemType" />
+          <s:element name="HardCancel" type="tns:BaseResponseItemType" />
+          <s:element name="Resume" type="tns:BaseResponseItemType" />
+          <s:element name="Pause" type="tns:BaseResponseItemType" />
+          <s:element name="GetInfo">
+            <s:complexType>
+              <s:sequence>
+                <s:element minOccurs="0" maxOccurs="1" name="Subscription" type="tns:SubscriptionInfo" />
+                <s:element minOccurs="0" maxOccurs="1" name="SubscriptionUsage" type="tns:SubscriptionUsageInfo" />
+              </s:sequence>
+              <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+            </s:complexType>
+          </s:element>
+          <s:element name="GetDownloadLinks">
+            <s:complexType>
+              <s:sequence>
+                <s:element minOccurs="1" maxOccurs="1" name="DownloadLinks">
+                  <s:complexType>
+                    <s:sequence>
+                      <s:element minOccurs="1" maxOccurs="unbounded" name="DownloadLink" type="tns:GetDownloadLinksInfo" />
+                    </s:sequence>
+                  </s:complexType>
+                </s:element>
+              </s:sequence>
+              <s:attribute name="Platform" type="tns:PlatformEnum" use="required" />
+              <s:attributeGroup ref="tns:UnitIdAndSubscriberIdGroup" />
+            </s:complexType>
+          </s:element>
+        </s:choice>
+      </s:complexType>
+      <s:complexType name="SubscriptionResponseErrorCollection">
+        <s:choice minOccurs="0" maxOccurs="unbounded">
+          <s:element name="ActivateError" type="tns:ResponseItemErrorType" />
+          <s:element name="RenewError" type="tns:ResponseItemErrorType" />
+          <s:element name="HardCancelError" type="tns:ResponseItemErrorType" />
+          <s:element name="SoftCancelError" type="tns:ResponseItemErrorType" />
+          <s:element name="PauseError" type="tns:ResponseItemErrorType" />
+          <s:element name="ResumeError" type="tns:ResponseItemErrorType" />
+          <s:element name="GetInfoError" type="tns:ResponseItemErrorType" />
+          <s:element name="GetDownloadLinksError" type="tns:ResponseItemErrorType" />
+        </s:choice>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="SubscriptionRequestMessageIn">
+    <wsdl:part name="SubscriptionRequestContainer" element="tns:SubscriptionRequestContainer" />
+  </wsdl:message>
+  <wsdl:message name="SubscriptionRequestMessageOut">
+    <wsdl:part name="SubscriptionResponseContainer" element="tns:SubscriptionResponseContainer" />
+  </wsdl:message>
+  <wsdl:message name="SubscriptionRequestAccessInfo">
+    <wsdl:part name="AccessInfo" element="tns:AccessInfo" />
+  </wsdl:message>
+  <wsdl:portType name="KasperskySubscriptionServicePortType">
+    <wsdl:operation name="SubscriptionRequest">
+      <wsdl:input message="tns:SubscriptionRequestMessageIn" />
+      <wsdl:output message="tns:SubscriptionRequestMessageOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="KasperskySubscriptionServiceBinding" type="tns:KasperskySubscriptionServicePortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="SubscriptionRequest">
+      <soap:operation soapAction="http://schemas.kaspersky.com/services/subscription/subscriptionRequest" style="document" />
+      <wsdl:input>
+        <soap:header message="tns:SubscriptionRequestAccessInfo" part="AccessInfo" use="literal" />
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="KasperskySubscriptionService">
+    <wsdl:port name="KasperskySubscriptionServiceSoap" binding="tns:KasperskySubscriptionServiceBinding">
+      <soap:address location="https://kss-info.kaspersky.com/soap/upi" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,109 @@
+@import '../../config/breakpoints.scss';
+.wrapper {
+  background-color: #f7f7f7;
+  padding-bottom: 20px;
+}
+.title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  line-height: 23px;
+  color: #707070;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 10px;
+  margin: 10px;
+  border-bottom: 2px solid #b4b4b467;
+}
+
+.title_green {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  line-height: 21px;
+  color: #23c6a3;
+  font-weight: 700;
+  padding: 0;
+  margin: 0;
+}
+.subTitle_green {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  line-height: 21px;
+  color: #707070;
+  font-weight: 400;
+}
+.productName {
+  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 16px;
+  color: #707070;
+}
+.productImage {
+  height: 105px;
+  width: auto;
+}
+.plan {
+  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  color: #707070;
+}
+
+.savings {
+  background-color: #c8ebe4;
+  height: 42px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19px;
+  color: #23c6a3;
+  margin-top: 20px;
+}
+.flags {
+  padding: 0px 40px;
+}
+.safeBuy {
+  border: 1px solid #ededed;
+  background-color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 19px;
+  text-transform: uppercase;
+  padding: 8px;
+  color: #989898;
+  margin-top: 20px;
+  text-align: center;
+  img {
+    margin-top: 5px;
+  }
+}
+
+@media screen and (max-width: $sm) {
+  .flags {
+    display: none !important;
+  }
+  .safeBuy {
+    display: none !important;
+  }
+}
+
+.thanksTitle {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 23px;
+  color: #707070;
+}
+
+.thanksSubTitle {
+  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 18px;
+  color: #707070;
+}
