@@ -1013,7 +1013,7 @@ namespace BLL
 
                 activateItem.SubscriberId = item;
                 activateItem.UnitId = cont.ToString(); // "KISMD";
-                activateItem.InfoSection = SubscriptionInfoType.Subscription;
+                activateItem.InfoSection = SubscriptionInfoType.SubscriptionSubscriptionUsage;
                 cont++;
 
                 lista.Add(activateItem);
