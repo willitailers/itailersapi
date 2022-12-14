@@ -18,7 +18,7 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '**/*.publishproj'
+    solution: '**/KL_Vendas/*.publishproj'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     msbuildArgs:  /p:Platform="AnyCPU" /p:PipelineDependsOnBuild=True /p:DeployOnBuild=true /p:DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder /p:PackageTempRootDir="$(Build.SourcesDirectory)"
