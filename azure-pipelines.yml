@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-2019'
 
 variables:
-  solution: '/KL_Vendas/**/*.sln'
+  solution: '**/KL_Vendas/*.sln'
   buildPlatform: 'AnyCPU'
   buildConfiguration: 'Release'
 
@@ -18,7 +18,7 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '/KL_Vendas/**/*.publishproj'
+    solution: '**/KL_Vendas/*.publishproj'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     msbuildArgs:  /p:Platform="AnyCPU" /p:PipelineDependsOnBuild=True /p:DeployOnBuild=true /p:DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder /p:PackageTempRootDir="$(Build.SourcesDirectory)"
