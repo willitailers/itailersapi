@@ -1,17 +1,12 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
-
 trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2019'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
+  solution: '**/KL_Vendas/*.sln'
+  buildPlatform: 'AnyCPU'
   buildConfiguration: 'Release'
 
 steps:
@@ -23,12 +18,28 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+    solution: '**/KL_Vendas/*.publishproj'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    msbuildArgs:  /p:Platform="AnyCPU" /p:PipelineDependsOnBuild=True /p:DeployOnBuild=true /p:DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder /p:PackageTempRootDir="$(Build.SourcesDirectory)"
 
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- task: CopyFiles@2
+  displayName: 'Copia SourcesDirectory-> $(Build.SourcesDirectory) ArtifactStagingDirectory-> $(Build.ArtifactStagingDirectory)'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\PackageTmp'
+    contents: '**'
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+    OverWrite: true
+    CleanTargetFolder: true
+    
+- task: PublishBuildArtifacts@1    
+  displayName: 'Publish Artifact: drop'    
+  inputs:    
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
