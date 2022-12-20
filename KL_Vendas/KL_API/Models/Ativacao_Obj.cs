@@ -834,10 +834,10 @@ namespace KL_API.Models
                                    "",
                                    "",
                                    "",
-                                   produto.link_ativacao_android,
-                                   produto.link_ativacao_iphone,
-                                   produto.link_ativacao_windows,
-                                   produto.link_ativacao_windows,
+                                   produto.link_ativacao_android == null ? "" : produto.link_ativacao_android,
+                                   produto.link_ativacao_iphone == null ? "" : produto.link_ativacao_iphone,
+                                   produto.link_ativacao_windows == null ? "" : produto.link_ativacao_windows,
+                                   produto.link_ativacao_mac == null ? "" : produto.link_ativacao_mac,
                                    "",
                                    "",
                                    2);
@@ -917,13 +917,15 @@ namespace KL_API.Models
             par.Add(db.retorna_parametros("@id_produto", id_produto.ToString()));
             par.Add(db.retorna_parametros("@cd_ativacao_kl", cd_ativacao_kl.ToString()));
             par.Add(db.retorna_parametros("@nm_subscriber_id", nm_subscriber_id.ToString()));
-            par.Add(db.retorna_parametros("@nm_ativacao_android", nm_ativacao_android));
-            par.Add(db.retorna_parametros("@nm_ativacao_iphone", nm_ativacao_iphone));
-            par.Add(db.retorna_parametros("@nm_ativacao_windows", nm_ativacao_windows));
-            par.Add(db.retorna_parametros("@nm_ativacao_mac", nm_ativacao_mac));
+            par.Add(db.retorna_parametros("@nm_ativacao_android", nm_ativacao_android.ToString()));
+            par.Add(db.retorna_parametros("@nm_ativacao_iphone", nm_ativacao_iphone.ToString()));
+            par.Add(db.retorna_parametros("@nm_ativacao_windows", nm_ativacao_windows.ToString()));
+            par.Add(db.retorna_parametros("@nm_ativacao_mac", nm_ativacao_mac.ToString()));
             par.Add(db.retorna_parametros("@dt_ativacao", dt_ativacao.ToString()));
             par.Add(db.retorna_parametros("@dt_expiracao", dt_expiracao.ToString()));
             par.Add(db.retorna_parametros("@id_status", id_status.ToString()));
+
+            log_inserir("TESTE: " + nm_ativacao_android.ToString() + "," +  nm_ativacao_iphone.ToString() + "," + nm_ativacao_windows.ToString() + "," + nm_ativacao_mac.ToString(), 9999);
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
