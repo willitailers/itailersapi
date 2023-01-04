@@ -8,6 +8,8 @@ create procedure dbo.p_insere_cliente_usuario(
 --@nm_transaction_id varchar(500), 
 @nm_email varchar(500), 
 @dt_start datetime, 
+@dt_end varchar(100),
+
 @nm_user_document varchar(500), 
 @nm_user_plan varchar(500))
 as
@@ -25,6 +27,7 @@ begin
 									nm_transaction_id,
 									nm_email, 
 									dt_start, 
+									dt_end,
 									nm_user_document, 
 									nm_user_plan,
 									id_status)
@@ -33,6 +36,7 @@ begin
 			convert(varchar(20), @id_cliente) + '0000' + @nm_user_id, 
 			@nm_email, 
 			@dt_start, 
+			@dt_end,
 			@nm_user_document, 
 			@nm_user_plan,
 			10)

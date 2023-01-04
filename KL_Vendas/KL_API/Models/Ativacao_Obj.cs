@@ -31,6 +31,7 @@ namespace KL_API.Models
         public string UserID { set; get; }
         public string ProductID { set; get; }
         public DateTime StartDate { set; get; }
+        public string EndDate { get; set; }
         public bool IgnoreRegister { set; get; } = false;
     }
 
@@ -45,6 +46,7 @@ namespace KL_API.Models
         public string UserID { set; get; }
         public string Email { set; get; }
         public DateTime StartDate { set; get; }
+        public string EndDate { set; get; }
         public string UserDocument { set; get; }
         public string UserPlan { set; get; }
         public List<Produto_UserAdd> ProductList { set; get; }
@@ -246,7 +248,7 @@ namespace KL_API.Models
         public DataTable addUser(UserAdd usuario, ClientInfo client)
         {
             // Cadastra usuario
-            var dt_usuario = ClienteUsuarioInserir(client.id_cliente, usuario.UserID, usuario.Email, usuario.StartDate, usuario.UserDocument, usuario.UserPlan);
+            var dt_usuario = ClienteUsuarioInserir(client.id_cliente, usuario.UserID, usuario.Email, usuario.StartDate, usuario.EndDate, usuario.UserDocument, usuario.UserPlan);
 
             return dt_usuario;
         }
@@ -284,10 +286,17 @@ namespace KL_API.Models
 
                 string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
 
+                string endTimeParam = "indefinite";
+
+                if (!String.IsNullOrEmpty(usuario.EndDate))
+                {
+                    endTimeParam = usuario.EndDate;
+                }
+
                 var ativacao = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
                                                                     dt_produto[0]["cd_produto_kl"].ToString(),
                                                                     DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
-                                                                    "indefinite",
+                                                                    endTimeParam,
                                                                     count.ToString(),
                                                                     false,
                                                                     subscription_id);
@@ -645,11 +654,18 @@ namespace KL_API.Models
             string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
             string TransactionId = dt_usuario.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
+            string endTimeParam = "indefinite";
+
+            if (!String.IsNullOrEmpty(ativacao.EndDate))
+            {
+                endTimeParam = ativacao.EndDate;
+            }
+
             // Se nao achou, cadastra na hora 
             var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
                                                                 dt_produto[0]["cd_produto_kl"].ToString(),
                                                                 DateTime.Now,
-                                                                "indefinite",
+                                                                endTimeParam,
                                                                 count.ToString(),
                                                                 false,
                                                                 subscription_id);
@@ -846,6 +862,11 @@ namespace KL_API.Models
             return new Ativacao_Retorno { cod_retorno = 0, msg_retorno = "", produtos = produto_ativado };
         }
 
+        public void userAddLote(UserAdd usuario, ClientInfo client, DataTable dt_usuario)
+        {
+
+        }
+
 
         #region atualizacao BD
         public void ClienteInserir(string nm_cliente)
@@ -887,8 +908,13 @@ namespace KL_API.Models
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable ClienteUsuarioInserir(int id_cliente, string nm_user_id, string nm_email, DateTime dt_start, string nm_user_document, string nm_user_plan)
+        public DataTable ClienteUsuarioInserir(int id_cliente, string nm_user_id, string nm_email, DateTime dt_start, string dt_end, string nm_user_document, string nm_user_plan)
         {
+            if (dt_end == null)
+            {
+                dt_end = "";
+            }
+
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente_usuario";
 
@@ -898,6 +924,7 @@ namespace KL_API.Models
             //par.Add(db.retorna_parametros("@nm_transaction_id", nm_transaction_id));
             par.Add(db.retorna_parametros("@nm_email", nm_email));
             par.Add(db.retorna_parametros("@dt_start", dt_start.ToString()));
+            par.Add(db.retorna_parametros("@dt_end", dt_end));
             par.Add(db.retorna_parametros("@nm_user_document", nm_user_document));
             par.Add(db.retorna_parametros("@nm_user_plan", nm_user_plan));
 
