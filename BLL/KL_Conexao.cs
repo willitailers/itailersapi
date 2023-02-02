@@ -288,14 +288,14 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "75053e7b318d024f42d3165c060aa23d0fd56bb5");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "240d0eb8d41bde38e10c4ac8370d800cf00b9070");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
 
             else
             {
-                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021#", X509KeyStorageFlags.PersistKeySet);
                 client.ClientCredentials.ClientCertificate.Certificate = cert;
             }
 
@@ -349,14 +349,14 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "75053e7b318d024f42d3165c060aa23d0fd56bb5");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "240d0eb8d41bde38e10c4ac8370d800cf00b9070");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
 
             else
             {
-                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021#", X509KeyStorageFlags.PersistKeySet);
                 client.ClientCredentials.ClientCertificate.Certificate = cert;
             }
 
@@ -449,7 +449,7 @@ namespace BLL
 
             else
             {
-                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021#", X509KeyStorageFlags.PersistKeySet);
                 client.ClientCredentials.ClientCertificate.Certificate = cert;
             }
 
@@ -915,7 +915,7 @@ namespace BLL
 
             else
             {
-                cert = new X509Certificate2(@"C:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                cert = new X509Certificate2(@"C:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021#", X509KeyStorageFlags.PersistKeySet);
                 client.ClientCredentials.ClientCertificate.Certificate = cert;
             }
 
@@ -1311,14 +1311,14 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "75053e7b318d024f42d3165c060aa23d0fd56bb5");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "240d0eb8d41bde38e10c4ac8370d800cf00b9070");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
 
             else
             {
-                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=uol_edtech, O=Itailers_20210308.pfx", "@Itailers2021#", X509KeyStorageFlags.PersistKeySet);
                 client.ClientCredentials.ClientCertificate.Certificate = cert;
             }
             ((BasicHttpBinding)client.Endpoint.Binding).Security.Mode = BasicHttpSecurityMode.Transport;

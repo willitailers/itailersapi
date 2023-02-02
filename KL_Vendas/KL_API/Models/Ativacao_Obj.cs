@@ -245,6 +245,11 @@ namespace KL_API.Models
 
         }
 
+        public void Activation(UserAdd usuario, ClientInfo client) 
+        { 
+            
+        }
+
         public DataTable addUser(UserAdd usuario, ClientInfo client)
         {
             // Cadastra usuario
