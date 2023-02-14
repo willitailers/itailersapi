@@ -52,7 +52,7 @@ namespace API_Licencas.Models
                     {
                         var response_neo = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(responseContent);
 
-                        if(response_neo.access)
+                        if (response_neo.access)
                         {
                             // consulta usuario
                             var cliente = consulta_cliente(response_neo.subscriber_id);
@@ -133,7 +133,7 @@ namespace API_Licencas.Models
                             {
                                 var produto_ativado = consulta_cliente_ativacao(id_cliente);
 
-                                if(produto_ativado.Rows.Count == 0)
+                                if (produto_ativado.Rows.Count == 0)
                                 {
                                     var produto = consulta_produto("0");
 
@@ -211,7 +211,7 @@ namespace API_Licencas.Models
                                             //string link_mac = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "2" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.macOS);
                                             //string link_ios = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "3" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.iOS);
 
-                                            if(produto.Rows[0]["id_combo"].ToString() == "0")
+                                            if (produto.Rows[0]["id_combo"].ToString() == "0")
                                             {
                                                 usuario_neo.produto.Add(new Produto_Neo()
                                                 {
@@ -282,7 +282,7 @@ namespace API_Licencas.Models
                             return new Usuario_Neo() { dv_ativo = 0 };
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         log_inserir("json nao convertido: " + responseContent + " - " + ex.Message, (int)Lista_Erro.erro_neo);
                         return new Usuario_Neo() { dv_ativo = 0 };
@@ -422,7 +422,7 @@ namespace API_Licencas.Models
                     //string link_mac = link_download_neo(ativacao.subscriber_id, usuario_neo.nm_subscribe_id + "2" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.macOS);
                     //string link_ios = link_download_neo(ativacao.subscriber_id, usuario_neo.nm_subscribe_id + "3" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.iOS);
 
-                    var cliente_ativar = inserir_cliente_ativacao(id_cliente_neo, "0", ativacao.subscriber_id, activation_code, id_produto_kl);
+                    var cliente_ativar = inserir_cliente_ativacao(id_cliente_neo, "0", ativacao.subscriber_id, activation_code, id_produto_kl, ativacao.provedor_id);
 
                     usuario_neo.dv_ativo = 2;
                     usuario_neo.produto.Add(new Produto_Neo()
@@ -494,7 +494,7 @@ namespace API_Licencas.Models
                                     // cancelou corretamente a licença
                                     var licenca = produtos.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                    var cliente_ativar = inserir_cliente_ativacao(id_cliente_neo, "0", itemDetalhe.SubscriberId, itemDetalhe.ActivationCode, id_produto_kl, licenca.id_produto);
+                                    var cliente_ativar = inserir_cliente_ativacao(id_cliente_neo, "0", itemDetalhe.SubscriberId, itemDetalhe.ActivationCode, id_produto_kl, licenca.id_produto, ativacao.provedor_id);
 
                                     usuario_neo.dv_ativo = 2;
                                     usuario_neo.produto.Add(new Produto_Neo()
@@ -556,7 +556,7 @@ namespace API_Licencas.Models
                     return usuario_neo;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log_inserir(ex.Message, (int)Lista_Erro.erro_neo);
                 usuario_neo.msg_erro = "O processo de ativação não está disponivel no momento.";
@@ -623,7 +623,7 @@ namespace API_Licencas.Models
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log_inserir("Erro link " + ex.Message, (int)Lista_Erro.erro_neo);
             }
@@ -909,11 +909,11 @@ namespace API_Licencas.Models
                             if (id_combo == "0")
                             {
                                 List<Lista_Produto> nm_subrscribe_kls = new List<Lista_Produto>();
-                                nm_subrscribe_kls.Add( new Lista_Produto() { subscribe_id = nm_subrscribe_kl, id_produto = 0 });
+                                nm_subrscribe_kls.Add(new Lista_Produto() { subscribe_id = nm_subrscribe_kl, id_produto = 0 });
 
                                 var links = new List<Link_Produto>();
 
-                                
+
                                 if (false) // Verifica se links estão salvos
                                 {
 
@@ -963,7 +963,7 @@ namespace API_Licencas.Models
                                             nm_subrscribe_kls.Add(new Lista_Produto() { subscribe_id = produto_ativado_row["nm_subrscribe_kl"].ToString(), id_produto = int.Parse(dr["id_produto"].ToString()) });
                                         }
                                     }
-                                    
+
                                     string activation_code = string.Empty;
                                     foreach (DataRow item in produto_ativado.Rows)
                                     {
@@ -1166,7 +1166,7 @@ namespace API_Licencas.Models
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_AV);
         }
 
-        public DataTable inserir_cliente_ativacao(string id_cliente_neo, string id_operadora_neo, string nm_subrscribe_kl, string activation_code, string id_produto_kl, string id_produto = "0")
+        public DataTable inserir_cliente_ativacao(string id_cliente_neo, string id_operadora_neo, string nm_subrscribe_kl, string activation_code, string id_produto_kl, string id_produto = "0", string id_provedor = "0")
         {
             DataBase db = new DataBase();
             db.procedure = "p_cliente_ativacao_inserir";
@@ -1179,6 +1179,7 @@ namespace API_Licencas.Models
             par.Add(db.retorna_parametros("@activation_code", activation_code));
             par.Add(db.retorna_parametros("@id_produto_kl", id_produto_kl));
             par.Add(db.retorna_parametros("@id_produto", id_produto));
+            par.Add(db.retorna_parametros("@id_provedor", id_provedor));
 
             db.parametros = par;
 
@@ -1191,7 +1192,7 @@ namespace API_Licencas.Models
         {
             string retorno = data.Day.ToString() + " de ";
 
-            switch(data.Month)
+            switch (data.Month)
             {
                 case 1:
                     retorno += "jan de " + data.Year.ToString();
@@ -1274,6 +1275,8 @@ namespace API_Licencas.Models
         public string subscriber_id { set; get; }
 
         public string resource_id { set; get; }
+
+        public string provedor_id { get; set; }
     }
 
     public class Produto_Consulta_Neo
