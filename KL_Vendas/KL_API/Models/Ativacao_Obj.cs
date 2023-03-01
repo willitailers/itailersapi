@@ -1,13 +1,19 @@
 ﻿using BLL;
 using BLL.KL_API;
 using DAL;
+using Newtonsoft.Json;
 using Objetos;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Web;
+using System.Web.Helpers;
+using System.Xml.Linq;
 
 namespace KL_API.Models
 {
@@ -16,7 +22,9 @@ namespace KL_API.Models
         license_ativation = 2000,
         license_cancel = 2001,
         usar_add = 2002,
-        user_delete = 2003
+        user_delete = 2003,
+        login = 2004
+            
 
     }
     public class Ativacao_Envio
@@ -128,6 +136,69 @@ namespace KL_API.Models
         public string nm_produto { set; get; }
         public string urn_produto { set; get; }
     }
+
+    public class LoginRetorno
+    {
+        public int cod_retorno { get; set; }
+        public string nm_subscribe_id { set; get; }
+
+        public int dv_ativo { set; get; }
+
+        public string msg_retorno { set; get; }
+
+        public List<Produto_Ativacao_Retorno> produtos { set; get; }
+    }
+
+    public class Login
+    {
+        public string username { set; get; }
+
+        public string password { set; get; }
+    }
+
+    public class LoginInterno
+    {
+        public string sys { get; set; }
+        public string token { set; get; }
+        public string password { get; set; }
+        public int cd_servico { get; set; }
+    }
+
+    public class MKWSAutenticacao
+    {
+        public string Expire { get; set; }
+        public int LimiteUso { get; set; }
+        public int[] ServicosAutorizados { get; set; }
+        public string token { get; set; }
+        public string status { get; set; }
+    }
+
+    public class ContratosAtivo
+    {
+        public string adesao { get; set; }
+        public object cd_empresa { get; set; }
+        public int codcontrato { get; set; }
+        public string nome_empresa { get; set; }
+        public string plano_acesso { get; set; }
+        public string previsao_vencimento { get; set; }
+    }
+
+    public class WSMKContratosPorCliente
+    {
+        public int CodigoPessoa { get; set; }
+        public List<ContratosAtivo> ContratosAtivos { get; set; }
+        public string Nome { get; set; }
+        public string status { get; set; }
+    }
+
+    public class WSMKUserSenhaSAC
+    {
+        public string AcessoSAC { get; set; }
+        public int CodigoPessoa { get; set; }
+        public string Nome { get; set; }
+        public string status { get; set; }
+    }
+
 
     public enum comando_kl
     {
@@ -871,6 +942,114 @@ namespace KL_API.Models
         {
 
         }
+
+
+        public LoginRetorno login(Login login)
+        {
+            using (var client = new HttpClient())
+            {
+                LoginInterno loginInterno = new LoginInterno()
+                {
+                    sys = "MK0",
+                    cd_servico = 9999,
+                    token = "e9be9025025af4e7a0df70e6d2d3cd69",
+                    password = "34091b705f83484"
+                };
+
+                WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
+
+                if (userSac.CodigoPessoa <= 0)
+                {
+                    return new LoginRetorno() { cod_retorno = 0 };
+                }
+
+                WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
+
+                if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
+                {
+                    return new LoginRetorno() { cod_retorno = 1 };
+                }
+
+                return new LoginRetorno() { cod_retorno = 2 };
+            }
+        }
+
+        public MKWSAutenticacao GetTokenMK(LoginInterno loginInterno, HttpClient client)
+        {
+            string uri = "http://mk.seatelecom.com.br:8080/mk/WSAutenticacao.rule?sys=";
+
+            var responseAutenticacao =
+                client.GetAsync($@"{uri}{loginInterno.sys}&token={loginInterno.token}&password={loginInterno.password}&cd_servico={loginInterno.cd_servico}").Result;
+
+            if (responseAutenticacao.Content != null)
+            {
+                var responseContent = responseAutenticacao.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    var response_autenticacao_itailers = Newtonsoft.Json.JsonConvert.DeserializeObject<MKWSAutenticacao>(responseContent);
+                    return response_autenticacao_itailers;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            return new MKWSAutenticacao();
+        }
+
+        public WSMKUserSenhaSAC GetUserSAC(LoginInterno loginInterno, string username, string password, HttpClient client)
+        {
+            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
+
+            string uri = "http://mk.seatelecom.com.br:8080/mk/WSMKUserSenhaSAC.rule?sys=";
+
+            var responseSac =
+                client.GetAsync($@"{uri}{loginInterno.sys}&token={autenticacao.token}&user_sac={username}&pass_sac={password}").Result;
+
+            if (responseSac.Content != null)
+            {
+                var responseContent = responseSac.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    var response_SAC = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKUserSenhaSAC>(responseContent);
+                    return response_SAC;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            return new WSMKUserSenhaSAC();
+        }
+
+        public WSMKContratosPorCliente GetContratosPorCliente(LoginInterno loginInterno, WSMKUserSenhaSAC userSac, HttpClient client)
+        {
+            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
+
+            string uri = "http://mk.seatelecom.com.br:8080/mk/WSMKContratosPorCliente.rule?sys=";
+
+            var responseContratos =
+                client.GetAsync($@"{uri}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
+
+            if (responseContratos.Content != null)
+            {
+                var responseContent = responseContratos.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    var response_contratos_cliente = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKContratosPorCliente>(responseContent);
+                    return response_contratos_cliente;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            return new WSMKContratosPorCliente();
+        }
+
 
 
         #region atualizacao BD

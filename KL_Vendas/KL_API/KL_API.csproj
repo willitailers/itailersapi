@@ -260,6 +260,7 @@
     <Compile Include="Controllers\LicenseActivationController.cs" />
     <Compile Include="Controllers\LicenseCancelController.cs" />
     <Compile Include="Controllers\ActivationController.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\UserAddController.cs" />
     <Compile Include="Controllers\UserDeleteController.cs" />
     <Compile Include="Global.asax.cs">
