@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web;
@@ -154,6 +155,10 @@ namespace KL_API.Models
         public string username { set; get; }
 
         public string password { set; get; }
+
+        public string provedor { get; set; }
+
+        public string email { get; set; }
     }
 
     public class LoginInterno
@@ -944,7 +949,7 @@ namespace KL_API.Models
         }
 
 
-        public LoginRetorno login(Login login)
+        public LoginRetorno login(Login login, ClientInfo clientInfo)
         {
             using (var client = new HttpClient())
             {
@@ -960,17 +965,31 @@ namespace KL_API.Models
 
                 if (userSac.CodigoPessoa <= 0)
                 {
-                    return new LoginRetorno() { cod_retorno = 0 };
+                    return new LoginRetorno() { cod_retorno = -1 };
                 }
 
                 WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
 
-                if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
+                if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0) //PRECISA ADICIONAR A VALIDACAO DO CONTRATO DO STANDARD (PENDENTE SEA)
                 {
-                    return new LoginRetorno() { cod_retorno = 1 };
+                    UserAdd useradd = new UserAdd()
+                    {
+                        UserID = login.username,
+                        Email = login.email,
+                        StartDate = DateTime.Now
+                    };
+
+                    var dt_usuario = new Ativacao_Controle().addUser(useradd, clientInfo);
+
+                    if (dt_usuario.Rows.Count <= 0)
+                    {
+                        var dt_produto_ativacao = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+                        return new LoginRetorno() { cod_retorno = 0 };
+                    }
                 }
 
-                return new LoginRetorno() { cod_retorno = 2 };
+                return new LoginRetorno() { cod_retorno = -1 };
             }
         }
 

@@ -43,21 +43,27 @@ namespace KL_API.Controllers
         [HttpPost]
         public HttpResponseMessage Post([FromBody]Login login)
         {
-            string id_cliente_usuario = "";
-            try
+            var clientInfo = new ClientInfo();
+            if (Request.Headers.Contains("kl-token"))
             {
-                LoginRetorno loginRetorno = new Ativacao_Controle().login(login);
-
-                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.OK, loginRetorno);
+                string token = Request.Headers.GetValues("kl-token").First();
+                clientInfo = new Ativacao_Controle().ValidaToken(token);
+                if (clientInfo.valido)
+                {
+                    LoginRetorno loginRetorno = new Ativacao_Controle().login(login, clientInfo);
+                    return Request.CreateResponse<LoginRetorno>(HttpStatusCode.OK, loginRetorno);
+                }
+                else
+                {
+                    return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                }
             }
-            catch (Exception ex)
+            else
             {
-                if (id_cliente_usuario != "")
-                    new Ativacao_Controle().ClienteDeletar(id_cliente_usuario, 1);
-                new Ativacao_Controle().log_inserir("Erro login " + ex.Message, (int)Lista_Erro.login);
-                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.BadRequest, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Solicitação não pode ser processada" });
+                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
             }
         }
+
 
         /* PUT: api/UserAdd/5
         public void Put(int id, [FromBody]string value)
