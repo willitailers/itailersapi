@@ -976,10 +976,8 @@ namespace KL_API.Models
 
         public MKWSAutenticacao GetTokenMK(LoginInterno loginInterno, HttpClient client)
         {
-            string uri = "http://mk.seatelecom.com.br:8080/mk/WSAutenticacao.rule?sys=";
-
             var responseAutenticacao =
-                client.GetAsync($@"{uri}{loginInterno.sys}&token={loginInterno.token}&password={loginInterno.password}&cd_servico={loginInterno.cd_servico}").Result;
+                client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSAutenticacao"]}{loginInterno.sys}&token={loginInterno.token}&password={loginInterno.password}&cd_servico={loginInterno.cd_servico}").Result;
 
             if (responseAutenticacao.Content != null)
             {
@@ -1002,10 +1000,8 @@ namespace KL_API.Models
         {
             MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
 
-            string uri = "http://mk.seatelecom.com.br:8080/mk/WSMKUserSenhaSAC.rule?sys=";
-
             var responseSac =
-                client.GetAsync($@"{uri}{loginInterno.sys}&token={autenticacao.token}&user_sac={username}&pass_sac={password}").Result;
+                client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKUserSenhaSAC"]}{loginInterno.sys}&token={autenticacao.token}&user_sac={username}&pass_sac={password}").Result;
 
             if (responseSac.Content != null)
             {
@@ -1028,10 +1024,8 @@ namespace KL_API.Models
         {
             MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
 
-            string uri = "http://mk.seatelecom.com.br:8080/mk/WSMKContratosPorCliente.rule?sys=";
-
             var responseContratos =
-                client.GetAsync($@"{uri}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
+                client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKContratosPorCliente"]}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
 
             if (responseContratos.Content != null)
             {
