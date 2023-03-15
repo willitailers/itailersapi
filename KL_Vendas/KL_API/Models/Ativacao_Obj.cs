@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Objetos;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Net.Http;
 using System.Text;
 using System.Web;
 using System.Web.Helpers;
+using System.Web.Util;
 using System.Xml.Linq;
 
 namespace KL_API.Models
@@ -142,11 +144,8 @@ namespace KL_API.Models
     {
         public int cod_retorno { get; set; }
         public string nm_subscribe_id { set; get; }
-
         public int dv_ativo { set; get; }
-
         public string msg_retorno { set; get; }
-
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
@@ -948,6 +947,158 @@ namespace KL_API.Models
 
         }
 
+        public void Provisionar()
+        {
+            string token = ""; // TOKEN SEA TELECOM
+            var client = new Ativacao_Controle().ValidaToken(token);
+
+            // consulta se cliente existe, e se é pra cadastrar na hora
+            var dt_usuario = seleciona_cliente_usuario(client.id_cliente, "prov_sea");
+
+            string id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
+
+            // Se existir, verifica se ja nao foi ativado esse produto
+            var dt_produto_cliente = seleciona_licenca_produto(client.id_cliente, "prov_sea", "urn:sva:kaspersky:standard1");
+            string urn = dt_produto_cliente.Rows[0]["nm_urn"].ToString();
+            string produto_kl = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString();
+
+            string id = Guid.NewGuid().ToString("N");
+            string subscription_id = "prov-sea-1000"; //string.Concat("prov-sea-", id);
+
+            List<object> comandos = new List<object>();
+            int count = 1;
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            var produto_ativado = new List<Produto_Ativacao_Retorno>();
+            string TransactionId = dt_usuario.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+
+            
+            for (int i = 0; i < 50; i++)
+            {
+                subscription_id = subscription_id + "_" + i;
+
+                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao("1", "KSTD", DateTime.Now, "indefinite", count.ToString(), false, subscription_id);
+
+                controle.Add(new Controle_Envio()
+                {
+                    comando = comando_kl.ativar,
+                    UnitId = count,
+                    SubscribeId = subscription_id,
+                    id_produto_kl = "KSTD",
+                    id_cliente_usuario = id_cliente_usuario,
+                    urn_produto = urn
+                });
+
+                comandos.Add((object)ativacao_prod);
+                count++;
+
+                var link_android = new KL_Conexao().KL_retorna_link(subscription_id,
+                                         count.ToString(),
+                                        "pt",
+                                        PlatformEnum.Android);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_android, UnitId = count, SubscribeId = subscription_id, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl });
+                comandos.Add((object)link_android);
+                count++;
+
+                var link_windows = new KL_Conexao().KL_retorna_link(subscription_id,
+                                         count.ToString(),
+                                        "pt",
+                                        PlatformEnum.Windows);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_windows, UnitId = count, SubscribeId = subscription_id, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl });
+                comandos.Add((object)link_windows);
+                count++;
+
+                var link_ios = new KL_Conexao().KL_retorna_link(subscription_id,
+                                        count.ToString(),
+                                       "pt",
+                                       PlatformEnum.iOS);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_iphone, UnitId = count, SubscribeId = subscription_id, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl });
+                comandos.Add((object)link_ios);
+                count++;
+
+                var link_mac = new KL_Conexao().KL_retorna_link(subscription_id,
+                                        count.ToString(),
+                                       "pt",
+                                       PlatformEnum.macOS);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_mac, UnitId = count, SubscribeId = subscription_id, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl });
+                comandos.Add((object)link_mac);
+                count++;
+
+                produto_ativado.Add(new Produto_Ativacao_Retorno()
+                {
+                    ativado = false,
+                    nome_produto = produto_kl,
+                    urn_produto = urn
+                });
+            }
+
+            try
+            {
+                string xmlRequest, xmlContainer;
+
+                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+                container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+                foreach (object obj in container.Items)
+                {
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                            {
+                                string id_cliente_licenca = String.Empty;
+                                var produto = new Produto_Ativacao_Retorno();
+                                var controleEnvio = new Controle_Envio();
+
+                                var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
+
+                                controleEnvio = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                InserirProvisionamento(controleEnvio.id_cliente_licenca, controleEnvio.id_cliente_usuario, controleEnvio.SubscribeId, controleEnvio.id_produto_kl,
+                                    itemDetalhe.ActivationCode, "", "", "", "", true, DateTime.Now, DateTime.Now);
+
+                                id_cliente_licenca = ClienteLicencaInserir("0",
+                                controleEnvio.id_cliente_usuario,
+                                controleEnvio.id_produto_kl,
+                                itemDetalhe.ActivationCode,
+                                controleEnvio.SubscribeId,
+                                "",
+                                "",
+                                "",
+                                "",
+                                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                "",
+                                2);
+
+                                produto = produto_ativado.Where(x => x.urn_produto == controleEnvio.urn_produto).FirstOrDefault();
+
+                                produto.ativado = true;
+                                produto.chave_ativacao = itemDetalhe.ActivationCode;
+                                produto.cd_produto = id_cliente_licenca;
+                            }
+
+                            if (item.GetType() == typeof(SubscriptionResponseItemCollectionGetDownloadLinks))
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
 
         public LoginRetorno login(Login login, ClientInfo clientInfo)
         {
@@ -1149,7 +1300,28 @@ namespace KL_API.Models
             par.Add(db.retorna_parametros("@dt_expiracao", dt_expiracao.ToString()));
             par.Add(db.retorna_parametros("@id_status", id_status.ToString()));
 
-            log_inserir("TESTE: " + nm_ativacao_android.ToString() + "," +  nm_ativacao_iphone.ToString() + "," + nm_ativacao_windows.ToString() + "," + nm_ativacao_mac.ToString(), 9999);
+            db.parametros = par;
+            return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public string InserirProvisionamento(string id_cliente, string id_cliente_usuario, string subscriber_id, string id_produto, string chaveAtivacao, string linkOS, string linkMac, string linkAndroid,
+                                             string linkWindows, bool status, DateTime data_criacao, DateTime data_atualizacao)
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_insere_provisionamento";
+
+            List<parametros> par = new List<parametros>();
+            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
+            par.Add(db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()));
+            par.Add(db.retorna_parametros("@subscriber_id", subscriber_id.ToString()));
+            par.Add(db.retorna_parametros("@id_produto", id_produto.ToString()));
+            par.Add(db.retorna_parametros("@chaveAtivacao", chaveAtivacao.ToString()));
+            par.Add(db.retorna_parametros("@linkOS", linkOS.ToString()));
+            par.Add(db.retorna_parametros("@linkMac", linkMac.ToString()));
+            par.Add(db.retorna_parametros("@linkAndroid", linkAndroid.ToString()));
+            par.Add(db.retorna_parametros("@subscriber_id", subscriber_id.ToString()));
+            par.Add(db.retorna_parametros("@data_criacao", data_criacao.ToString("yyyy-MM-dd HH:mm:ss")));
+            par.Add(db.retorna_parametros("@data_atualizacao", data_atualizacao.ToString("yyyy-MM-dd HH:mm:ss")));
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
