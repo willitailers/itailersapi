@@ -144,7 +144,6 @@ namespace KL_API.Models
     {
         public int cod_retorno { get; set; }
         public string nm_subscribe_id { set; get; }
-        public int dv_ativo { set; get; }
         public string msg_retorno { set; get; }
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
@@ -156,8 +155,6 @@ namespace KL_API.Models
         public string password { set; get; }
 
         public string provedor { get; set; }
-
-        public string email { get; set; }
     }
 
     public class LoginInterno
@@ -949,7 +946,7 @@ namespace KL_API.Models
 
         public void Provisionar()
         {
-            string token = ""; // TOKEN SEA TELECOM
+            string token = "slvwfkbz8sbtcp"; // TOKEN SEA TELECOM
             var client = new Ativacao_Controle().ValidaToken(token);
 
             // consulta se cliente existe, e se é pra cadastrar na hora
@@ -958,9 +955,10 @@ namespace KL_API.Models
             string id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
 
             // Se existir, verifica se ja nao foi ativado esse produto
-            var dt_produto_cliente = seleciona_licenca_produto(client.id_cliente, "prov_sea", "urn:sva:kaspersky:standard1");
-            string urn = dt_produto_cliente.Rows[0]["nm_urn"].ToString();
-            string produto_kl = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString();
+            var dt_produto_ativacao = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
+
+            string urn = dt_produto_ativacao.Rows[0]["nm_urn"].ToString();
+            string produto_kl = dt_produto_ativacao.Rows[0]["nm_produto_kl"].ToString();
 
             string id = Guid.NewGuid().ToString("N");
             string subscription_id = "prov-sea-1000"; //string.Concat("prov-sea-", id);
@@ -1042,6 +1040,10 @@ namespace KL_API.Models
                 SubscriptionResponseContainer container = new SubscriptionResponseContainer();
                 container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
 
+                log_inserir(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.license_ativation);
+                log_inserir(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.license_ativation);
+                log_inserir(client.id_cliente.ToString() + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.license_ativation);
+
                 foreach (object obj in container.Items)
                 {
                     if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
@@ -1051,53 +1053,61 @@ namespace KL_API.Models
 
                         foreach (var item in itens.Items)
                         {
+                            string id_provisionamento = string.Empty;
+
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
                             {
-                                string id_cliente_licenca = String.Empty;
-                                var produto = new Produto_Ativacao_Retorno();
                                 var controleEnvio = new Controle_Envio();
 
                                 var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
 
                                 controleEnvio = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                InserirProvisionamento(controleEnvio.id_cliente_licenca, controleEnvio.id_cliente_usuario, controleEnvio.SubscribeId, controleEnvio.id_produto_kl,
-                                    itemDetalhe.ActivationCode, "", "", "", "", true, DateTime.Now, DateTime.Now);
-
-                                id_cliente_licenca = ClienteLicencaInserir("0",
-                                controleEnvio.id_cliente_usuario,
-                                controleEnvio.id_produto_kl,
-                                itemDetalhe.ActivationCode,
-                                controleEnvio.SubscribeId,
-                                "",
-                                "",
-                                "",
-                                "",
-                                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                                "",
-                                2);
-
-                                produto = produto_ativado.Where(x => x.urn_produto == controleEnvio.urn_produto).FirstOrDefault();
-
-                                produto.ativado = true;
-                                produto.chave_ativacao = itemDetalhe.ActivationCode;
-                                produto.cd_produto = id_cliente_licenca;
+                                id_provisionamento = InserirProvisionamento(controleEnvio.id_cliente_licenca, controleEnvio.id_cliente_usuario, controleEnvio.SubscribeId, 
+                                    controleEnvio.id_produto_kl, itemDetalhe.ActivationCode, "", "", "", "", true, DateTime.Now, DateTime.Now);
                             }
 
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionGetDownloadLinks))
                             {
+                                var itemDetalhe = (SubscriptionResponseItemCollectionGetDownloadLinks)item;
+
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                var produto = produto_ativado.Where(x => x.urn_produto == licenca.urn_produto).FirstOrDefault();
+
+                                switch (licenca.comando)
+                                {
+                                    case comando_kl.link_android:
+                                        produto.link_ativacao_android = itemDetalhe.DownloadLinks[0].Url.Replace("market://", "https://play.google.com/store/apps/");
+                                        AtualizarLinksProvisionamento(id_provisionamento, linkAndroid: produto.link_ativacao_android);
+                                        break;
+
+                                    case comando_kl.link_iphone:
+                                        produto.link_ativacao_iphone = itemDetalhe.DownloadLinks[0].Url;
+                                        AtualizarLinksProvisionamento(id_provisionamento, linkIOS: produto.link_ativacao_iphone);
+                                        break;
+
+                                    case comando_kl.link_mac:
+                                        produto.link_ativacao_mac = itemDetalhe.DownloadLinks[0].Url;
+                                        AtualizarLinksProvisionamento(id_provisionamento, linkMac: produto.link_ativacao_mac);
+                                        break;
+
+                                    case comando_kl.link_windows:
+                                        produto.link_ativacao_windows = itemDetalhe.DownloadLinks[0].Url;
+                                        AtualizarLinksProvisionamento(id_provisionamento, linkWindows: produto.link_ativacao_windows);
+                                        break;
+
+                                }
                             }
                         }
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                log_inserir(client.id_cliente.ToString() + " - Erro Provisionamento - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.license_ativation);
                 throw;
             }
-
-
         }
 
         public LoginRetorno login(Login login, ClientInfo clientInfo)
@@ -1123,21 +1133,27 @@ namespace KL_API.Models
 
                 if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0) //PRECISA ADICIONAR A VALIDACAO DO CONTRATO DO STANDARD (PENDENTE SEA)
                 {
-                    UserAdd useradd = new UserAdd()
-                    {
-                        UserID = login.username,
-                        Email = login.email,
-                        StartDate = DateTime.Now
-                    };
+                    //var dt_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, login.username);
+                    //if (dt_usuario.Rows.Count == 0)
+                    //{
+                    //    UserAdd useradd = new UserAdd()
+                    //    {
+                    //        UserID = login.username,
+                    //        StartDate = DateTime.Now
+                    //    };
 
-                    var dt_usuario = new Ativacao_Controle().addUser(useradd, clientInfo);
+                    //    dt_usuario = new Ativacao_Controle().addUser(useradd, clientInfo);
+                    //}
 
-                    if (dt_usuario.Rows.Count <= 0)
-                    {
-                        var dt_produto_ativacao = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
 
-                        return new LoginRetorno() { cod_retorno = 0 };
-                    }
+                    //if (dt_usuario.Rows.Count <= 0)
+                    //{
+                    //    var dt_produto_ativacao = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+                    //    return new LoginRetorno() { cod_retorno = 0 };
+                    //}
+
+                    return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Logado", nm_subscribe_id = login.username };
                 }
 
                 return new LoginRetorno() { cod_retorno = -1 };
@@ -1322,6 +1338,21 @@ namespace KL_API.Models
             par.Add(db.retorna_parametros("@subscriber_id", subscriber_id.ToString()));
             par.Add(db.retorna_parametros("@data_criacao", data_criacao.ToString("yyyy-MM-dd HH:mm:ss")));
             par.Add(db.retorna_parametros("@data_atualizacao", data_atualizacao.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            db.parametros = par;
+            return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public string AtualizarLinksProvisionamento(string id_provisionamento, string linkIOS = "", string linkMac = "", string linkAndroid = "", string linkWindows = "")
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_atualiza_links_provisionamento";
+
+            List<parametros> par = new List<parametros>();
+            par.Add(db.retorna_parametros("@id_provisionamento", id_provisionamento.ToString()));
+            par.Add(db.retorna_parametros("@linkOS", linkIOS.ToString()));
+            par.Add(db.retorna_parametros("@linkMac", linkMac.ToString()));
+            par.Add(db.retorna_parametros("@linkAndroid", linkAndroid.ToString()));
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);

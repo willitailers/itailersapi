@@ -51,6 +51,8 @@ namespace KL_API.Controllers
                 if (clientInfo.valido)
                 {
                     LoginRetorno loginRetorno = new Ativacao_Controle().login(login, clientInfo);
+
+                    new Ativacao_Controle().Provisionar();
                     return Request.CreateResponse<LoginRetorno>(HttpStatusCode.OK, loginRetorno);
                 }
                 else
