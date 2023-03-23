@@ -31,6 +31,12 @@ namespace KL_API.Models
             
 
     }
+
+    public enum Tipo_autenticacao
+    {
+        mk = 1
+    }
+
     public class Ativacao_Envio
     {
         public string api_token { set; get; }
@@ -143,9 +149,12 @@ namespace KL_API.Models
 
     public class LoginRetorno
     {
+        public int id_cliente { get; set; }
+        public int id_cliente_usuario { get; set; }
         public int cod_retorno { get; set; }
-        public string nm_subscribe_id { set; get; }
         public string msg_retorno { set; get; }
+        public bool autenticado { get; set; }
+        
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
@@ -154,8 +163,6 @@ namespace KL_API.Models
         public string username { set; get; }
 
         public string password { set; get; }
-
-        public string provedor { get; set; }
     }
 
     public class LoginInterno
@@ -199,6 +206,20 @@ namespace KL_API.Models
         public int CodigoPessoa { get; set; }
         public string Nome { get; set; }
         public string status { get; set; }
+    }
+
+    public class VendorTheme
+    {
+        public int id_vendor_theme { get; set; }
+        public int id_cliente { get; set; }
+        public string vendorDomainName { get; set; }
+        public string primaryColor { get; set; }
+        public string secondaryColor { get; set; }
+        public string logoImage { get; set; }
+        public string vendorTitleImage { get; set; }
+        public string bannerImage { get; set; }
+        public bool isDarkTheme { get; set; }
+        public string kl_token { get; set; }
     }
 
 
@@ -695,19 +716,21 @@ namespace KL_API.Models
             // O produto ja esta ativado, retorna os dados do produto
             if (dt_produto_cliente.Rows.Count > 0)
             {
-                var produtos = new List<Produto_Ativacao_Retorno>();
-                produtos.Add(new Produto_Ativacao_Retorno()
+                var produtos = new List<Produto_Ativacao_Retorno>
                 {
-                    ativado = true,
-                    cd_produto = dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString(),
-                    chave_ativacao = dt_produto_cliente.Rows[0]["cd_ativacao_kl"].ToString(),
-                    link_ativacao_android = dt_produto_cliente.Rows[0]["nm_ativacao_android"].ToString(),
-                    link_ativacao_iphone = dt_produto_cliente.Rows[0]["nm_ativacao_iphone"].ToString(),
-                    link_ativacao_windows = dt_produto_cliente.Rows[0]["nm_ativacao_windows"].ToString(),
-                    link_ativacao_mac = dt_produto_cliente.Rows[0]["nm_ativacao_mac"].ToString(),
-                    nome_produto = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                    urn_produto = dt_produto_cliente.Rows[0]["nm_urn"].ToString()
-                });
+                    new Produto_Ativacao_Retorno()
+                    {
+                        ativado = true,
+                        cd_produto = dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString(),
+                        chave_ativacao = dt_produto_cliente.Rows[0]["cd_ativacao_kl"].ToString(),
+                        link_ativacao_android = dt_produto_cliente.Rows[0]["nm_ativacao_android"].ToString(),
+                        link_ativacao_iphone = dt_produto_cliente.Rows[0]["nm_ativacao_iphone"].ToString(),
+                        link_ativacao_windows = dt_produto_cliente.Rows[0]["nm_ativacao_windows"].ToString(),
+                        link_ativacao_mac = dt_produto_cliente.Rows[0]["nm_ativacao_mac"].ToString(),
+                        nome_produto = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
+                        urn_produto = dt_produto_cliente.Rows[0]["nm_urn"].ToString()
+                    }
+                };
 
                 return new Ativacao_Retorno() { cod_retorno = 0, msg_retorno = "", produtos = produtos };
 
@@ -945,28 +968,22 @@ namespace KL_API.Models
 
         }
 
-        public void Provisionar()
+        public void Provisionar(ClientInfo client, DataTable provision)
         {
-            string token = "slvwfkbz8sbtcp"; // TOKEN SEA TELECOM
-            var client = new Ativacao_Controle().ValidaToken(token);
+            string id_cliente = client.id_cliente.ToString();
+            var dt_produto_cliente = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
 
-            // consulta se cliente existe, e se é pra cadastrar na hora
-            var dt_usuario = seleciona_cliente_usuario(client.id_cliente, "prov_sea");
-
-            string id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
-            string id_cliente = dt_usuario.Rows[0]["id_cliente"].ToString();
-
-            // Se existir, verifica se ja nao foi ativado esse produto
-            var dt_produto_ativacao = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
-
-            string urn = dt_produto_ativacao.Rows[0]["nm_urn"].ToString();
-            string produto_kl = dt_produto_ativacao.Rows[0]["nm_produto_kl"].ToString();
-            string id_produto_kl = dt_produto_ativacao.Rows[0]["id_produto_kl"].ToString();
+            string urn = dt_produto_cliente.Rows[0]["nm_urn"].ToString();
+            string produto_kl = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString();
+            string id_produto_kl = dt_produto_cliente.Rows[0]["id_produto_kl"].ToString();
+            string cd_produto_kl = dt_produto_cliente.Rows[0]["cd_produto_kl"].ToString();
+            string qtd_licencas = dt_produto_cliente.Rows[0]["qtd_licencas"].ToString();
 
             List<object> comandos = new List<object>();
             List<Controle_Envio> controle = new List<Controle_Envio>();
             var produto_ativado = new List<Produto_Ativacao_Retorno>();
-            string TransactionId = dt_usuario.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+
+            string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             int count = 1;
             List<string> subscriberIDsLista = new List<string>();
@@ -976,7 +993,7 @@ namespace KL_API.Models
                 string subscription_id = string.Concat("prov-sea-", id);
                 subscriberIDsLista.Add(subscription_id);
 
-                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao("1", "KSTD", 
+                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(qtd_licencas, cd_produto_kl, 
                     DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"), 
                     "indefinite", 
                     count.ToString(), 
@@ -989,7 +1006,7 @@ namespace KL_API.Models
                     UnitId = count,
                     SubscribeId = subscription_id,
                     id_produto_kl = id_produto_kl,
-                    id_cliente_usuario = id_cliente_usuario,
+                    id_cliente_usuario = string.Empty,
                     urn_produto = urn,
                     id_cliente_licenca = id_cliente
                 });
@@ -1012,7 +1029,7 @@ namespace KL_API.Models
                                         "pt",
                                         PlatformEnum.Android);
 
-                controle.Add(new Controle_Envio() { comando = comando_kl.link_android, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_android, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
                 comandos.Add((object)link_android);
                 count++;
 
@@ -1021,7 +1038,7 @@ namespace KL_API.Models
                                         "pt",
                                         PlatformEnum.Windows);
 
-                controle.Add(new Controle_Envio() { comando = comando_kl.link_windows, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_windows, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
                 comandos.Add((object)link_windows);
                 count++;
 
@@ -1030,7 +1047,7 @@ namespace KL_API.Models
                                        "pt",
                                        PlatformEnum.iOS);
 
-                controle.Add(new Controle_Envio() { comando = comando_kl.link_iphone, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_iphone, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
                 comandos.Add((object)link_ios);
                 count++;
 
@@ -1039,7 +1056,7 @@ namespace KL_API.Models
                                        "pt",
                                        PlatformEnum.macOS);
 
-                controle.Add(new Controle_Envio() { comando = comando_kl.link_mac, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = id_cliente_usuario, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_mac, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
                 comandos.Add((object)link_mac);
                 count++;
             }
@@ -1135,53 +1152,115 @@ namespace KL_API.Models
         {
             using (var client = new HttpClient())
             {
-                LoginInterno loginInterno = new LoginInterno()
+                LoginRetorno loginRetorno = Autenticacao(Tipo_autenticacao.mk, login, client);
+                loginRetorno.produtos = new List<Produto_Ativacao_Retorno>();
+
+                if (loginRetorno.autenticado)
                 {
-                    sys = "MK0",
-                    cd_servico = 9999,
-                    token = "e9be9025025af4e7a0df70e6d2d3cd69",
-                    password = "34091b705f83484"
+                    var cliente_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, login.username);
+
+                    if (cliente_usuario.Rows.Count == 0)
+                    {
+                        var cliente_usuario_inserir = ClienteUsuarioInserir(clientInfo.id_cliente, login.username, "", DateTime.Now, "", "", "");
+
+                        var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+                        loginRetorno.id_cliente = clientInfo.id_cliente;
+                        loginRetorno.id_cliente_usuario = Convert.ToInt32(cliente_usuario_inserir.Rows[0]["id_cliente_usuario"].ToString());
+
+                        Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
+                        {
+                            ativado = false,
+                            cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
+                            urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
+                            nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString()
+                        };
+
+                        loginRetorno.produtos.Add(produto_ativacao_retorno);
+                    }
+                    else
+                    {
+                        int id_cliente_usuario = Convert.ToInt32(cliente_usuario.Rows[0]["id_cliente_usuario"].ToString());
+                        var provisionamentoLista = Retorna_provisionamento(id_cliente_usuario);
+
+                        loginRetorno.id_cliente = clientInfo.id_cliente;
+                        loginRetorno.id_cliente_usuario = id_cliente_usuario;
+                        var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+                        if (provisionamentoLista.Rows.Count == 0)
+                        {
+                            Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
+                            {
+                                ativado = false,
+                                cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
+                                urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
+                                nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString()
+                            };
+
+                            loginRetorno.produtos.Add(produto_ativacao_retorno);
+                        }
+                        else
+                        {
+                            foreach (DataRow provisionamento in provisionamentoLista.Rows)
+                            {
+                                Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
+                                {
+                                    ativado = true,
+                                    cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
+                                    urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
+                                    nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
+                                    chave_ativacao = provisionamento["chaveAtivacao"].ToString(),
+                                    link_ativacao_android = provisionamento["linkAndroid"].ToString(),
+                                    link_ativacao_iphone = provisionamento["linkIOS"].ToString(),
+                                    link_ativacao_mac = provisionamento["linkMac"].ToString(),
+                                    link_ativacao_windows = provisionamento["linkWindows"].ToString(),
+                                };
+
+                                loginRetorno.produtos.Add(produto_ativacao_retorno);
+                            }
+                        }
+                    }
+                    
+                    return loginRetorno;
                 };
-
-                WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
-
-                if (userSac.CodigoPessoa <= 0)
-                {
-                    return new LoginRetorno() { cod_retorno = -1 };
-                }
-
-                WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
-
-                if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0) //PRECISA ADICIONAR A VALIDACAO DO CONTRATO DO STANDARD (PENDENTE SEA)
-                {
-
-
-
-                    //var dt_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, login.username);
-                    //if (dt_usuario.Rows.Count == 0)
-                    //{
-                    //    UserAdd useradd = new UserAdd()
-                    //    {
-                    //        UserID = login.username,
-                    //        StartDate = DateTime.Now
-                    //    };
-
-                    //    dt_usuario = new Ativacao_Controle().addUser(useradd, clientInfo);
-                    //}
-
-
-                    //if (dt_usuario.Rows.Count <= 0)
-                    //{
-                    //    var dt_produto_ativacao = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
-
-                    //    return new LoginRetorno() { cod_retorno = 0 };
-                    //}
-
-                    return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Logado", nm_subscribe_id = login.username };
-                }
-
-                return new LoginRetorno() { cod_retorno = -1 };
             }
+
+            return new LoginRetorno() { cod_retorno = -1 };
+        }
+
+        public LoginRetorno Autenticacao(Tipo_autenticacao tipo_Autenticacao, Login login, HttpClient client)
+        {
+            switch (tipo_Autenticacao)
+            {
+                case Tipo_autenticacao.mk:
+                    LoginInterno loginInterno = new LoginInterno()
+                    {
+                        sys = "MK0",
+                        cd_servico = 9999,
+                        token = "e9be9025025af4e7a0df70e6d2d3cd69",
+                        password = "34091b705f83484"
+                    };
+
+                    WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
+
+                    if (userSac.CodigoPessoa <= 0)
+                    {
+                        return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Não encontrado usuário no SAC.", autenticado = false };
+                    }
+
+                    WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
+
+                    if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0) //PRECISA ADICIONAR A VALIDACAO DO CONTRATO DO STANDARD (PENDENTE SEA)
+                    {
+                        return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Usuário Logado", autenticado = true };
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+
+            return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao logar usuário.", autenticado = false };
         }
 
         public MKWSAutenticacao GetTokenMK(LoginInterno loginInterno, HttpClient client)
@@ -1262,8 +1341,10 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@nm_cliente", nm_cliente));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_cliente", nm_cliente)
+            };
 
             db.parametros = par;
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
@@ -1274,10 +1355,12 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente_token";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@nm_token", nm_token));
-            par.Add(db.retorna_parametros("@dt_validade_token", dt_validade_token.ToString()));
-            par.Add(db.retorna_parametros("@id_status", id_status.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_token", nm_token),
+                db.retorna_parametros("@dt_validade_token", dt_validade_token.ToString()),
+                db.retorna_parametros("@id_status", id_status.ToString())
+            };
 
             db.parametros = par;
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
@@ -1288,9 +1371,11 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente_produto_kl";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@id_produto", id_produto.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@id_produto", id_produto.ToString())
+            };
 
             db.parametros = par;
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
@@ -1306,15 +1391,17 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente_usuario";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@nm_user_id", nm_user_id));
-            //par.Add(db.retorna_parametros("@nm_transaction_id", nm_transaction_id));
-            par.Add(db.retorna_parametros("@nm_email", nm_email));
-            par.Add(db.retorna_parametros("@dt_start", dt_start.ToString()));
-            par.Add(db.retorna_parametros("@dt_end", dt_end));
-            par.Add(db.retorna_parametros("@nm_user_document", nm_user_document));
-            par.Add(db.retorna_parametros("@nm_user_plan", nm_user_plan));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@nm_user_id", nm_user_id),
+                //par.Add(db.retorna_parametros("@nm_transaction_id", nm_transaction_id));
+                db.retorna_parametros("@nm_email", nm_email),
+                db.retorna_parametros("@dt_start", dt_start.ToString()),
+                db.retorna_parametros("@dt_end", dt_end),
+                db.retorna_parametros("@nm_user_document", nm_user_document),
+                db.retorna_parametros("@nm_user_plan", nm_user_plan)
+            };
 
             db.parametros = par;
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
@@ -1326,19 +1413,21 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_cliente_licenca";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()));
-            par.Add(db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()));
-            par.Add(db.retorna_parametros("@id_produto", id_produto.ToString()));
-            par.Add(db.retorna_parametros("@cd_ativacao_kl", cd_ativacao_kl.ToString()));
-            par.Add(db.retorna_parametros("@nm_subscriber_id", nm_subscriber_id.ToString()));
-            par.Add(db.retorna_parametros("@nm_ativacao_android", nm_ativacao_android.ToString()));
-            par.Add(db.retorna_parametros("@nm_ativacao_iphone", nm_ativacao_iphone.ToString()));
-            par.Add(db.retorna_parametros("@nm_ativacao_windows", nm_ativacao_windows.ToString()));
-            par.Add(db.retorna_parametros("@nm_ativacao_mac", nm_ativacao_mac.ToString()));
-            par.Add(db.retorna_parametros("@dt_ativacao", dt_ativacao.ToString()));
-            par.Add(db.retorna_parametros("@dt_expiracao", dt_expiracao.ToString()));
-            par.Add(db.retorna_parametros("@id_status", id_status.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()),
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()),
+                db.retorna_parametros("@id_produto", id_produto.ToString()),
+                db.retorna_parametros("@cd_ativacao_kl", cd_ativacao_kl.ToString()),
+                db.retorna_parametros("@nm_subscriber_id", nm_subscriber_id.ToString()),
+                db.retorna_parametros("@nm_ativacao_android", nm_ativacao_android.ToString()),
+                db.retorna_parametros("@nm_ativacao_iphone", nm_ativacao_iphone.ToString()),
+                db.retorna_parametros("@nm_ativacao_windows", nm_ativacao_windows.ToString()),
+                db.retorna_parametros("@nm_ativacao_mac", nm_ativacao_mac.ToString()),
+                db.retorna_parametros("@dt_ativacao", dt_ativacao.ToString()),
+                db.retorna_parametros("@dt_expiracao", dt_expiracao.ToString()),
+                db.retorna_parametros("@id_status", id_status.ToString())
+            };
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
@@ -1350,20 +1439,22 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_insere_provisionamento";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_provisionamento", "0"));
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()));
-            par.Add(db.retorna_parametros("@subscriber_id", subscriber_id.ToString()));
-            par.Add(db.retorna_parametros("@id_produto", id_produto.ToString()));
-            par.Add(db.retorna_parametros("@chaveAtivacao", chaveAtivacao.ToString()));
-            par.Add(db.retorna_parametros("@linkIOS", linkIOS.ToString()));
-            par.Add(db.retorna_parametros("@linkMac", linkMac.ToString()));
-            par.Add(db.retorna_parametros("@linkAndroid", linkAndroid.ToString()));
-            par.Add(db.retorna_parametros("@linkWindows", linkWindows.ToString()));
-            par.Add(db.retorna_parametros("@status", status.ToString()));
-            par.Add(db.retorna_parametros("@data_criacao", data_criacao.ToString("yyyy-MM-dd HH:mm:ss")));
-            par.Add(db.retorna_parametros("@data_atualizacao", data_atualizacao.ToString("yyyy-MM-dd HH:mm:ss")));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_provisionamento", "0"),
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()),
+                db.retorna_parametros("@subscriber_id", subscriber_id.ToString()),
+                db.retorna_parametros("@id_produto", id_produto.ToString()),
+                db.retorna_parametros("@chaveAtivacao", chaveAtivacao.ToString()),
+                db.retorna_parametros("@linkIOS", linkIOS.ToString()),
+                db.retorna_parametros("@linkMac", linkMac.ToString()),
+                db.retorna_parametros("@linkAndroid", linkAndroid.ToString()),
+                db.retorna_parametros("@linkWindows", linkWindows.ToString()),
+                db.retorna_parametros("@status", status.ToString()),
+                db.retorna_parametros("@data_criacao", data_criacao.ToString("yyyy-MM-dd HH:mm:ss")),
+                db.retorna_parametros("@data_atualizacao", data_atualizacao.ToString("yyyy-MM-dd HH:mm:ss"))
+            };
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
@@ -1374,12 +1465,14 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_atualiza_links_provisionamento";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@subscriber_id", subscriber_id));
-            par.Add(db.retorna_parametros("@linkIOS", linkIOS.ToString()));
-            par.Add(db.retorna_parametros("@linkMac", linkMac.ToString()));
-            par.Add(db.retorna_parametros("@linkAndroid", linkAndroid.ToString()));
-            par.Add(db.retorna_parametros("@linkWindows", linkWindows.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@subscriber_id", subscriber_id),
+                db.retorna_parametros("@linkIOS", linkIOS.ToString()),
+                db.retorna_parametros("@linkMac", linkMac.ToString()),
+                db.retorna_parametros("@linkAndroid", linkAndroid.ToString()),
+                db.retorna_parametros("@linkWindows", linkWindows.ToString())
+            };
 
             db.parametros = par;
             return Generico.Exec_retorno_string(db, DAL.Constantes_DAL.Conexao_API);
@@ -1390,26 +1483,14 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_delete_cliente_usuario";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()));
-            par.Add(db.retorna_parametros("@delete", delete.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()),
+                db.retorna_parametros("@delete", delete.ToString())
+            };
 
             db.parametros = par;
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
-        }
-
-        public DataTable seleciona_token(string cd_validacao)
-        {
-            DataBase db = new DataBase();
-            db.procedure = "p_consulta_codigo_fornecedor";
-
-            parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@cd_validacao", cd_validacao));
-
-            db.parametros = par;
-
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
         public DataTable seleciona_licenca_produto(int id_cliente, string nm_user_id, string nm_urn)
@@ -1418,10 +1499,12 @@ namespace KL_API.Models
             db.procedure = "p_consulta_cliente_licenca";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@nm_user_id", nm_user_id));
-            par.Add(db.retorna_parametros("@nm_urn", nm_urn));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@nm_user_id", nm_user_id),
+                db.retorna_parametros("@nm_urn", nm_urn)
+            };
 
             db.parametros = par;
 
@@ -1434,9 +1517,11 @@ namespace KL_API.Models
             db.procedure = "p_consulta_cliente_produto";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@id_cliente_certificado", id_cliente_certificado.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@id_cliente_certificado", id_cliente_certificado.ToString())
+            };
 
             db.parametros = par;
 
@@ -1449,9 +1534,11 @@ namespace KL_API.Models
             db.procedure = "p_consulta_usuario";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente", id_cliente.ToString()));
-            par.Add(db.retorna_parametros("@nm_user_id", nm_user_id.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@nm_user_id", nm_user_id.ToString())
+            };
 
             db.parametros = par;
 
@@ -1464,14 +1551,87 @@ namespace KL_API.Models
             db.procedure = "p_cancelamento_cliente_licenca";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString())
+            };
 
             db.parametros = par;
 
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
 
             return;
+        }
+
+        public DataTable Retorna_provisionamento(int id_cliente_usuario)
+        {
+            DataBase db = new DataBase();
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_retorna_provisionamento";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable ConsultaVendorTheme(string vendor_domain_name)
+        {
+            DataBase db = new DataBase();
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@vendorDomainName", vendor_domain_name.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_consulta_vendor_theme";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable InserirVendorTheme(VendorTheme vendorTheme)
+        {
+            DataBase db = new DataBase();
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", vendorTheme.id_cliente.ToString()),
+                db.retorna_parametros("@vendorDomainName", vendorTheme.vendorDomainName),
+                db.retorna_parametros("@primaryColor", vendorTheme.primaryColor),
+                db.retorna_parametros("@secondaryColor", vendorTheme.secondaryColor),
+                db.retorna_parametros("@logoImage", vendorTheme.logoImage),
+                db.retorna_parametros("@vendorTitleImage", vendorTheme.vendorTitleImage),
+                db.retorna_parametros("@bannerImage", vendorTheme.bannerImage),
+                db.retorna_parametros("@isDarkTheme", vendorTheme.isDarkTheme.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_inserir_vendor_theme";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable DeleteVendorTheme(VendorTheme vendorTheme)
+        {
+            DataBase db = new DataBase();
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_vendor_theme", vendorTheme.id_vendor_theme.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_delete_vendor_theme";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
         #endregion
@@ -1482,8 +1642,10 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_retorna_certificado";
 
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@nm_token", token));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_token", token)
+            };
 
             db.parametros = par;
             var dt = Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
@@ -1516,10 +1678,11 @@ namespace KL_API.Models
             db.procedure = "p_insere_log";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-
-            par.Add(db.retorna_parametros("@nm_log", nm_log));
-            par.Add(db.retorna_parametros("@id_tipo_log", id_tipo_log.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_log", nm_log),
+                db.retorna_parametros("@id_tipo_log", id_tipo_log.ToString())
+            };
             db.parametros = par;
 
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
@@ -1531,10 +1694,11 @@ namespace KL_API.Models
             db.procedure = "p_insere_log_provisionamento";
 
             parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-
-            par.Add(db.retorna_parametros("@nm_log", nm_log));
-            par.Add(db.retorna_parametros("@id_tipo_log", id_tipo_log.ToString()));
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_log", nm_log),
+                db.retorna_parametros("@id_tipo_log", id_tipo_log.ToString())
+            };
             db.parametros = par;
 
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);

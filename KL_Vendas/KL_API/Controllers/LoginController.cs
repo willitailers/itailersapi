@@ -50,9 +50,20 @@ namespace KL_API.Controllers
                 clientInfo = new Ativacao_Controle().ValidaToken(token);
                 if (clientInfo.valido)
                 {
+                    var provisionamento = new Ativacao_Controle().Retorna_provisionamento(0);
+
+                    if (provisionamento.Rows.Count <= 5)
+                    {
+                        new Ativacao_Controle().Provisionar(clientInfo, provisionamento);
+                    }
+
                     LoginRetorno loginRetorno = new Ativacao_Controle().login(login, clientInfo);
 
-                    new Ativacao_Controle().Provisionar();
+                    if (!loginRetorno.autenticado)
+                    {
+                        return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, loginRetorno);
+                    }
+
                     return Request.CreateResponse<LoginRetorno>(HttpStatusCode.OK, loginRetorno);
                 }
                 else
@@ -62,7 +73,7 @@ namespace KL_API.Controllers
             }
             else
             {
-                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token é obrigatório" });
             }
         }
 
