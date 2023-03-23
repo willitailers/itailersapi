@@ -13,12 +13,12 @@ namespace KL_API.Controllers
     public class GetProviderInfoController : ApiController
     {
         [HttpGet]
-        public HttpResponseMessage GetProviderInfo([FromBody]object value)
+        public HttpResponseMessage GetProviderInfo(string provedor)
         {
-            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject<VendorTheme>(value.ToString());
-            VendorTheme vendorDomain = (VendorTheme)obj;
+            //var obj = Newtonsoft.Json.JsonConvert.DeserializeObject<VendorTheme>(value.ToString());
+            //VendorTheme vendorDomain = (VendorTheme)obj;
 
-            var vendorThemeDataTable = new Ativacao_Controle().ConsultaVendorTheme(vendorDomain.vendorDomainName);
+            var vendorThemeDataTable = new Ativacao_Controle().ConsultaVendorTheme(provedor);
 
             if (vendorThemeDataTable.Rows.Count == 0)
             {
