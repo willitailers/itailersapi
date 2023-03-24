@@ -158,6 +158,16 @@ namespace KL_API.Models
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
+    public class AtivacaoRetorno
+    {
+        public int id_cliente { get; set; }
+        public int id_cliente_usuario { get; set; }
+        public int cod_retorno { get; set; }
+        public string msg_retorno { set; get; }
+
+        public List<Produto_Ativacao_Retorno> produtos { set; get; }
+    }
+
     public class Login
     {
         public string username { set; get; }
@@ -222,6 +232,11 @@ namespace KL_API.Models
         public string kl_token { get; set; }
     }
 
+    public class Ativacao
+    {
+        public int id_cliente { get; set; }
+        public int id_cliente_usuario { get; set; }
+    }
 
     public enum comando_kl
     {
@@ -1148,6 +1163,44 @@ namespace KL_API.Models
             }
         }
 
+        public AtivacaoRetorno AtivarLicenca(Ativacao ativacao, ClientInfo clientInfo)
+        {
+            AtivacaoRetorno ativacaoRetorno = new AtivacaoRetorno();
+            ativacaoRetorno.produtos = new List<Produto_Ativacao_Retorno>();
+
+            var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+            var ativarPorProvisionamento = AtivarPorProvisionamento(ativacao.id_cliente, ativacao.id_cliente_usuario);
+
+            ativacaoRetorno.cod_retorno = 0;
+            ativacaoRetorno.id_cliente = ativacao.id_cliente;
+            ativacaoRetorno.id_cliente_usuario = ativacao.id_cliente_usuario;
+            ativacaoRetorno.msg_retorno = "Produto ativado com sucesso.";
+
+            if (ativarPorProvisionamento.Rows.Count > 0)
+            {
+                foreach (DataRow provisionamento in ativarPorProvisionamento.Rows)
+                {
+                    Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
+                    {
+                        ativado = true,
+                        cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
+                        urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
+                        nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
+                        chave_ativacao = provisionamento["chaveAtivacao"].ToString(),
+                        link_ativacao_android = provisionamento["linkAndroid"].ToString(),
+                        link_ativacao_iphone = provisionamento["linkIOS"].ToString(),
+                        link_ativacao_mac = provisionamento["linkMac"].ToString(),
+                        link_ativacao_windows = provisionamento["linkWindows"].ToString(),
+                    };
+
+                    ativacaoRetorno.produtos.Add(produto_ativacao_retorno);
+                }
+            }
+
+            return ativacaoRetorno;
+        }
+
         public LoginRetorno login(Login login, ClientInfo clientInfo)
         {
             using (var client = new HttpClient())
@@ -1497,8 +1550,6 @@ namespace KL_API.Models
         {
             DataBase db = new DataBase();
             db.procedure = "p_consulta_cliente_licenca";
-
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente", id_cliente.ToString()),
@@ -1515,8 +1566,6 @@ namespace KL_API.Models
         {
             DataBase db = new DataBase();
             db.procedure = "p_consulta_cliente_produto";
-
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente", id_cliente.ToString()),
@@ -1532,8 +1581,6 @@ namespace KL_API.Models
         {
             DataBase db = new DataBase();
             db.procedure = "p_consulta_usuario";
-
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente", id_cliente.ToString()),
@@ -1550,7 +1597,6 @@ namespace KL_API.Models
             DataBase db = new DataBase();
             db.procedure = "p_cancelamento_cliente_licenca";
 
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString())
@@ -1566,8 +1612,6 @@ namespace KL_API.Models
         public DataTable Retorna_provisionamento(int id_cliente_usuario)
         {
             DataBase db = new DataBase();
-
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString())
@@ -1582,8 +1626,6 @@ namespace KL_API.Models
         public DataTable ConsultaVendorTheme(string vendor_domain_name)
         {
             DataBase db = new DataBase();
-
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@vendorDomainName", vendor_domain_name.ToString())
@@ -1599,7 +1641,6 @@ namespace KL_API.Models
         {
             DataBase db = new DataBase();
 
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_cliente", vendorTheme.id_cliente.ToString()),
@@ -1622,7 +1663,6 @@ namespace KL_API.Models
         {
             DataBase db = new DataBase();
 
-            parametros p = new parametros();
             List<parametros> par = new List<parametros>
             {
                 db.retorna_parametros("@id_vendor_theme", vendorTheme.id_vendor_theme.ToString())
@@ -1631,6 +1671,22 @@ namespace KL_API.Models
             db.parametros = par;
 
             db.procedure = "p_delete_vendor_theme";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable AtivarPorProvisionamento(int id_cliente, int id_cliente_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString()),
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_ativar_por_provisionamento";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 

@@ -15,9 +15,6 @@ namespace KL_API.Controllers
         [HttpGet]
         public HttpResponseMessage GetProviderInfo(string provedor)
         {
-            //var obj = Newtonsoft.Json.JsonConvert.DeserializeObject<VendorTheme>(value.ToString());
-            //VendorTheme vendorDomain = (VendorTheme)obj;
-
             var vendorThemeDataTable = new Ativacao_Controle().ConsultaVendorTheme(provedor);
 
             if (vendorThemeDataTable.Rows.Count == 0)
