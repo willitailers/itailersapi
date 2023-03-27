@@ -1303,9 +1303,14 @@ namespace KL_API.Models
 
                     WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
 
-                    if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0) //PRECISA ADICIONAR A VALIDACAO DO CONTRATO DO STANDARD (PENDENTE SEA)
+                    if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
                     {
-                        return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Usuário Logado", autenticado = true };
+                        int[] codContratos = new int[4] { 121619, 121617, 121611, 121609 };
+
+                        if (contratosPorCliente.ContratosAtivos.Where(w => codContratos.Contains(w.codcontrato)).Any())
+                        {
+                            return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Usuário Logado", autenticado = true };
+                        }
                     }
 
                     break;
