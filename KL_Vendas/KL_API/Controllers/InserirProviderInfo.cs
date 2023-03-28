@@ -40,7 +40,8 @@ namespace KL_API.Controllers
                     vendorTitleImage = item["vendorTitleImage"].ToString(),
                     bannerImage = item["bannerImage"].ToString(),
                     isDarkTheme = (Boolean)item["isDarkTheme"],
-                    kl_token = item["kl_token"].ToString()
+                    kl_token = item["kl_token"].ToString(),
+                    bannerImageMobile = item["bannerImageMobile"].ToString()
                 };
 
                 vendorThemes.Add(vendorThemeRetorno);

@@ -33,7 +33,8 @@ namespace KL_API.Controllers
                 vendorTitleImage = vendorThemeDataTable.Rows[0]["vendorTitleImage"].ToString(),
                 bannerImage = vendorThemeDataTable.Rows[0]["bannerImage"].ToString(),
                 isDarkTheme = (Boolean)vendorThemeDataTable.Rows[0]["isDarkTheme"],
-                kl_token = vendorThemeDataTable.Rows[0]["kl_token"].ToString()
+                kl_token = vendorThemeDataTable.Rows[0]["kl_token"].ToString(),
+                bannerImageMobile = vendorThemeDataTable.Rows[0]["bannerImageMobile"].ToString()
             };
 
             return Request.CreateResponse<VendorTheme>(HttpStatusCode.OK, vendorTheme);

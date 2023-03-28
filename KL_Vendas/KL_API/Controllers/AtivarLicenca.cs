@@ -14,16 +14,29 @@ namespace KL_API.Controllers
         [HttpPost]
         public HttpResponseMessage AtivarLicenca([FromBody]Ativacao ativacao)
         {
+
             var clientInfo = new ClientInfo();
             if (Request.Headers.Contains("kl-token"))
             {
                 string token = Request.Headers.GetValues("kl-token").First();
                 clientInfo = new Ativacao_Controle().ValidaToken(token);
-                AtivacaoRetorno ativacaoRetorno = new AtivacaoRetorno();
 
+                var provisionamento = new Ativacao_Controle().Retorna_provisionamento(0);
+
+                if (provisionamento.Rows.Count <= 5)
+                {
+                    new Ativacao_Controle().Provisionar(clientInfo, provisionamento);
+                }
+
+                AtivacaoRetorno ativacaoRetorno = new AtivacaoRetorno();
                 if (clientInfo.valido)
                 {
                     ativacaoRetorno = new Ativacao_Controle().AtivarLicenca(ativacao, clientInfo);
+
+                    if (ativacaoRetorno.cod_retorno < 0)
+                    {
+                        return Request.CreateResponse<AtivacaoRetorno>(HttpStatusCode.NotAcceptable, ativacaoRetorno);
+                    }
                 }
 
                 return Request.CreateResponse<AtivacaoRetorno>(HttpStatusCode.OK, ativacaoRetorno);
