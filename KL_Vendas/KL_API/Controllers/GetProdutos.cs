@@ -24,16 +24,21 @@ namespace KL_API.Controllers
                 {
                     getProdutos = new Ativacao_Controle().GetProdutos(getProdutosObj, clientInfo);
 
+                    if (getProdutos.cod_retorno < 0)
+                    {
+                        return Request.CreateResponse<GetProdutosRetorno>(HttpStatusCode.NotAcceptable, getProdutos);
+                    }
+
                     return Request.CreateResponse<GetProdutosRetorno>(HttpStatusCode.OK, getProdutos);
                 }
                 else
                 {
-                    return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                    return Request.CreateResponse<GetProdutosRetorno>(HttpStatusCode.NotAcceptable, new GetProdutosRetorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
                 }
             }
             else
             {
-                return Request.CreateResponse<LoginRetorno>(HttpStatusCode.NotAcceptable, new LoginRetorno() { cod_retorno = -1, msg_retorno = "Token é obrigatório" });
+                return Request.CreateResponse<GetProdutosRetorno>(HttpStatusCode.NotAcceptable, new GetProdutosRetorno() { cod_retorno = -1, msg_retorno = "Token é obrigatório" });
             }
         }
     }

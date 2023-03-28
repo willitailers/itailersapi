@@ -252,6 +252,8 @@ namespace KL_API.Models
     public class GetProdutosRetorno
     {
         public int id_cliente_usuario { get; set; }
+        public int cod_retorno { get; set; }
+        public string msg_retorno { get; set; }
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
@@ -1750,24 +1752,21 @@ namespace KL_API.Models
             getProdutosRetorno.id_cliente_usuario = getProdutos.id_cliente_usuario;
             getProdutosRetorno.produtos = new List<Produto_Ativacao_Retorno>();
 
+            if (getProdutos.id_cliente_usuario == 0)
+            {
+                getProdutosRetorno.cod_retorno = -1;
+                getProdutosRetorno.msg_retorno = "id_cliente_usuario não encontrado";
+                return getProdutosRetorno;
+            }
+
             var provisionamentoLista = Retorna_provisionamento(getProdutos.id_cliente_usuario);
 
             var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
 
             if (provisionamentoLista.Rows.Count == 0)
             {
-                Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
-                {
-                    ativado = false,
-                    cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
-                    urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
-                    nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                    id_produto = Convert.ToInt32(produto_cliente.Rows[0]["id_produto_kl"].ToString()),
-                    descricao = produto_cliente.Rows[0]["descricao"].ToString(),
-                    imagem_produto = produto_cliente.Rows[0]["imagem_produto"].ToString()
-                };
-
-                getProdutosRetorno.produtos.Add(produto_ativacao_retorno);
+                getProdutosRetorno.cod_retorno = -1;
+                getProdutosRetorno.msg_retorno = "id_cliente_usuario não encontrado";
 
                 return getProdutosRetorno;
             }
