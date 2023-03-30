@@ -158,8 +158,6 @@ namespace KL_API.Models
         public int cod_retorno { get; set; }
         public string msg_retorno { set; get; }
         public bool autenticado { get; set; }
-        
-        public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
     public class AtivacaoRetorno
@@ -168,6 +166,7 @@ namespace KL_API.Models
         public int id_cliente_usuario { get; set; }
         public int cod_retorno { get; set; }
         public string msg_retorno { set; get; }
+        public int id_produto { get; set; }
 
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
@@ -1002,10 +1001,12 @@ namespace KL_API.Models
 
         }
 
-        public void Provisionar(ClientInfo client, DataTable provision)
+        public void Provisionar(ClientInfo client, DataTable provision, int id_produto)
         {
             string id_cliente = client.id_cliente.ToString();
             var dt_produto_cliente = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
+
+            dt_produto_cliente = dt_produto_cliente.Select("id_produto_kl = " + id_produto)[0].Table;
 
             string urn = dt_produto_cliente.Rows[0]["nm_urn"].ToString();
             string produto_kl = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString();
@@ -1188,8 +1189,10 @@ namespace KL_API.Models
             ativacaoRetorno.produtos = new List<Produto_Ativacao_Retorno>();
 
             DataTable produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
             string cd_produto, urn_produto, nome_produto, descricao, imagem_produto;
             int id_produto;
+
             if (produto_cliente.Select("id_produto_kl = " + ativacao.id_produto).Count() > 0)
             {
                 id_produto = (int)produto_cliente.Select("id_produto_kl = " + ativacao.id_produto)[0]["id_produto_kl"];
@@ -1206,7 +1209,18 @@ namespace KL_API.Models
                 return ativacaoRetorno;
             }
 
-            var ativarPorProvisionamento = AtivarPorProvisionamento(ativacao.id_cliente, ativacao.id_cliente_usuario);
+            var ativarPorProvisionamento = AtivarPorProvisionamento(ativacao.id_cliente, ativacao.id_cliente_usuario, id_produto);
+
+            if (ativarPorProvisionamento.Rows.Count == 0)
+            {
+                ativacaoRetorno.cod_retorno = -1;
+                ativacaoRetorno.id_cliente = ativacao.id_cliente;
+                ativacaoRetorno.id_cliente_usuario = ativacao.id_cliente_usuario;
+                ativacaoRetorno.msg_retorno = "Não foi possivel ativar este produto, pois não possui provisionamento. Entre em contato com o suporte.";
+                ativacaoRetorno.id_produto = id_produto;
+
+                return ativacaoRetorno;
+            }
 
             ativacaoRetorno.cod_retorno = 0;
             ativacaoRetorno.id_cliente = ativacao.id_cliente;
@@ -1246,7 +1260,6 @@ namespace KL_API.Models
             using (var client = new HttpClient())
             {
                 LoginRetorno loginRetorno = Autenticacao(Tipo_autenticacao.mk, login, client);
-                loginRetorno.produtos = new List<Produto_Ativacao_Retorno>();
 
                 if (loginRetorno.autenticado)
                 {
@@ -1260,75 +1273,21 @@ namespace KL_API.Models
 
                         loginRetorno.id_cliente = clientInfo.id_cliente;
                         loginRetorno.id_cliente_usuario = Convert.ToInt32(cliente_usuario_inserir.Rows[0]["id_cliente_usuario"].ToString());
-
-                        Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
-                        {
-                            ativado = false,
-                            cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
-                            urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
-                            nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                            id_produto = Convert.ToInt32(produto_cliente.Rows[0]["id_produto_kl"].ToString()),
-                            descricao = produto_cliente.Rows[0]["descricao"].ToString(),
-                            imagem_produto = produto_cliente.Rows[0]["imagem_produto"].ToString()
-                        };
-
-                        loginRetorno.produtos.Add(produto_ativacao_retorno);
                     }
                     else
                     {
                         int id_cliente_usuario = Convert.ToInt32(cliente_usuario.Rows[0]["id_cliente_usuario"].ToString());
-                        var provisionamentoLista = Retorna_provisionamento(id_cliente_usuario);
-
                         loginRetorno.id_cliente = clientInfo.id_cliente;
                         loginRetorno.id_cliente_usuario = id_cliente_usuario;
-                        var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
-
-                        if (provisionamentoLista.Rows.Count == 0)
-                        {
-                            Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
-                            {
-                                ativado = false,
-                                cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
-                                urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
-                                nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                                id_produto = Convert.ToInt32(produto_cliente.Rows[0]["id_produto_kl"].ToString()),
-                                descricao = produto_cliente.Rows[0]["descricao"].ToString(),
-                                imagem_produto = produto_cliente.Rows[0]["imagem_produto"].ToString()
-                            };
-
-                            loginRetorno.produtos.Add(produto_ativacao_retorno);
-                        }
-                        else
-                        {
-                            foreach (DataRow provisionamento in provisionamentoLista.Rows)
-                            {
-                                Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
-                                {
-                                    ativado = true,
-                                    id_produto = Convert.ToInt32(produto_cliente.Rows[0]["id_produto_kl"].ToString()),
-                                    cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
-                                    urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
-                                    nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                                    chave_ativacao = provisionamento["chaveAtivacao"].ToString(),
-                                    link_ativacao_android = provisionamento["linkAndroid"].ToString(),
-                                    link_ativacao_iphone = provisionamento["linkIOS"].ToString(),
-                                    link_ativacao_mac = provisionamento["linkMac"].ToString(),
-                                    link_ativacao_windows = provisionamento["linkWindows"].ToString(),
-                                    data_ativacao = Convert.ToDateTime(provisionamento["data_atualizacao"]),
-                                    descricao = produto_cliente.Rows[0]["descricao"].ToString(),
-                                    imagem_produto = produto_cliente.Rows[0]["imagem_produto"].ToString()
-                                };
-
-                                loginRetorno.produtos.Add(produto_ativacao_retorno);
-                            }
-                        }
                     }
                     
                     return loginRetorno;
-                };
+                }
+                else
+                {
+                    return loginRetorno;
+                }
             }
-
-            return new LoginRetorno() { cod_retorno = -1 };
         }
 
         public LoginRetorno Autenticacao(Tipo_autenticacao tipo_Autenticacao, Login login, HttpClient client)
@@ -1361,6 +1320,10 @@ namespace KL_API.Models
                         {
                             return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Usuário Logado", autenticado = true };
                         }
+                    }
+                    else
+                    {
+                        return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Nenhum contrato encontrado para este usuário", autenticado = false };
                     }
 
                     break;
@@ -1663,12 +1626,13 @@ namespace KL_API.Models
             return;
         }
 
-        public DataTable Retorna_provisionamento(int id_cliente_usuario)
+        public DataTable Retorna_provisionamento(int id_cliente_usuario, int id_produto)
         {
             DataBase db = new DataBase();
             List<parametros> par = new List<parametros>
             {
-                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString())
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()),
+                db.retorna_parametros("@id_produto", id_produto.ToString())
             };
 
             db.parametros = par;
@@ -1729,7 +1693,7 @@ namespace KL_API.Models
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable AtivarPorProvisionamento(int id_cliente, int id_cliente_usuario)
+        public DataTable AtivarPorProvisionamento(int id_cliente, int id_cliente_usuario, int id_produto)
         {
             DataBase db = new DataBase();
 
@@ -1737,7 +1701,8 @@ namespace KL_API.Models
             {
                 db.retorna_parametros("@id_cliente", id_cliente.ToString()),
                 db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario.ToString()),
-                db.retorna_parametros("@data_atualizacao", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                db.retorna_parametros("@data_atualizacao", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                db.retorna_parametros("@id_produto", id_produto.ToString())
             };
 
             db.parametros = par;
@@ -1759,36 +1724,34 @@ namespace KL_API.Models
                 return getProdutosRetorno;
             }
 
-            var provisionamentoLista = Retorna_provisionamento(getProdutos.id_cliente_usuario);
-
             var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
 
-            if (provisionamentoLista.Rows.Count == 0)
-            {
-                getProdutosRetorno.cod_retorno = -1;
-                getProdutosRetorno.msg_retorno = "id_cliente_usuario não encontrado";
-
-                return getProdutosRetorno;
-            }
-
-            foreach (DataRow provisionamento in provisionamentoLista.Rows)
+            List<Produto_Ativacao_Retorno> produtoAtivacaoLista = new List<Produto_Ativacao_Retorno>();
+            foreach (DataRow prod_cliente in produto_cliente.Rows)
             {
                 Produto_Ativacao_Retorno produto_ativacao_retorno = new Produto_Ativacao_Retorno()
                 {
-                    ativado = true,
-                    id_produto = Convert.ToInt32(produto_cliente.Rows[0]["id_produto_kl"].ToString()),
-                    cd_produto = produto_cliente.Rows[0]["cd_produto_kl"].ToString(),
-                    urn_produto = produto_cliente.Rows[0]["nm_urn"].ToString(),
-                    nome_produto = produto_cliente.Rows[0]["nm_produto_kl"].ToString(),
-                    chave_ativacao = provisionamento["chaveAtivacao"].ToString(),
-                    link_ativacao_android = provisionamento["linkAndroid"].ToString(),
-                    link_ativacao_iphone = provisionamento["linkIOS"].ToString(),
-                    link_ativacao_mac = provisionamento["linkMac"].ToString(),
-                    link_ativacao_windows = provisionamento["linkWindows"].ToString(),
-                    data_ativacao = Convert.ToDateTime(provisionamento["data_atualizacao"]),
-                    descricao = produto_cliente.Rows[0]["descricao"].ToString(),
-                    imagem_produto = produto_cliente.Rows[0]["imagem_produto"].ToString()
+                    ativado = false,
+                    cd_produto = prod_cliente["cd_produto_kl"].ToString(),
+                    urn_produto = prod_cliente["nm_urn"].ToString(),
+                    nome_produto = prod_cliente["nm_produto_kl"].ToString(),
+                    id_produto = Convert.ToInt32(prod_cliente["id_produto_kl"].ToString()),
+                    descricao = prod_cliente["descricao"].ToString(),
+                    imagem_produto = prod_cliente["imagem_produto"].ToString()
                 };
+
+                var provisionamentoLista = Retorna_provisionamento(getProdutos.id_cliente_usuario, Convert.ToInt32(prod_cliente["id_produto_kl"]));
+
+                if (provisionamentoLista.Rows.Count > 0)
+                {
+                    produto_ativacao_retorno.ativado = true;
+                    produto_ativacao_retorno.chave_ativacao = provisionamentoLista.Rows[0]["chaveAtivacao"].ToString();
+                    produto_ativacao_retorno.link_ativacao_android = provisionamentoLista.Rows[0]["linkAndroid"].ToString();
+                    produto_ativacao_retorno.link_ativacao_iphone = provisionamentoLista.Rows[0]["linkIOS"].ToString();
+                    produto_ativacao_retorno.link_ativacao_mac = provisionamentoLista.Rows[0]["linkMac"].ToString();
+                    produto_ativacao_retorno.link_ativacao_windows = provisionamentoLista.Rows[0]["linkWindows"].ToString();
+                    produto_ativacao_retorno.data_ativacao = Convert.ToDateTime(provisionamentoLista.Rows[0]["data_atualizacao"]);
+                }
 
                 getProdutosRetorno.produtos.Add(produto_ativacao_retorno);
             }

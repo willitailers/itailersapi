@@ -50,12 +50,12 @@ namespace KL_API.Controllers
                 clientInfo = new Ativacao_Controle().ValidaToken(token);
                 if (clientInfo.valido)
                 {
-                    var provisionamento = new Ativacao_Controle().Retorna_provisionamento(0);
+                    //var provisionamento = new Ativacao_Controle().Retorna_provisionamento(0);
 
-                    if (provisionamento.Rows.Count <= 5)
-                    {
-                        new Ativacao_Controle().Provisionar(clientInfo, provisionamento);
-                    }
+                    //if (provisionamento.Rows.Count <= 5)
+                    //{
+                    //    new Ativacao_Controle().Provisionar(clientInfo, provisionamento);
+                    //}
 
                     LoginRetorno loginRetorno = new Ativacao_Controle().login(login, clientInfo);
 
