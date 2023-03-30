@@ -1006,13 +1006,13 @@ namespace KL_API.Models
             string id_cliente = client.id_cliente.ToString();
             var dt_produto_cliente = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
 
-            dt_produto_cliente = dt_produto_cliente.Select("id_produto_kl = " + id_produto)[0].Table;
+            DataRow dt_produto_cliente_row = dt_produto_cliente.Select("id_produto_kl = " + id_produto)[0];
 
-            string urn = dt_produto_cliente.Rows[0]["nm_urn"].ToString();
-            string produto_kl = dt_produto_cliente.Rows[0]["nm_produto_kl"].ToString();
-            string id_produto_kl = dt_produto_cliente.Rows[0]["id_produto_kl"].ToString();
-            string cd_produto_kl = dt_produto_cliente.Rows[0]["cd_produto_kl"].ToString();
-            string qtd_licencas = dt_produto_cliente.Rows[0]["qtd_licencas"].ToString();
+            string urn = dt_produto_cliente_row["nm_urn"].ToString();
+            string produto_kl = dt_produto_cliente_row["nm_produto_kl"].ToString();
+            string id_produto_kl = dt_produto_cliente_row["id_produto_kl"].ToString();
+            string cd_produto_kl = dt_produto_cliente_row["cd_produto_kl"].ToString();
+            string qtd_licencas = dt_produto_cliente_row["qtd_licencas"].ToString();
 
             List<object> comandos = new List<object>();
             List<Controle_Envio> controle = new List<Controle_Envio>();
@@ -1041,7 +1041,7 @@ namespace KL_API.Models
                     UnitId = count,
                     SubscribeId = subscription_id,
                     id_produto_kl = id_produto_kl,
-                    id_cliente_usuario = string.Empty,
+                    id_cliente_usuario = "0",
                     urn_produto = urn,
                     id_cliente_licenca = id_cliente
                 });
