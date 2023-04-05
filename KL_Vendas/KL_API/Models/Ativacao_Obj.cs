@@ -213,6 +213,38 @@ namespace KL_API.Models
         public string status { get; set; }
     }
 
+    public class WSMKConexoesPorCliente
+    {
+        public int CodigoPessoa { get; set; }
+        public List<Conexoes> Conexoes { get; set; }
+    }
+    
+    public class Conexoes
+    {
+        public string bloqueada { get; set; }
+        public int? codconexao { get; set; }
+        public int? conexao { get; set; }
+        public int? contrato { get; set; }
+        public string motivo_bloqueio { get; set; }
+        public string username { get; set; }
+
+        public bool acesso
+        {
+            get
+            {
+                return bloqueada == "Não" ? true : false;
+            }
+        }
+
+        public int codigo_contrato
+        {
+            get
+            {
+                return contrato == null ? 0 : contrato.Value;
+            }
+        }
+    }
+
     public class WSMKUserSenhaSAC
     {
         public string AcessoSAC { get; set; }
@@ -372,9 +404,9 @@ namespace KL_API.Models
 
         }
 
-        public void Activation(UserAdd usuario, ClientInfo client) 
-        { 
-            
+        public void Activation(UserAdd usuario, ClientInfo client)
+        {
+
         }
 
         public DataTable addUser(UserAdd usuario, ClientInfo client)
@@ -1028,11 +1060,11 @@ namespace KL_API.Models
                 string subscription_id = string.Concat("prov-sea-", id);
                 subscriberIDsLista.Add(subscription_id);
 
-                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(qtd_licencas, cd_produto_kl, 
-                    DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"), 
-                    "indefinite", 
-                    count.ToString(), 
-                    false, 
+                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(qtd_licencas, cd_produto_kl,
+                    DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                    "indefinite",
+                    count.ToString(),
+                    false,
                     subscription_id);
 
                 controle.Add(new Controle_Envio()
@@ -1280,7 +1312,7 @@ namespace KL_API.Models
                         loginRetorno.id_cliente = clientInfo.id_cliente;
                         loginRetorno.id_cliente_usuario = id_cliente_usuario;
                     }
-                    
+
                     return loginRetorno;
                 }
                 else
@@ -1292,46 +1324,79 @@ namespace KL_API.Models
 
         public LoginRetorno Autenticacao(Tipo_autenticacao tipo_Autenticacao, Login login, HttpClient client)
         {
-            switch (tipo_Autenticacao)
+            try
             {
-                case Tipo_autenticacao.mk:
-                    LoginInterno loginInterno = new LoginInterno()
-                    {
-                        sys = "MK0",
-                        cd_servico = 9999,
-                        token = "e9be9025025af4e7a0df70e6d2d3cd69",
-                        password = "34091b705f83484"
-                    };
+                switch (tipo_Autenticacao)
+                {
+                    case Tipo_autenticacao.mk:
+                        LoginInterno loginInterno = new LoginInterno()
+                        {
+                            sys = "MK0",
+                            cd_servico = 9999,
+                            token = "e9be9025025af4e7a0df70e6d2d3cd69",
+                            password = "34091b705f83484"
+                        };
 
-                    WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
+                        WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
 
-                    if (userSac.CodigoPessoa <= 0)
-                    {
-                        return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Não encontrado usuário no SAC.", autenticado = false };
-                    }
+                        if (userSac.CodigoPessoa <= 0)
+                        {
+                            return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Não encontrado usuário no SAC.", autenticado = false };
+                        }
 
-                    WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
-
-                    if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
-                    {
                         int[] codContratos = new int[4] { 121619, 121617, 121611, 121609 };
 
-                        if (contratosPorCliente.ContratosAtivos.Where(w => codContratos.Contains(w.codcontrato)).Any())
+                        WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
+
+                        List<ContratosAtivo> listaContratos = new List<ContratosAtivo>();
+                        if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
                         {
-                            return new LoginRetorno() { cod_retorno = 0, msg_retorno = "Usuário Logado", autenticado = true };
+                            listaContratos = contratosPorCliente.ContratosAtivos.Where(w => codContratos.Contains(w.codcontrato)).ToList();
                         }
-                    }
-                    else
-                    {
-                        return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Nenhum contrato encontrado para este usuário", autenticado = false };
-                    }
+                        else
+                        {
+                            return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Nenhum contrato encontrado para este usuário", autenticado = false };
+                        }
 
-                    break;
-                default:
-                    break;
+                        WSMKConexoesPorCliente wSMKConexoesPorCliente = GetConexoesPorCliente(loginInterno, userSac, client);
+
+                        if (wSMKConexoesPorCliente.Conexoes.Count == 0)
+                        {
+                            return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Nenhuma conexão foi encontrado para este usuário", autenticado = false };
+                        }
+
+                        if (wSMKConexoesPorCliente.Conexoes.Count > 0)
+                        {
+                            List<Conexoes> conexoes = wSMKConexoesPorCliente.Conexoes.Where(w => listaContratos.Select(s => s.codcontrato).Contains(w.codigo_contrato)).ToList();
+
+                            if (conexoes.Count == 0)
+                            {
+                                return new LoginRetorno() { cod_retorno = -2, msg_retorno = "Este usuário não possui conexões para os contratos que habilitam o produto Kaspersky. Para saber mais entre em contato com a nossa central de relacionamento através do número: 91 2992-0230.", autenticado = false };
+                            }
+
+                            if (conexoes.Where(w => w.acesso).Count() == 0)
+                            {
+                                return new LoginRetorno()
+                                {
+                                    cod_retorno = -2,
+                                    msg_retorno = "Prezado cliente, informamos que no momento sua conexão encontra-se suspensa. " +
+                                            "Para saber mais entre em contato com a nossa central de relacionamento através do número: 91 2992-0230.",
+                                    autenticado = false
+                                };
+                            }
+
+                            return new LoginRetorno() { cod_retorno = 0, msg_retorno = "", autenticado = true };
+                        }
+
+                        break;
+                }
+
+                return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao logar usuário.", autenticado = false };
             }
-
-            return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao logar usuário.", autenticado = false };
+            catch (Exception ex)
+            {
+                return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao executar o processo de autenticação ex:" + ex.Message, autenticado = false };
+            }
         }
 
         public MKWSAutenticacao GetTokenMK(LoginInterno loginInterno, HttpClient client)
@@ -1404,7 +1469,29 @@ namespace KL_API.Models
             return new WSMKContratosPorCliente();
         }
 
+        public WSMKConexoesPorCliente GetConexoesPorCliente(LoginInterno loginInterno, WSMKUserSenhaSAC userSac, HttpClient client)
+        {
+            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
 
+            var responseConexoes =
+                client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKConexoesPorCliente"]}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
+
+            if (responseConexoes.Content != null)
+            {
+                var responseContent = responseConexoes.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    var response_conexoes_cliente = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKConexoesPorCliente>(responseContent);
+                    return response_conexoes_cliente;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            return new WSMKConexoesPorCliente();
+        }
 
         #region atualizacao BD
         public void ClienteInserir(string nm_cliente)
