@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Policy;
 using System.Text;
 using System.Web;
 using System.Web.Helpers;
@@ -28,7 +29,7 @@ namespace KL_API.Models
         usar_add = 2002,
         user_delete = 2003,
         login = 2004
-            
+
 
     }
 
@@ -218,7 +219,7 @@ namespace KL_API.Models
         public int CodigoPessoa { get; set; }
         public List<Conexoes> Conexoes { get; set; }
     }
-    
+
     public class Conexoes
     {
         public string bloqueada { get; set; }
@@ -251,6 +252,22 @@ namespace KL_API.Models
         public int CodigoPessoa { get; set; }
         public string Nome { get; set; }
         public string status { get; set; }
+    }
+
+    public class WSMKPlanosAcesso
+    {
+        public int CodigoPlano { get; set; }
+        public string NomePlano { get; set; }
+        public string Status { get; set; }
+        public List<Contratos> contratos { get; set; }
+    }
+
+    public class Contratos
+    {
+        public int codcontrato { get; set; }
+        public int codigopessoa { get; set; }
+        public string loginsac { get; set; }
+        public string senhasac { get; set; }
     }
 
     public class VendorTheme
@@ -302,6 +319,14 @@ namespace KL_API.Models
 
     public class Ativacao_Controle
     {
+        LoginInterno loginInterno = new LoginInterno()
+        {
+            sys = "MK0",
+            cd_servico = 9999,
+            token = "e9be9025025af4e7a0df70e6d2d3cd69",
+            password = "34091b705f83484"
+        };
+
         public UserDelete_Retorno deleteUser(UserDelete usuario, ClientInfo client)
         {
             // consulta de cliente existe e/ou o produto que ele te esta ativado
@@ -1215,6 +1240,188 @@ namespace KL_API.Models
             }
         }
 
+        public void ProvisionarTodas(ClientInfo client, DataTable provision, int id_produto)
+        {
+            string id_cliente = client.id_cliente.ToString();
+            var dt_produto_cliente = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
+
+            DataRow dt_produto_cliente_row = dt_produto_cliente.Select("id_produto_kl = " + id_produto)[0];
+
+            string urn = dt_produto_cliente_row["nm_urn"].ToString();
+            string produto_kl = dt_produto_cliente_row["nm_produto_kl"].ToString();
+            string id_produto_kl = dt_produto_cliente_row["id_produto_kl"].ToString();
+            string cd_produto_kl = dt_produto_cliente_row["cd_produto_kl"].ToString();
+            string qtd_licencas = dt_produto_cliente_row["qtd_licencas"].ToString();
+
+            List<object> comandos = new List<object>();
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            var produto_ativado = new List<Produto_Ativacao_Retorno>();
+
+            string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+
+            int count = 1;
+            List<string> subscriberIDsLista = new List<string>();
+            for (int i = 0; i < 30; i++)
+            {
+                string id = Guid.NewGuid().ToString("N");
+                string subscription_id = string.Concat("prov-sea-", id);
+                subscriberIDsLista.Add(subscription_id);
+
+                var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(qtd_licencas, cd_produto_kl,
+                    DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                    "indefinite",
+                    count.ToString(),
+                    false,
+                    subscription_id);
+
+                controle.Add(new Controle_Envio()
+                {
+                    comando = comando_kl.ativar,
+                    UnitId = count,
+                    SubscribeId = subscription_id,
+                    id_produto_kl = id_produto_kl,
+                    id_cliente_usuario = "0",
+                    urn_produto = urn,
+                    id_cliente_licenca = id_cliente
+                });
+
+                comandos.Add((object)ativacao_prod);
+                count++;
+
+                produto_ativado.Add(new Produto_Ativacao_Retorno()
+                {
+                    ativado = false,
+                    nome_produto = produto_kl,
+                    urn_produto = urn
+                });
+            }
+
+            foreach (var subscriberID in subscriberIDsLista)
+            {
+                var link_android = new KL_Conexao().KL_retorna_link(subscriberID,
+                                         count.ToString(),
+                                        "pt",
+                                        PlatformEnum.Android);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_android, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                comandos.Add((object)link_android);
+                count++;
+
+                var link_windows = new KL_Conexao().KL_retorna_link(subscriberID,
+                                         count.ToString(),
+                                        "pt",
+                                        PlatformEnum.Windows);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_windows, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                comandos.Add((object)link_windows);
+                count++;
+
+                var link_ios = new KL_Conexao().KL_retorna_link(subscriberID,
+                                        count.ToString(),
+                                       "pt",
+                                       PlatformEnum.iOS);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_iphone, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                comandos.Add((object)link_ios);
+                count++;
+
+                var link_mac = new KL_Conexao().KL_retorna_link(subscriberID,
+                                        count.ToString(),
+                                       "pt",
+                                       PlatformEnum.macOS);
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.link_mac, UnitId = count, SubscribeId = subscriberID, id_cliente_usuario = string.Empty, urn_produto = urn, nm_produto = produto_kl, id_cliente_licenca = id_cliente, id_produto_kl = id_produto_kl });
+                comandos.Add((object)link_mac);
+                count++;
+            }
+
+            try
+            {
+                string xmlRequest, xmlContainer;
+
+                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+                container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+                log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.license_ativation);
+                log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.license_ativation);
+                log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.license_ativation);
+
+                foreach (object obj in container.Items)
+                {
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        string id_provisionamento = string.Empty;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                            {
+                                try
+                                {
+                                    var controleEnvio = new Controle_Envio();
+
+                                    var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
+
+                                    controleEnvio = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                    id_provisionamento = InserirProvisionamento(controleEnvio.id_cliente_licenca, controleEnvio.id_cliente_usuario, controleEnvio.SubscribeId,
+                                    controleEnvio.id_produto_kl, itemDetalhe.ActivationCode, "", "", "", "", true, DateTime.Now);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log_inserir_provisionamento("Erro Provisionamento InserirProvisionamento - " + ex.Message, (int)Lista_Erro.license_ativation);
+                                }
+                            }
+
+                            if (item.GetType() == typeof(SubscriptionResponseItemCollectionGetDownloadLinks))
+                            {
+                                try
+                                {
+                                    var itemDetalhe = (SubscriptionResponseItemCollectionGetDownloadLinks)item;
+                                    var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                    switch (licenca.comando)
+                                    {
+                                        case comando_kl.link_android:
+                                            string link_ativacao_android = itemDetalhe.DownloadLinks[0].Url.Replace("market://", "https://play.google.com/store/apps/");
+                                            AtualizarLinksProvisionamento(itemDetalhe.SubscriberId, linkAndroid: link_ativacao_android);
+                                            break;
+
+                                        case comando_kl.link_iphone:
+                                            string link_ativacao_iphone = itemDetalhe.DownloadLinks[0].Url;
+                                            AtualizarLinksProvisionamento(itemDetalhe.SubscriberId, linkIOS: link_ativacao_iphone);
+                                            break;
+
+                                        case comando_kl.link_mac:
+                                            string link_ativacao_mac = itemDetalhe.DownloadLinks[0].Url;
+                                            AtualizarLinksProvisionamento(itemDetalhe.SubscriberId, linkMac: link_ativacao_mac);
+                                            break;
+
+                                        case comando_kl.link_windows:
+                                            string link_ativacao_windows = itemDetalhe.DownloadLinks[0].Url;
+                                            AtualizarLinksProvisionamento(itemDetalhe.SubscriberId, linkWindows: link_ativacao_windows);
+                                            break;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    log_inserir_provisionamento("Erro Provisionamento AtualizarLinksProvisionamento - " + ex.Message, (int)Lista_Erro.license_ativation);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log_inserir(client.id_cliente.ToString() + " - Erro Provisionamento - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.license_ativation);
+                throw;
+            }
+        }
+
         public AtivacaoRetorno AtivarLicenca(Ativacao ativacao, ClientInfo clientInfo)
         {
             AtivacaoRetorno ativacaoRetorno = new AtivacaoRetorno();
@@ -1293,32 +1500,30 @@ namespace KL_API.Models
             {
                 LoginRetorno loginRetorno = Autenticacao(Tipo_autenticacao.mk, login, client);
 
-                if (loginRetorno.autenticado)
+                if (!loginRetorno.autenticado)
                 {
-                    var cliente_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, login.username);
-
-                    if (cliente_usuario.Rows.Count == 0)
-                    {
-                        var cliente_usuario_inserir = ClienteUsuarioInserir(clientInfo.id_cliente, login.username, "", DateTime.Now, "", "", "");
-
-                        var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
-
-                        loginRetorno.id_cliente = clientInfo.id_cliente;
-                        loginRetorno.id_cliente_usuario = Convert.ToInt32(cliente_usuario_inserir.Rows[0]["id_cliente_usuario"].ToString());
-                    }
-                    else
-                    {
-                        int id_cliente_usuario = Convert.ToInt32(cliente_usuario.Rows[0]["id_cliente_usuario"].ToString());
-                        loginRetorno.id_cliente = clientInfo.id_cliente;
-                        loginRetorno.id_cliente_usuario = id_cliente_usuario;
-                    }
-
                     return loginRetorno;
+                }
+
+                var cliente_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, login.username);
+
+                if (cliente_usuario.Rows.Count == 0)
+                {
+                    var cliente_usuario_inserir = ClienteUsuarioInserir(clientInfo.id_cliente, login.username, "", DateTime.Now, "", "", "");
+
+                    var produto_cliente = seleciona_produto_cliente(clientInfo.id_cliente, clientInfo.id_cliente_certificado);
+
+                    loginRetorno.id_cliente = clientInfo.id_cliente;
+                    loginRetorno.id_cliente_usuario = Convert.ToInt32(cliente_usuario_inserir.Rows[0]["id_cliente_usuario"].ToString());
                 }
                 else
                 {
-                    return loginRetorno;
+                    int id_cliente_usuario = Convert.ToInt32(cliente_usuario.Rows[0]["id_cliente_usuario"].ToString());
+                    loginRetorno.id_cliente = clientInfo.id_cliente;
+                    loginRetorno.id_cliente_usuario = id_cliente_usuario;
                 }
+
+                return loginRetorno;
             }
         }
 
@@ -1329,15 +1534,7 @@ namespace KL_API.Models
                 switch (tipo_Autenticacao)
                 {
                     case Tipo_autenticacao.mk:
-                        LoginInterno loginInterno = new LoginInterno()
-                        {
-                            sys = "MK0",
-                            cd_servico = 9999,
-                            token = "e9be9025025af4e7a0df70e6d2d3cd69",
-                            password = "34091b705f83484"
-                        };
-
-                        WSMKUserSenhaSAC userSac = GetUserSAC(loginInterno, login.username, login.password, client);
+                        WSMKUserSenhaSAC userSac = GetUserSAC(login.username, login.password, client);
 
                         if (userSac.CodigoPessoa <= 0)
                         {
@@ -1346,7 +1543,7 @@ namespace KL_API.Models
 
                         int[] codContratos = new int[4] { 121619, 121617, 121611, 121609 };
 
-                        WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(loginInterno, userSac, client);
+                        WSMKContratosPorCliente contratosPorCliente = GetContratosPorCliente(userSac, client);
 
                         List<ContratosAtivo> listaContratos = new List<ContratosAtivo>();
                         if (contratosPorCliente.ContratosAtivos != null && contratosPorCliente.ContratosAtivos.Count > 0)
@@ -1358,7 +1555,7 @@ namespace KL_API.Models
                             return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Nenhum contrato encontrado para este usuário", autenticado = false };
                         }
 
-                        WSMKConexoesPorCliente wSMKConexoesPorCliente = GetConexoesPorCliente(loginInterno, userSac, client);
+                        WSMKConexoesPorCliente wSMKConexoesPorCliente = GetConexoesPorCliente(userSac, client);
 
                         if (wSMKConexoesPorCliente.Conexoes.Count == 0)
                         {
@@ -1371,7 +1568,8 @@ namespace KL_API.Models
 
                             if (conexoes.Count == 0)
                             {
-                                return new LoginRetorno() { cod_retorno = -2, msg_retorno = "Este usuário não possui conexões para os contratos que habilitam o produto Kaspersky. Para saber mais entre em contato com a nossa central de relacionamento através do número: 91 2992-0230.", autenticado = false };
+                                return new LoginRetorno() { cod_retorno = -2, msg_retorno = "Este usuário não possui conexões para os contratos que habilitam o produto Kaspersky. " +
+                                    "Para saber mais entre em contato com a nossa central de relacionamento através do número: 91 2992-0230.", autenticado = false };
                             }
 
                             if (conexoes.Where(w => w.acesso).Count() == 0)
@@ -1392,14 +1590,16 @@ namespace KL_API.Models
                 }
 
                 return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao logar usuário.", autenticado = false };
+                
             }
             catch (Exception ex)
             {
+                log_inserir_provisionamento("Autenticacao: " + ex.Message, 0);
                 return new LoginRetorno() { cod_retorno = -1, msg_retorno = "Erro ao executar o processo de autenticação ex:" + ex.Message, autenticado = false };
             }
         }
 
-        public MKWSAutenticacao GetTokenMK(LoginInterno loginInterno, HttpClient client)
+        public MKWSAutenticacao GetTokenMK(HttpClient client)
         {
             var responseAutenticacao =
                 client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSAutenticacao"]}{loginInterno.sys}&token={loginInterno.token}&password={loginInterno.password}&cd_servico={loginInterno.cd_servico}").Result;
@@ -1421,9 +1621,9 @@ namespace KL_API.Models
             return new MKWSAutenticacao();
         }
 
-        public WSMKUserSenhaSAC GetUserSAC(LoginInterno loginInterno, string username, string password, HttpClient client)
+        public WSMKUserSenhaSAC GetUserSAC(string username, string password, HttpClient client)
         {
-            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
+            MKWSAutenticacao autenticacao = GetTokenMK(client);
 
             var responseSac =
                 client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKUserSenhaSAC"]}{loginInterno.sys}&token={autenticacao.token}&user_sac={username}&pass_sac={password}").Result;
@@ -1445,9 +1645,9 @@ namespace KL_API.Models
             return new WSMKUserSenhaSAC();
         }
 
-        public WSMKContratosPorCliente GetContratosPorCliente(LoginInterno loginInterno, WSMKUserSenhaSAC userSac, HttpClient client)
+        public WSMKContratosPorCliente GetContratosPorCliente(WSMKUserSenhaSAC userSac, HttpClient client)
         {
-            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
+            MKWSAutenticacao autenticacao = GetTokenMK(client);
 
             var responseContratos =
                 client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKContratosPorCliente"]}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
@@ -1469,9 +1669,9 @@ namespace KL_API.Models
             return new WSMKContratosPorCliente();
         }
 
-        public WSMKConexoesPorCliente GetConexoesPorCliente(LoginInterno loginInterno, WSMKUserSenhaSAC userSac, HttpClient client)
+        public WSMKConexoesPorCliente GetConexoesPorCliente(WSMKUserSenhaSAC userSac, HttpClient client)
         {
-            MKWSAutenticacao autenticacao = GetTokenMK(loginInterno, client);
+            MKWSAutenticacao autenticacao = GetTokenMK(client);
 
             var responseConexoes =
                 client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKConexoesPorCliente"]}{loginInterno.sys}&token={autenticacao.token}&cd_cliente={userSac.CodigoPessoa}").Result;
@@ -1491,6 +1691,170 @@ namespace KL_API.Models
             }
 
             return new WSMKConexoesPorCliente();
+        }
+
+        public List<WSMKPlanosAcesso> GetPlanosAcesso()
+        {
+            List<WSMKPlanosAcesso> wSMKPlanosAcessos = new List<WSMKPlanosAcesso>();
+            MKWSAutenticacao autenticacao = new MKWSAutenticacao();
+            List<int> codigos_plano = new List<int> { 135, 136, 137, 452 };
+
+            foreach (var codigo_plano in codigos_plano)
+            {
+                WSMKPlanosAcesso planoKaspersky = new WSMKPlanosAcesso();
+                planoKaspersky.contratos = new List<Contratos>();
+
+                using (var client = new HttpClient())
+                {
+                    #region Get Planos Ativos
+                    autenticacao = GetTokenMK(client);
+                    var responsePlanosAcessoAtivos =
+                        client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKPlanosAcesso"]}{loginInterno.sys}&token={autenticacao.token}&codigo_plano={codigo_plano}&cancelado=N&suspenso=N&aguarda_ativacao=N").Result;
+
+                    if (responsePlanosAcessoAtivos.Content != null)
+                    {
+                        var responseContent = responsePlanosAcessoAtivos.Content.ReadAsStringAsync().Result;
+
+                        try
+                        {
+                            WSMKPlanosAcesso response_planos_ativos = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKPlanosAcesso>(responseContent);
+                            planoKaspersky.CodigoPlano = response_planos_ativos.CodigoPlano;
+                            planoKaspersky.NomePlano = response_planos_ativos.NomePlano;
+                            planoKaspersky.Status = response_planos_ativos.Status;
+
+                            planoKaspersky.contratos.AddRange(response_planos_ativos.contratos);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                    #endregion
+
+                    #region Get Planos Cancelados
+                    autenticacao = GetTokenMK(client);
+                    var responsePlanosAcessoCancelados =
+                        client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKPlanosAcesso"]}{loginInterno.sys}&token={autenticacao.token}&codigo_plano={codigo_plano}&cancelado=S&suspenso=N&aguarda_ativacao=N").Result;
+
+                    if (responsePlanosAcessoCancelados.Content != null)
+                    {
+                        var responseContent = responsePlanosAcessoCancelados.Content.ReadAsStringAsync().Result;
+
+                        try
+                        {
+                            WSMKPlanosAcesso response_planos_cancelados = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKPlanosAcesso>(responseContent);
+                            planoKaspersky.CodigoPlano = response_planos_cancelados.CodigoPlano;
+                            planoKaspersky.NomePlano = response_planos_cancelados.NomePlano;
+                            planoKaspersky.Status = response_planos_cancelados.Status;
+                            planoKaspersky.contratos.AddRange(response_planos_cancelados.contratos);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                    #endregion
+
+                    #region Get Planos Suspensos
+                    autenticacao = GetTokenMK(client);
+                    var responsePlanosAcessoSuspensos =
+                        client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKPlanosAcesso"]}{loginInterno.sys}&token={autenticacao.token}&codigo_plano={codigo_plano}&cancelado=N&suspenso=S&aguarda_ativacao=N").Result;
+
+                    if (responsePlanosAcessoSuspensos.Content != null)
+                    {
+                        var responseContent = responsePlanosAcessoSuspensos.Content.ReadAsStringAsync().Result;
+
+                        try
+                        {
+                            WSMKPlanosAcesso response_planos_suspensos = Newtonsoft.Json.JsonConvert.DeserializeObject<WSMKPlanosAcesso>(responseContent);
+                            planoKaspersky.CodigoPlano = response_planos_suspensos.CodigoPlano;
+                            planoKaspersky.NomePlano = response_planos_suspensos.NomePlano;
+                            planoKaspersky.Status = response_planos_suspensos.Status;
+                            planoKaspersky.contratos.AddRange(response_planos_suspensos.contratos);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                    #endregion
+                }
+
+                wSMKPlanosAcessos.Add(planoKaspersky);
+            }
+
+            return wSMKPlanosAcessos;
+        }
+
+        public void CancelarMK()
+        {
+            string TransactionId = 999 + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+
+            List<object> comandos = new List<object>();
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+
+            int count = 1;
+
+            List<string> subscriberIDs = new List<string>()
+            {
+                "prov-sea-3bcbf72845d44295923970717dab55cd",
+                "prov-sea-a248ec074b3b4bd982034ebde43bccda",
+                "prov-sea-7500c3a1823a47d8ac443c918a7a813c"
+            };
+
+            foreach (var subscriberID in subscriberIDs)
+            {
+                var cancelamento_soft = new KL_Conexao().KL_retorna_cancelamento_soft(subscriberID,
+                    DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                    count.ToString());
+
+                controle.Add(new Controle_Envio()
+                {
+                    comando = comando_kl.cancelar_soft,
+                    UnitId = count,
+                    SubscribeId = subscriberID,
+                    id_produto_kl = "200",
+                    id_cliente_usuario = "0",
+                    urn_produto = "urn:sva:kaspersky:standard1",
+                    id_cliente_licenca = "0"
+                });
+
+                comandos.Add((object)cancelamento_soft);
+                count++;
+            }
+
+            string xmlRequest, xmlContainer;
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = new KL_Conexao().Comando_KL(TransactionId, "SEATelecom", "@Itailers2021#", "5242473F1FA6F320CC0F391EEFA857E363A890AF", comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+            log_inserir(0 + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.license_cancel);
+            log_inserir(0 + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.license_cancel);
+            log_inserir(0 + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.license_cancel);
+
+
+            //for (int i = 0; i < 30; i++)
+            //{
+            //    string subscription_id = string.Empty;
+
+            //    var cancelamento_soft = new KL_Conexao().KL_retorna_cancelamento_soft(subscription_id,
+            //        DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+            //        count.ToString());
+
+            //    controle.Add(new Controle_Envio()
+            //    {
+            //        comando = comando_kl.cancelar_soft,
+            //        UnitId = count,
+            //        SubscribeId = subscription_id,
+            //        id_produto_kl = id_produto_kl,
+            //        id_cliente_usuario = "0",
+            //        urn_produto = urn,
+            //        id_cliente_licenca = id_cliente
+            //    });
+
+            //    comandos.Add((object)cancelamento_soft);
+            //    count++;
+
+            //}
+
+
         }
 
         #region atualizacao BD
