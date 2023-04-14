@@ -257,9 +257,16 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\AtivarLicenca.cs" />
+    <Compile Include="Controllers\GetProdutos.cs" />
+    <Compile Include="Controllers\InserirProviderInfo.cs" />
+    <Compile Include="Controllers\DeletarProviderInfo.cs" />
+    <Compile Include="Controllers\GetProviderInfo.cs" />
     <Compile Include="Controllers\LicenseActivationController.cs" />
     <Compile Include="Controllers\LicenseCancelController.cs" />
     <Compile Include="Controllers\ActivationController.cs" />
+    <Compile Include="Controllers\GetInfo.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\UserAddController.cs" />
     <Compile Include="Controllers\UserDeleteController.cs" />
     <Compile Include="Global.asax.cs">
