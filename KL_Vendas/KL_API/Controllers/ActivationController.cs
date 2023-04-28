@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace KL_API.Controllers
 {
@@ -41,6 +42,7 @@ namespace KL_API.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Erro ao realizar o processo</response>
         [HttpPost]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public HttpResponseMessage Post([FromBody]UserAdd ativacao)
         {
             string id_cliente_usuario = "";

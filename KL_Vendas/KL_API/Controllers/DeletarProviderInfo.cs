@@ -7,12 +7,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace KL_API.Controllers
 {
     public class DeletarProviderInfoController : ApiController
     {
         [HttpPost]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public HttpResponseMessage DeletarProviderInfo([FromBody] VendorTheme vendorTheme)
         {
             var vendorThemeDataTable = new Ativacao_Controle().DeleteVendorTheme(vendorTheme);

@@ -13,6 +13,7 @@ using BLL.KL_API;
 using System.Xml.Linq;
 using System.ComponentModel;
 using System.IO;
+using Newtonsoft.Json.Linq;
 //using System.Data.Entity;
 //using SqlKata.Execution;
 
@@ -352,9 +353,8 @@ namespace API_Licencas.Models
                 if (id_combo == "0")
                 {
                     SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-                    Random rand = new Random();
 
-                    container = con.AtivacaoNeo(ativacao.subscriber_id + DateTime.Now.ToString("yyMMddHHmmss"), cd_produto_kl, rand.GetHashCode() + "_" + ativacao.subscriber_id, qtd_licenças, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
+                    container = con.AtivacaoNeo(ativacao.subscriber_id + DateTime.Now.ToString("yyMMddHHmmss"), cd_produto_kl, ativacao.subscriber_id, qtd_licenças, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
 
                     log_inserir(id_cliente_neo + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo);
                     log_inserir(id_cliente_neo + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo);
@@ -572,7 +572,11 @@ namespace API_Licencas.Models
                 KL_Conexao con = new KL_Conexao();
                 SubscriptionResponseContainer containerlink = new SubscriptionResponseContainer();
 
-                containerlink = con.DownloadLinkNeo(plat, subscriber_id, transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"));
+                containerlink = con.DownloadLinkNeo(plat, subscriber_id, transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"), out string xmlContainer, out string xmlRequest);
+
+                log_inserir("GetDownloadLink - RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo);
+                log_inserir("GetDownloadLink - RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo);
+                log_inserir("GetDownloadLink - RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(containerlink), (int)Lista_Erro.ativacao_neo);
 
                 bool ativado = true;
 
@@ -681,8 +685,11 @@ namespace API_Licencas.Models
                     contador++;
                 }
 
-                containerlink = con.DownloadLinkNeoLote(transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"), Itens.ToArray());
+                containerlink = con.DownloadLinkNeoLote(transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"), Itens.ToArray(), out string xmlContainer, out string xmlRequest);
 
+                log_inserir("DownloadLinkNeoLote - RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo);
+                log_inserir("DownloadLinkNeoLote - RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo);
+                log_inserir("DownloadLinkNeoLote - RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(containerlink), (int)Lista_Erro.ativacao_neo);
 
                 foreach (object obj in containerlink.Items)
                 {

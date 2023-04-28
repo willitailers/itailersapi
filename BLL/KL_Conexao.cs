@@ -654,7 +654,7 @@ namespace BLL
             return container;
         }
 
-        public SubscriptionResponseContainer DownloadLinkNeo(PlatformEnum platform, string _SubscriberId, string _TransactionId)
+        public SubscriptionResponseContainer DownloadLinkNeo(PlatformEnum platform, string _SubscriberId, string _TransactionId, out string xmlContainer, out string xmlRequest)
         {
             SubscriptionRequestContainer requestContainer = new SubscriptionRequestContainer();
             requestContainer.Timestamp = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
@@ -701,10 +701,32 @@ namespace BLL
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
             container = client.SubscriptionRequest(request.AccessInfo, requestContainer);
 
+            XmlSerializer xsSubmit = new XmlSerializer(typeof(SubscriptionRequestContainer));
+
+            using (var sww = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(sww))
+                {
+                    xsSubmit.Serialize(writer, requestContainer);
+                    xmlContainer = sww.ToString(); // Your XML
+                }
+            }
+
+            XmlSerializer xsSubmitrequest = new XmlSerializer(typeof(SubscriptionRequestRequest));
+
+            using (var swwrequest = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(swwrequest))
+                {
+                    xsSubmitrequest.Serialize(writer, request);
+                    xmlRequest = swwrequest.ToString(); // Your XML
+                }
+            }
+
             return container;
         }
 
-        public SubscriptionResponseContainer DownloadLinkNeoLote(string _TransactionId, object[] obj)
+        public SubscriptionResponseContainer DownloadLinkNeoLote(string _TransactionId, object[] obj, out string xmlContainer, out string xmlRequest)
         {
             SubscriptionRequestContainer requestContainer = new SubscriptionRequestContainer();
             requestContainer.Timestamp = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
@@ -739,6 +761,28 @@ namespace BLL
 
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
             container = client.SubscriptionRequest(request.AccessInfo, requestContainer);
+
+            XmlSerializer xsSubmit = new XmlSerializer(typeof(SubscriptionRequestContainer));
+
+            using (var sww = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(sww))
+                {
+                    xsSubmit.Serialize(writer, requestContainer);
+                    xmlContainer = sww.ToString(); // Your XML
+                }
+            }
+
+            XmlSerializer xsSubmitrequest = new XmlSerializer(typeof(SubscriptionRequestRequest));
+
+            using (var swwrequest = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(swwrequest))
+                {
+                    xsSubmitrequest.Serialize(writer, request);
+                    xmlRequest = swwrequest.ToString(); // Your XML
+                }
+            }
 
             return container;
         }

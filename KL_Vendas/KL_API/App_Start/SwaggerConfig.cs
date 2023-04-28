@@ -2,11 +2,7 @@ using System.Web.Http;
 using WebActivatorEx;
 using KL_API;
 using Swashbuckle.Application;
-using System.Net.Http;
-using System;
-using Swashbuckle.Swagger;
-using System.Collections.Generic;
-using System.Web.Http.Description;
+using System.Linq;
 
 [assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
@@ -25,13 +21,13 @@ namespace KL_API
                         // However, there may be situations (e.g. proxy and load-balanced environments) where this does not
                         // resolve correctly. You can workaround this by providing your own code to determine the root URL.
                         //
-                        c.RootUrl(ResolveBasePath);
+                        //c.RootUrl(req => GetRootUrlFromAppConfig());
 
                         // If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
                         // the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
                         // about them, you can use the "Schemes" option as shown below.
                         //
-                        c.Schemes(new[] { "http", "https" });
+                        //c.Schemes(new[] { "http", "https" });
 
                         // Use "SingleApiVersion" to describe a single version API. Swagger 2.0 includes an "Info" object to
                         // hold additional metadata for an API. Version and title are required but you can also provide
@@ -39,7 +35,6 @@ namespace KL_API
                         //
                         c.SingleApiVersion("v1", "Integração Itailers");
 
-                        c.OperationFilter<AddRequiredHeaderParameter>();
                         // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                         //
                         //c.PrettyPrint();
@@ -107,7 +102,7 @@ namespace KL_API
                         // those comments into the generated docs and UI. You can enable this by providing the path to one or
                         // more Xml comment files.
                         //
-                        c.IncludeXmlComments(GetXmlCommentsPath());
+                        //c.IncludeXmlComments(GetXmlCommentsPath());
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -182,6 +177,8 @@ namespace KL_API
                         // alternative implementation for ISwaggerProvider with the CustomProvider option.
                         //
                         //c.CustomProvider((defaultProvider) => new CachingSwaggerProvider(defaultProvider));
+
+                        c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
                     })
                 .EnableSwaggerUi(c =>
                     {
@@ -255,38 +252,7 @@ namespace KL_API
                         // "apiKeyIn" can either be "query" or "header"
                         //
                         //c.EnableApiKeySupport("apiKey", "header");
-
                     });
         }
-        private static string ResolveBasePath(HttpRequestMessage message)
-        {
-            var virtualPathRoot = message.GetRequestContext().VirtualPathRoot;
-
-            var schemeAndHost = "https://" + message.RequestUri.Host;
-            return new Uri(new Uri(schemeAndHost, UriKind.Absolute), virtualPathRoot).AbsoluteUri;
-        }
-        private static string GetXmlCommentsPath()
-        {
-            return System.AppDomain.CurrentDomain.BaseDirectory + @"bin\KL_API.xml";
-        }
     }
-
-    public class AddRequiredHeaderParameter : IOperationFilter
-    {
-        public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
-        {
-            if (operation.parameters == null)
-                operation.parameters = new List<Parameter>();
-
-            operation.parameters.Add(new Parameter
-            {
-                name = "kl-token",
-                @in = "header",
-                type = "string",
-                required = true
-            });
-        }
-    }
-
-
 }

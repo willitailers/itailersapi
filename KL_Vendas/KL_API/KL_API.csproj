@@ -259,6 +259,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
     <Compile Include="Controllers\GerenciaLicencaMK.cs" />
+    <Compile Include="Controllers\SolicitarLicencas.cs" />
     <Compile Include="Controllers\GetProdutos.cs" />
     <Compile Include="Controllers\InserirProviderInfo.cs" />
     <Compile Include="Controllers\DeletarProviderInfo.cs" />
@@ -275,6 +276,7 @@
     </Compile>
     <Compile Include="Models\AddRequiredHeaderParameter .cs" />
     <Compile Include="Models\Ativacao_Obj.cs" />
+    <Compile Include="Models\SolicitarLicencas.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
