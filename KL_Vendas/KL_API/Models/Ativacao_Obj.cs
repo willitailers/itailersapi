@@ -1939,8 +1939,8 @@ namespace KL_API.Models
                 db.retorna_parametros("@nm_email", nm_email),
                 db.retorna_parametros("@dt_start", dt_start.ToString()),
                 db.retorna_parametros("@dt_end", dt_end),
-                db.retorna_parametros("@nm_user_document", nm_user_document),
-                db.retorna_parametros("@nm_user_plan", nm_user_plan)
+                db.retorna_parametros("@nm_user_document", nm_user_document == null ? "": nm_user_document),
+                db.retorna_parametros("@nm_user_plan", nm_user_plan == null ? "": nm_user_plan)
             };
 
             db.parametros = par;
