@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32407.337
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KL_Vendas", "KL_Vendas\KL_Vendas.csproj", "{CA3891EE-1498-410C-8042-B494512CAF41}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardCancel", "HardCancel\HardCancel.csproj", "{A5E6909B-4317-4A82-8855-E4ED0D035B7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KL_API", "KL_API\KL_API.csproj", "{7BD8C99A-0A1F-4DDB-9A13-D1C6CA0B7AB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API_Itailers_Core", "API_Itailers_Core\API_Itailers_Core.csproj", "{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{7BD8C99A-0A1F-4DDB-9A13-D1C6CA0B7AB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BD8C99A-0A1F-4DDB-9A13-D1C6CA0B7AB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BD8C99A-0A1F-4DDB-9A13-D1C6CA0B7AB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
