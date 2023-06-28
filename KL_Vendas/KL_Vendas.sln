@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardCancel", "HardCancel\Ha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KL_API", "KL_API\KL_API.csproj", "{7BD8C99A-0A1F-4DDB-9A13-D1C6CA0B7AB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API_Itailers_Core", "API_Itailers_Core\API_Itailers_Core.csproj", "{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API_Itailers_Core", "API_Itailers_Core\API_Itailers_Core.csproj", "{70CA1B0C-5993-4F87-A71B-4EFFF29F2A5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

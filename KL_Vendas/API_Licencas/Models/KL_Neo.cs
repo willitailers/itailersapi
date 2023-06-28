@@ -45,6 +45,9 @@ namespace API_Licencas.Models
                 bool novo = false;
                 var response = client.PostAsync(@ConfigurationManager.AppSettings["link_login_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(login), Encoding.UTF8, "application/json")).Result;
 
+                string hashUsername = new Helper().GetHash(login.username, 15);
+                string nm_itailers_kl = $"{login.idp}_{hashUsername}";
+
                 if (response.Content != null)
                 {
                     var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -62,8 +65,7 @@ namespace API_Licencas.Models
                             // insere se nao tiver
                             if (cliente.Rows.Count == 0)
                             {
-                                var novo_cliente = inserir_cliente(response_neo.subscriber_id);
-
+                                var novo_cliente = inserir_cliente(response_neo.subscriber_id, nm_itailers_kl);
 
                                 id_cliente = novo_cliente.Rows[0]["id_cliente_neo"].ToString();
                                 novo = true;
@@ -316,7 +318,7 @@ namespace API_Licencas.Models
                 }
 
                 id_cliente_neo = cliente.Rows[0]["id_cliente_neo"].ToString();
-
+                string subscriber_id_kl = cliente.Rows[0]["nm_itailers_kl"].ToString();
 
                 var cliente_ativacao = consulta_cliente_ativacao(cliente.Rows[0]["id_cliente_neo"].ToString());
 
@@ -354,7 +356,8 @@ namespace API_Licencas.Models
                 {
                     SubscriptionResponseContainer container = new SubscriptionResponseContainer();
 
-                    container = con.AtivacaoNeo(ativacao.subscriber_id + DateTime.Now.ToString("yyMMddHHmmss"), cd_produto_kl, ativacao.subscriber_id, qtd_licenças, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
+                    container = con.AtivacaoNeo(subscriber_id_kl + DateTime.Now.ToString("yyMMddHHmmss"), 
+                        cd_produto_kl, subscriber_id_kl, qtd_licenças, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
 
                     log_inserir(id_cliente_neo + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo);
                     log_inserir(id_cliente_neo + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo);
@@ -456,10 +459,8 @@ namespace API_Licencas.Models
                     int UnitId = 1;
                     foreach (DataRow dr in produtos_Combo.Rows)
                     {
-                        Random rand = new Random();
-
                         produtos.Add(new Neo_Produto_Combo() { _ProductId = dr["cd_produto"].ToString(),
-                            _SubscriberId = rand.GetHashCode() + "_" + ativacao.subscriber_id + "-" + dr["id_produto"].ToString(),
+                            _SubscriberId = ativacao.subscriber_id + "-" + dr["id_produto"].ToString(),
                             qtd_licencas = dr["qtd_licencas"].ToString(),
                             UnitId = UnitId.ToString(),
                             id_produto = dr["id_produto"].ToString(),
@@ -471,7 +472,7 @@ namespace API_Licencas.Models
 
                     // ativa produtos
                     SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-                    container = con.AtivacaoNeoLote(ativacao.subscriber_id + DateTime.Now.ToString("yyMMddHHmmss"), produtos, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
+                    container = con.AtivacaoNeoLote(subscriber_id_kl + DateTime.Now.ToString("yyMMddHHmmss"), produtos, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
 
                     log_inserir(id_cliente_neo + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
                     log_inserir(id_cliente_neo + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo_lote);
@@ -569,10 +570,13 @@ namespace API_Licencas.Models
             string link = "";
             try
             {
+                var cliente = consulta_cliente(subscriber_id);
+                string subscriber_id_kl = cliente.Rows[0]["nm_itailers_kl"].ToString();
+
                 KL_Conexao con = new KL_Conexao();
                 SubscriptionResponseContainer containerlink = new SubscriptionResponseContainer();
 
-                containerlink = con.DownloadLinkNeo(plat, subscriber_id, transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"), out string xmlContainer, out string xmlRequest);
+                containerlink = con.DownloadLinkNeo(plat, subscriber_id_kl, transaction_id + "0" + DateTime.Now.ToString("yyMMddHHmmss"), out string xmlContainer, out string xmlRequest);
 
                 log_inserir("GetDownloadLink - RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo);
                 log_inserir("GetDownloadLink - RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo);
@@ -648,13 +652,16 @@ namespace API_Licencas.Models
                 int contador = 1;
                 foreach (var subscriber_id in subscriber_ids)
                 {
-                    links.Add(new Link_Produto() { subscribe_id = subscriber_id.subscribe_id });
+                    var cliente = consulta_cliente(subscriber_id.subscribe_id.ToString());
+                    string subscriber_id_kl = cliente.Rows[0]["nm_itailers_kl"].ToString();
+
+                    links.Add(new Link_Produto() { subscribe_id = subscriber_id_kl });
 
                     SubscriptionRequestGetDownloadLinksItem Item = new SubscriptionRequestGetDownloadLinksItem();
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id.subscribe_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.Android
                     });
@@ -662,7 +669,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id.subscribe_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.Windows
                     });
@@ -670,7 +677,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id.subscribe_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.iOS
                     });
@@ -678,7 +685,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id.subscribe_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.macOS
                     });
@@ -830,6 +837,7 @@ namespace API_Licencas.Models
                 usuario_neo.dv_ativo = 1;
                 usuario_neo.nm_subscribe_id = subscriber_id;
                 string nm_subrscribe_kl = "";
+                string subscriber_id_kl = cliente.Rows[0]["nm_itailers_kl"].ToString();
 
 
                 id_cliente = cliente.Rows[0]["id_cliente_neo"].ToString();
@@ -920,15 +928,7 @@ namespace API_Licencas.Models
 
                                 var links = new List<Link_Produto>();
 
-
-                                if (false) // Verifica se links estão salvos
-                                {
-
-                                }
-                                else
-                                {
-                                    links = link_download_neoLote(nm_subrscribe_kls, usuario_neo.nm_subscribe_id);
-                                }
+                                links = link_download_neoLote(nm_subrscribe_kls, subscriber_id_kl);
 
                                 usuario_neo.produto.Add(new Produto_Neo()
                                 {
@@ -1002,7 +1002,7 @@ namespace API_Licencas.Models
                                     });
                                 }
 
-                                var links = link_download_neoLote(nm_subrscribe_kls, usuario_neo.nm_subscribe_id);
+                                var links = link_download_neoLote(nm_subrscribe_kls, subscriber_id_kl);
 
                                 foreach (var link in links)
                                 {
@@ -1156,7 +1156,7 @@ namespace API_Licencas.Models
         #endregion Consultas
 
         #region inserir
-        public DataTable inserir_cliente(string nm_subrscribe_id)
+        public DataTable inserir_cliente(string nm_subrscribe_id, string nm_itailers_kl)
         {
             DataBase db = new DataBase();
             db.procedure = "p_cliente_inserir";
@@ -1164,6 +1164,7 @@ namespace API_Licencas.Models
             parametros p = new parametros();
             List<parametros> par = new List<parametros>();
             par.Add(db.retorna_parametros("@nm_subrscribe_id", nm_subrscribe_id));
+            par.Add(db.retorna_parametros("@nm_itailers_kl", nm_itailers_kl));
             //par.Add(db.retorna_parametros("@dt_expiracao_kl", dt_expiracao_kl));
             //par.Add(db.retorna_parametros("@dt_encerramento", dt_encerramento));
             //par.Add(db.retorna_parametros("@nm_link_url", nm_link_url));

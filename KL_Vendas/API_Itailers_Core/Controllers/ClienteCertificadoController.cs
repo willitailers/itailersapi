@@ -31,6 +31,11 @@ namespace API_Itailers_Core.Controllers
                 var query = "Select * from t_cliente_certificado";
                 var clienteCertificados = await con.QueryAsync<t_cliente_certificado>(query);
 
+                foreach (var item in clienteCertificados)
+                {
+                    item.nm_senha_certificado = "******-******-******-******";
+                }
+
                 return clienteCertificados.Any() ? Ok(clienteCertificados) : NoContent();
             }
             catch (Exception ex)

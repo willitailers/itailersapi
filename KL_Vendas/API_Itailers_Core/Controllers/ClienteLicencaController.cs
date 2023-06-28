@@ -31,7 +31,18 @@ namespace API_Itailers_Core.Controllers
                 var query = "Select * from t_cliente_licenca";
                 var clienteLicencas = await con.QueryAsync<t_cliente_licenca>(query);
 
-                return clienteLicencas.Any() ? Ok(clienteLicencas) : NoContent();
+                foreach (var item in clienteLicencas)
+                {
+                    item.cd_ativacao_kl = "******-******-******-******";
+                    item.nm_ativacao_mac = "******-******-******-******";
+                    item.nm_ativacao_android = "******-******-******-******";
+                    item.nm_ativacao_iphone = "******-******-******-******";
+                    item.nm_ativacao_windows = "******-******-******-******";
+                }
+
+                return clienteLicencas.Any() ? 
+                    Ok(clienteLicencas) : 
+                    NoContent();
             }
             catch (Exception ex)
             {
