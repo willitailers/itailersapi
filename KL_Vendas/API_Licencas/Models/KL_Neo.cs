@@ -346,6 +346,7 @@ namespace API_Licencas.Models
                     usuario_neo.msg_erro = "Produto não encontrado.";
                     return usuario_neo;
                 }
+
                 // ativar
                 KL_Conexao con = new KL_Conexao();
                 bool ativado = true;
@@ -639,7 +640,7 @@ namespace API_Licencas.Models
             return link;
         }
 
-        public List<Link_Produto> link_download_neoLote(List<Lista_Produto> subscriber_ids, string transaction_id)
+        public List<Link_Produto> link_download_neoLote(List<Lista_Produto> subscriber_ids, string transaction_id, bool isCombo = false)
         {
             List<Link_Produto> links = new List<Link_Produto>();
             try
@@ -652,16 +653,32 @@ namespace API_Licencas.Models
                 int contador = 1;
                 foreach (var subscriber_id in subscriber_ids)
                 {
+                    string _subscriber_id = string.Empty;
                     var cliente = consulta_cliente(subscriber_id.subscribe_id.ToString());
-                    string subscriber_id_kl = cliente.Rows[0]["nm_itailers_kl"].ToString();
 
-                    links.Add(new Link_Produto() { subscribe_id = subscriber_id_kl });
+                    if (cliente.Rows.Count == 0 && isCombo)
+                    {
+                        _subscriber_id = subscriber_id.subscribe_id;
+                    }
+                    else
+                    {
+                        if (cliente.Rows.Count == 0)
+                        {
+                            _subscriber_id = subscriber_id.subscribe_id;
+                        }
+                        else
+                        {
+                            _subscriber_id = cliente.Rows[0]["nm_itailers_kl"].ToString();
+                        }
+                    }
+
+                    links.Add(new Link_Produto() { subscribe_id = _subscriber_id });
 
                     SubscriptionRequestGetDownloadLinksItem Item = new SubscriptionRequestGetDownloadLinksItem();
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = _subscriber_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.Android
                     });
@@ -669,7 +686,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = _subscriber_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.Windows
                     });
@@ -677,7 +694,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = _subscriber_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.iOS
                     });
@@ -685,7 +702,7 @@ namespace API_Licencas.Models
                     Itens.Add(new SubscriptionRequestGetDownloadLinksItem()
                     {
                         UnitId = contador.ToString(),
-                        SubscriberId = subscriber_id_kl, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
+                        SubscriberId = _subscriber_id, // "C8147E02-8A91-43B2-AD48-5D04DAFD38C2";
                         Language = "pt",
                         Platform = PlatformEnum.macOS
                     });
@@ -1002,7 +1019,8 @@ namespace API_Licencas.Models
                                     });
                                 }
 
-                                var links = link_download_neoLote(nm_subrscribe_kls, subscriber_id_kl);
+                                bool isCombo = true;
+                                var links = link_download_neoLote(nm_subrscribe_kls, subscriber_id_kl, isCombo);
 
                                 foreach (var link in links)
                                 {

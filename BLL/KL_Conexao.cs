@@ -391,6 +391,28 @@ namespace BLL
             return activateItem;
         }
 
+        [Obsolete]
+        public SubscriptionRequestResumeItem KL_retorna_resume(string SubscriberId, string UnitId)
+        {
+            SubscriptionRequestResumeItem resumeItem = new SubscriptionRequestResumeItem();
+
+            resumeItem.UnitId = UnitId;
+            resumeItem.SubscriberId = SubscriberId;
+
+            return resumeItem;
+        }
+
+        public SubscriptionRequestRenewItem KL_retorna_renew(string SubscriberId, string UnitId)
+        {
+            SubscriptionRequestRenewItem renewItem = new SubscriptionRequestRenewItem();
+
+            renewItem.UnitId = UnitId;
+            renewItem.SubscriberId = SubscriberId;
+            renewItem.EndTime = "indefinite";
+
+            return renewItem;
+        }
+
         public SubscriptionRequestGetDownloadLinksItem KL_retorna_link(string SubscriberId, string UnitId, string Language, PlatformEnum Platform)
         {
             SubscriptionRequestGetDownloadLinksItem Item = new SubscriptionRequestGetDownloadLinksItem();
@@ -492,10 +514,7 @@ namespace BLL
             requestContainer.TransactionId = _TransactionId; // "010000002";
 
             SubscriptionRequestRequest request = new SubscriptionRequestRequest();
-            if (System.Configuration.ConfigurationManager.AppSettings["ambiente_Producao"].ToString() == "1")
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
-            else
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-itailers-br", Password = "@Itailers2021#" };
+            request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
 
             SubscriptionRequestActivateItem activateItem = new SubscriptionRequestActivateItem();
 
@@ -519,7 +538,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -575,10 +594,7 @@ namespace BLL
             requestContainer.TransactionId = _TransactionId; // "010000002";
 
             SubscriptionRequestRequest request = new SubscriptionRequestRequest();
-            if (System.Configuration.ConfigurationManager.AppSettings["ambiente_Producao"].ToString() == "1")
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
-            else
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-itailers-br", Password = "@Itailers2021#" };
+            request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
 
             List<object> incricoes = new List<object>();
 
@@ -606,7 +622,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -661,10 +677,7 @@ namespace BLL
             requestContainer.TransactionId = _TransactionId; // "010000002";
 
             SubscriptionRequestRequest request = new SubscriptionRequestRequest();
-            if (System.Configuration.ConfigurationManager.AppSettings["ambiente_Producao"].ToString() == "1")
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
-            else
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-itailers-br", Password = "@Itailers2021#" };
+            request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
 
             SubscriptionRequestGetDownloadLinksItem Item = new SubscriptionRequestGetDownloadLinksItem();
 
@@ -685,7 +698,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -733,10 +746,7 @@ namespace BLL
             requestContainer.TransactionId = _TransactionId; // "010000002";
 
             SubscriptionRequestRequest request = new SubscriptionRequestRequest();
-            if (System.Configuration.ConfigurationManager.AppSettings["ambiente_Producao"].ToString() == "1")
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
-            else
-                request.AccessInfo = new AccessInfo() { UserName = "freenet-itailers-br", Password = "@Itailers2021#" };
+            request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
 
             requestContainer.SubscriptionRequest = obj;
             X509Certificate2 cert;
@@ -746,7 +756,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -794,7 +804,7 @@ namespace BLL
             requestContainer.TransactionId = _TransactionId; // "010000002";
 
             SubscriptionRequestRequest request = new SubscriptionRequestRequest();
-            request.AccessInfo = new AccessInfo() { UserName = "freenet-itailers-br", Password = "@Itailers2021#" };
+            request.AccessInfo = new AccessInfo() { UserName = "freenet-br", Password = "@Itailers2021#" };
 
             SubscriptionRequestRenewItem Item = new SubscriptionRequestRenewItem();
 
@@ -1072,7 +1082,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -1142,7 +1152,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -1281,7 +1291,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "ccfdbc6e0b7b7e0aaa74542ac7d196f61f39695b");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "bfb8799d126d3be12f759dcc68d6243578d80b28");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }

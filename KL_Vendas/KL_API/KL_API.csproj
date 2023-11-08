@@ -258,7 +258,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
-    <Compile Include="Controllers\GerenciaLicencaMK.cs" />
+    <Compile Include="Controllers\Provisionado\GerenciaLicencaController.cs" />
     <Compile Include="Controllers\SolicitarLicencas.cs" />
     <Compile Include="Controllers\GetProdutos.cs" />
     <Compile Include="Controllers\InserirProviderInfo.cs" />
