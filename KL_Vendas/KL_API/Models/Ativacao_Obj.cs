@@ -1929,7 +1929,7 @@ namespace KL_API.Models
 
             var responseSac =
                 client.GetAsync($@"{@ConfigurationManager.AppSettings["MK_WSMKUserSenhaSAC"]}{loginInterno.sys}&token={autenticacao.token}&user_sac={username}&pass_sac={password}").Result;
-
+            
             if (responseSac.Content != null)
             {
                 var responseContent = responseSac.Content.ReadAsStringAsync().Result;
