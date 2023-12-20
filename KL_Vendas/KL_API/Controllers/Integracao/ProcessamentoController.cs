@@ -10,54 +10,91 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using KL_API.Models.Integracao.cliente;
+using System.Data;
+using System.Web.Http.Description;
 
 namespace KL_API.Controllers.Integracao
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ProcessamentoController : ApiController
     {
-        //Signet
-        //public readonly string username = "91";
-        //public readonly string password = "be8a53e7090d0c42fc61b155b24bb7eb71b8da2f499c810249ccc5bfef5fe641";
-        //public readonly string base_url = "https://central.signets.com.br/webservice/v1/";
-        //public readonly string id_produto = "2717";
-
-        //LocalNet
-        public readonly string username = "33";
-        public readonly string password = "37d30e12c4a2d986672ffd361aaca2fa5312175f8b7bf1f6f7febcbf145e55d4";
-        public readonly string base_url = "https://sac.localnet.srv.br/webservice/v1/";
-        public readonly string id_produto = "1076";
-
         [HttpPost]
         public async Task<HttpResponseMessage> Post()
         {
-            //string id_produto = "1076";
-            string base64Credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+           Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
+           var integracao_clientes = integracao.RetornaIntegracaoClientes();
 
-            // Defina seu nome de usuário e senha
-            view_vd_contratos_produtos_gen contratos = await GetContratos(base_url, base64Credentials, id_produto);
+            List<string> msg_erro = new List<string>();
 
-            var cells = contratos.rows.Select(r => r.cell).ToList();
-            var id_contratos = cells.Select(s => s[12]).ToList();
-
-            if (string.IsNullOrEmpty(contratos.total) || contratos.total == "0")
+            foreach (DataRow row in integracao_clientes.Rows)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Nenhum contrato foi encontrado");
+                string username = row["usuario_itailers"].ToString();
+                string password = row["password_itailers"].ToString();
+                string id_produto = row["id_produto"].ToString();
+                string base_url = row["url"].ToString();
+                string cliente_name = row["cliente"].ToString();
+
+                string base64Credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+
+                view_vd_contratos_produtos_gen contratos = await GetContratos(base_url, base64Credentials, id_produto);
+
+                if (contratos.type == "error")
+                {
+                    msg_erro.Add($"{cliente_name}: {contratos.message}");
+                    continue;
+                }
+
+                var cells = contratos.rows.Select(r => r.cell).ToList();
+                var id_contratos = cells.Select(s => s[12]).ToList();
+
+                if (string.IsNullOrEmpty(contratos.total) || contratos.total == "0")
+                {
+                    msg_erro.Add($"{cliente_name}: Nenhum contrato foi encontrado");
+                }
+
+                cliente_contrato cliente_contrato = await GetClienteContratos(base_url, base64Credentials, id_contratos);
+
+                if (!cliente_contrato.registros.Any(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")))
+                {
+                    msg_erro.Add($"{cliente_name}: Nenhum contrato ativo foi encontrado");
+                }
+
+                cliente_contrato.registros = cliente_contrato.registros.Where(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")).ToList();
+
+                string id_clientes = string.Join(",", cliente_contrato.registros.Select(s => s.id_cliente).ToList());
+
+                cliente cliente = await GetClientes(base_url, base64Credentials, id_clientes);
+
+                var usuarios = integracao.RetornaIntegracaoUsuarios();
             }
 
-            cliente_contrato cliente_contrato = await GetClienteContratos(base_url, base64Credentials, id_contratos);
+            var template = integracao.RetornaIntegracaoTemplate();
+            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviar();
 
-            if (!cliente_contrato.registros.Any(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")))
+            List<string> emails = new List<string>();
+            foreach (DataRow row in emails_enviar.Rows)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Nenhum contrato ativo foi encontrado");
+                string[] emails_splited = row["email"].ToString().Split(';');
+                if (emails_splited.Length > 1)
+                {
+                    foreach (string email in emails_splited)
+                    {
+                        emails.Add(email);
+                    }
+                }
+                else
+                {
+                    emails.Add(row["email"].ToString());
+                }
             }
 
-            cliente_contrato.registros = cliente_contrato.registros.Where(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")).ToList();
+            string conteudo_template = template.Rows[0]["conteudo"].ToString();
+            
+            EmailsEnviar emailsEnviar = new EmailsEnviar();
+            emailsEnviar.emails = emails;
+            emailsEnviar.template = conteudo_template;
 
-            string id_clientes = string.Join(",", cliente_contrato.registros.Select(s => s.id_cliente).ToList());
-
-            cliente cliente = await GetClientes(base_url, base64Credentials, id_clientes);
-
-            return Request.CreateResponse(HttpStatusCode.OK, cliente);
+            return Request.CreateResponse(HttpStatusCode.OK, emailsEnviar);
         }
 
         public async Task<view_vd_contratos_produtos_gen> GetContratos(string base_url, string base64Credentials, string id_produto)

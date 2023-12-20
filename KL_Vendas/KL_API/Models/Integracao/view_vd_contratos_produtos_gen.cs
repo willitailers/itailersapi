@@ -7,6 +7,9 @@ namespace KL_API.Models.Integracao
         public string page { get; set; }
         public string total { get; set; }
         public List<Row> rows { get; set; }
+
+        public string type { get; set; }
+        public string message { get; set; }
     }
 
     public class Row

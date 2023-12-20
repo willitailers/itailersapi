@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using DAL;
+using Objetos;
+using System.Collections.Generic;
+using System.Data;
 
 namespace KL_API.Models.Integracao.cliente
 {
