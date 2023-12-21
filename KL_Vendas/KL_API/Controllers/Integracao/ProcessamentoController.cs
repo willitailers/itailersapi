@@ -33,6 +33,7 @@ namespace KL_API.Controllers.Integracao
                 string id_produto = row["id_produto"].ToString();
                 string base_url = row["url"].ToString();
                 string cliente_name = row["cliente"].ToString();
+                string id_cliente = row["id"].ToString();
 
                 string base64Credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
 
@@ -65,34 +66,42 @@ namespace KL_API.Controllers.Integracao
 
                 cliente cliente = await GetClientes(base_url, base64Credentials, id_clientes);
 
-                var usuarios = integracao.RetornaIntegracaoUsuarios();
+                foreach (var registro in cliente.registros)
+                {
+                    integracao.AtualizaIntegracaoUsuarios(id_cliente, registro.email, registro.cnpj_cpf, registro.fantasia != "" ? registro.fantasia : registro.razao, 
+                        registro.telefone_celular, registro.ativo == "S");
+                }
             }
 
             var template = integracao.RetornaIntegracaoTemplate();
             var emails_enviar = integracao.RetornaIntegracaoEmailsEnviar();
 
-            List<string> emails = new List<string>();
+            List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
             foreach (DataRow row in emails_enviar.Rows)
             {
-                string[] emails_splited = row["email"].ToString().Split(';');
-                if (emails_splited.Length > 1)
-                {
-                    foreach (string email in emails_splited)
-                    {
-                        emails.Add(email);
-                    }
-                }
-                else
-                {
-                    emails.Add(row["email"].ToString());
-                }
-            }
+                var id_cliente = row["id_cliente"].ToString();
+                var conteudo = row["conteudo"].ToString();
+                var email = row["email"].ToString();
+                var nome = row["nome"].ToString();
+                var nome_cliente = row["nome_cliente"].ToString();
 
-            string conteudo_template = template.Rows[0]["conteudo"].ToString();
-            
-            EmailsEnviar emailsEnviar = new EmailsEnviar();
-            emailsEnviar.emails = emails;
-            emailsEnviar.template = conteudo_template;
+                conteudo = conteudo.Replace("[[nome_cliente]]", nome);
+                conteudo = conteudo.Replace("[[nome_provedor]]", nome_cliente);
+                conteudo = conteudo.Replace("[[nome_provedor.baixemeuapp.com.br]]", $"{nome_cliente.ToLower()}.baixemeuapp.com.br");
+
+                email = email.Replace(";", ","); //n8n diferencia os emails por virgula.
+
+                EmailsEnviar cliente = new EmailsEnviar()
+                {
+                    conteudo = conteudo,
+                    email = email,
+                    id_cliente = id_cliente,
+                    nome = nome,
+                    nome_cliente = nome_cliente
+                };
+
+                emailsEnviar.Add(cliente);
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, emailsEnviar);
         }
@@ -213,3 +222,4 @@ namespace KL_API.Controllers.Integracao
         }
     }
 }
+

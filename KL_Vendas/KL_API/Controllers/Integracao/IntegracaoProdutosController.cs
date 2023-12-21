@@ -36,8 +36,8 @@ namespace KL_API.Controllers.Integracao
                 nome_produto = "Kaspersky Standard"
             };
 
-            produtosResponse.Produtos.Add(produtos1);
-            produtosResponse.Produtos.Add(produtos2);
+            produtosResponse.produtos.Add(produtos1);
+            produtosResponse.produtos.Add(produtos2);
 
             return Request.CreateResponse(HttpStatusCode.OK, produtosResponse);
         }
@@ -49,7 +49,7 @@ namespace KL_API.Controllers.Integracao
 
         public class ProdutosResponse
         {
-            public List<Produtos> Produtos { get; set; } = new List<Produtos>();
+            public List<Produtos> produtos { get; set; } = new List<Produtos>();
             public string msg_retorno { get; set; }
         }
 

@@ -19,5 +19,7 @@ namespace KL_API.Models.Integracao.cliente
         public string email { get; set; }
         public string cnpj_cpf { get; set; }
         public string telefone_celular { get; set; }
+        public string fantasia { get; set; }
+        public string razao { get; set; }
     }
 }
