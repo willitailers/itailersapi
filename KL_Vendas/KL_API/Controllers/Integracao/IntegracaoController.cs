@@ -16,7 +16,7 @@ using System.Web.Http.Description;
 namespace KL_API.Controllers.Integracao
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class ProcessamentoController : ApiController
+    public class IntegracaoController : ApiController
     {
         [HttpPost]
         public async Task<HttpResponseMessage> Post()
@@ -30,12 +30,23 @@ namespace KL_API.Controllers.Integracao
             {
                 string username = row["usuario_itailers"].ToString();
                 string password = row["password_itailers"].ToString();
-                string id_produto = row["id_produto"].ToString();
+                //string id_produto = row["id_produto"].ToString();
                 string base_url = row["url"].ToString();
                 string cliente_name = row["cliente"].ToString();
                 string id_cliente = row["id"].ToString();
 
                 string base64Credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+
+                var relacao_produtos = integracao.RetornaIntegracaoRelacaoProdutos(id_cliente);
+
+                string id_produto = string.Empty;
+                List<string> listProdutos = new List<string>();
+                foreach (DataRow produto in relacao_produtos.Rows)
+                {
+                    listProdutos.Add(produto["id_produto_cliente"].ToString());
+                }
+
+                id_produto = string.Join(",", listProdutos);
 
                 view_vd_contratos_produtos_gen contratos = await GetContratos(base_url, base64Credentials, id_produto);
 
@@ -73,37 +84,7 @@ namespace KL_API.Controllers.Integracao
                 }
             }
 
-            var template = integracao.RetornaIntegracaoTemplate();
-            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviar();
-
-            List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
-            foreach (DataRow row in emails_enviar.Rows)
-            {
-                var id_cliente = row["id_cliente"].ToString();
-                var conteudo = row["conteudo"].ToString();
-                var email = row["email"].ToString();
-                var nome = row["nome"].ToString();
-                var nome_cliente = row["nome_cliente"].ToString();
-
-                conteudo = conteudo.Replace("[[nome_cliente]]", nome);
-                conteudo = conteudo.Replace("[[nome_provedor]]", nome_cliente);
-                conteudo = conteudo.Replace("[[nome_provedor.baixemeuapp.com.br]]", $"{nome_cliente.ToLower()}.baixemeuapp.com.br");
-
-                email = email.Replace(";", ","); //n8n diferencia os emails por virgula.
-
-                EmailsEnviar cliente = new EmailsEnviar()
-                {
-                    conteudo = conteudo,
-                    email = email,
-                    id_cliente = id_cliente,
-                    nome = nome,
-                    nome_cliente = nome_cliente
-                };
-
-                emailsEnviar.Add(cliente);
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, emailsEnviar);
+            return Request.CreateResponse(HttpStatusCode.OK, "OK!");
         }
 
         public async Task<view_vd_contratos_produtos_gen> GetContratos(string base_url, string base64Credentials, string id_produto)
@@ -112,7 +93,7 @@ namespace KL_API.Controllers.Integracao
             {
                 qtype = "view_vd_contratos_produtos_gen.id_produto",
                 query = id_produto,
-                oper = "=",
+                oper = "IN",
                 rp = "2000"
             };
 

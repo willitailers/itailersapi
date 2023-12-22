@@ -258,9 +258,11 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoKasperskyController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoProdutosController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoLoginController.cs" />
-    <Compile Include="Controllers\Integracao\ProcessamentoController.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoEmailsController.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoController.cs" />
     <Compile Include="Controllers\Provisionado\GerenciaLicencaController.cs" />
     <Compile Include="Controllers\SolicitarLicencas.cs" />
     <Compile Include="Controllers\GetProdutos.cs" />
