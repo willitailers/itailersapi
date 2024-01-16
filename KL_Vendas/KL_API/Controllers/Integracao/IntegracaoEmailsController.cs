@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Data;
 using System.Web.Http.Description;
+using System.Linq;
 
 namespace KL_API.Controllers.Integracao
 {
@@ -26,12 +27,26 @@ namespace KL_API.Controllers.Integracao
                 var email = row["email"].ToString();
                 var nome = row["nome"].ToString();
                 var nome_cliente = row["nome_cliente"].ToString();
+                var id_usuario = row["id_usuario"].ToString();
 
                 conteudo = conteudo.Replace("[[nome_cliente]]", nome);
                 conteudo = conteudo.Replace("[[nome_provedor]]", nome_cliente);
                 conteudo = conteudo.Replace("[[nome_provedor.baixemeuapp.com.br]]", $"{nome_cliente.ToLower()}.baixemeuapp.com.br");
 
-                email = email.Replace(";", ","); //n8n diferencia os emails por virgula.
+                var ativacao_usuarios = integracao.RetornaIntegracaoAtivacaoUsuarios(id_usuario);
+                string ativacoes_html = string.Empty;
+                foreach (DataRow ativacao in ativacao_usuarios.Rows)
+                {
+                    ativacoes_html += $"<p>{ativacao["chave_ativacao"]}</p>";
+                }
+
+                conteudo = conteudo.Replace("[[chave_ativacao]]", ativacoes_html);
+
+                string[] emails = email.Split(';');
+                string[] uniqueEmails = emails.Distinct().ToArray();
+                string resultString = string.Join(";", uniqueEmails);
+
+                email = resultString.Replace(";", ","); //n8n diferencia os emails por virgula.
 
                 EmailsEnviar cliente = new EmailsEnviar()
                 {
@@ -43,10 +58,11 @@ namespace KL_API.Controllers.Integracao
                 };
 
                 emailsEnviar.Add(cliente);
+
+                integracao.AtualizarIntegracaoEmailsEnviados(id_usuario);
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, emailsEnviar);
         }
     }
 }
-

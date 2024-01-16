@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,32 +13,43 @@ namespace KL_API.Controllers.Integracao
     {
         [HttpPost]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public HttpResponseMessage Post([FromBody] ProdutosRequest produtos)
+        public HttpResponseMessage Post([FromBody] ProdutosRequest produto)
         {
             if (!Request.Headers.Contains("kl-token"))
-                return Request.CreateResponse(HttpStatusCode.NotAcceptable, new ProdutosResponse() { msg_retorno = "Token é obrigatório" });
+                return Request.CreateResponse(HttpStatusCode.NotAcceptable, 
+                    new ProdutosResponse() { msg_retorno = "Token é obrigatório" });
+
+            if(produto.id_cliente is null || produto.id_cliente == "")
+                return Request.CreateResponse(HttpStatusCode.NotAcceptable, 
+                    new ProdutosResponse() { msg_retorno = "id_cliente é obrigatório" });
 
             string token = Request.Headers.GetValues("kl-token").First();
 
+            Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
+            var produtos = integracao.RetornaIntegracaoProdutos(produto.id_cliente);
+
+            if (produtos.Rows.Count == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotAcceptable, 
+                    new ProdutosResponse() { msg_retorno = "Nenhum produto ativado para este usuario" });
+            }
+
             ProdutosResponse produtosResponse = new ProdutosResponse();
-            Produtos produtos1 = new Produtos()
+            if (produtos.Rows.Count > 0)
             {
-                chave_ativacao = "AAAAb-BABASBD-NASDIOADNS-DNASIO",
-                descricao_produto = "Mais que um Antivírus. Nova proteção para múltiplos dispositivos...",
-                imagem_produto = "images/kaspersky-logo.svg",
-                nome_produto = "Kaspersky Standard"
-            };
+                foreach (DataRow row in produtos.Rows)
+                {
+                    Produtos produtos1 = new Produtos()
+                    {
+                        chave_ativacao = row["chave_ativacao"].ToString(),
+                        descricao_produto = row["descricao_produto"].ToString(),
+                        imagem_produto = row["imagem_produto"].ToString(),
+                        nome_produto = row["nome_produto"].ToString()
+                    };
 
-            Produtos produtos2 = new Produtos()
-            {
-                chave_ativacao = "1123-435345-6456456-7567567",
-                descricao_produto = "Mais que um Antivírus. Nova proteção para múltiplos dispositivos...",
-                imagem_produto = "images/kaspersky-logo.svg",
-                nome_produto = "Kaspersky Standard"
-            };
-
-            produtosResponse.produtos.Add(produtos1);
-            produtosResponse.produtos.Add(produtos2);
+                    produtosResponse.produtos.Add(produtos1);
+                }
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, produtosResponse);
         }
@@ -55,10 +67,10 @@ namespace KL_API.Controllers.Integracao
 
         public class Produtos
         {
+            public string nome_produto { get; set; }
             public string chave_ativacao { get; set; }
             public string imagem_produto { get; set; }
             public string descricao_produto { get; set; }
-            public string nome_produto { get; set; }
-        }
+        }   
     }
 }

@@ -259,6 +259,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoKasperskyController.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoRelatorioAtivacoesController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoProdutosController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoLoginController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoEmailsController.cs" />
@@ -285,6 +286,7 @@
     <Compile Include="Models\Integracao\cliente_contrato.cs" />
     <Compile Include="Models\Integracao\Entidades\t_integracao_ativacao.cs" />
     <Compile Include="Models\Integracao\Entidades\t_integracao_cliente.cs" />
+    <Compile Include="Models\Integracao\Entidades\t_integracao_relacao_produto.cs" />
     <Compile Include="Models\Integracao\Entidades\t_integracao_usuario.cs" />
     <Compile Include="Models\Integracao\Integracao.cs" />
     <Compile Include="Models\Integracao\view_vd_contratos_produtos_gen.cs" />

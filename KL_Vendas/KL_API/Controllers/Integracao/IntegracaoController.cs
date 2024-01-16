@@ -2,7 +2,6 @@
 using KL_API.Models.Integracao;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,6 +11,9 @@ using System.Web.Http;
 using KL_API.Models.Integracao.cliente;
 using System.Data;
 using System.Web.Http.Description;
+using KL_API.Models.Integracao.Entidades;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace KL_API.Controllers.Integracao
 {
@@ -24,13 +26,12 @@ namespace KL_API.Controllers.Integracao
            Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
            var integracao_clientes = integracao.RetornaIntegracaoClientes();
 
-            List<string> msg_erro = new List<string>();
+            RetornoIntegracao retornoIntegracao = new RetornoIntegracao();
 
             foreach (DataRow row in integracao_clientes.Rows)
             {
                 string username = row["usuario_itailers"].ToString();
                 string password = row["password_itailers"].ToString();
-                //string id_produto = row["id_produto"].ToString();
                 string base_url = row["url"].ToString();
                 string cliente_name = row["cliente"].ToString();
                 string id_cliente = row["id"].ToString();
@@ -39,52 +40,88 @@ namespace KL_API.Controllers.Integracao
 
                 var relacao_produtos = integracao.RetornaIntegracaoRelacaoProdutos(id_cliente);
 
-                string id_produto = string.Empty;
-                List<string> listProdutos = new List<string>();
-                foreach (DataRow produto in relacao_produtos.Rows)
+                if (relacao_produtos.Rows.Count == 0)
                 {
-                    listProdutos.Add(produto["id_produto_cliente"].ToString());
-                }
-
-                id_produto = string.Join(",", listProdutos);
-
-                view_vd_contratos_produtos_gen contratos = await GetContratos(base_url, base64Credentials, id_produto);
-
-                if (contratos.type == "error")
-                {
-                    msg_erro.Add($"{cliente_name}: {contratos.message}");
                     continue;
                 }
 
-                var cells = contratos.rows.Select(r => r.cell).ToList();
-                var id_contratos = cells.Select(s => s[12]).ToList();
-
-                if (string.IsNullOrEmpty(contratos.total) || contratos.total == "0")
+                List<t_integracao_relacao_produto> listProdutos = new List<t_integracao_relacao_produto>();
+                foreach (DataRow produto in relacao_produtos.Rows)
                 {
-                    msg_erro.Add($"{cliente_name}: Nenhum contrato foi encontrado");
-                }
+                    t_integracao_relacao_produto t_integracao_relacao_produto = new t_integracao_relacao_produto()
+                    {
+                        id = produto["id"].ToString(),
+                        id_cliente = produto["id_cliente"].ToString(),
+                        id_produto_cliente = produto["id_produto_cliente"].ToString(),
+                        id_produto_kl = produto["id_produto_kl"].ToString()
+                    };
 
-                cliente_contrato cliente_contrato = await GetClienteContratos(base_url, base64Credentials, id_contratos);
+                    view_vd_contratos_produtos_gen contratos = await GetContratos(base_url, base64Credentials, t_integracao_relacao_produto.id_produto_cliente);
 
-                if (!cliente_contrato.registros.Any(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")))
-                {
-                    msg_erro.Add($"{cliente_name}: Nenhum contrato ativo foi encontrado");
-                }
+                    if (!string.IsNullOrEmpty(contratos.message))
+                    {
+                        retornoIntegracao.msg.Add(contratos.message);
+                    }
 
-                cliente_contrato.registros = cliente_contrato.registros.Where(w => w.status == "A" && (w.status_internet == "A" || w.status_internet == "FA")).ToList();
+                    if (contratos.rows is null || contratos.rows.Count == 0)
+                    {
+                        continue;
+                    }
 
-                string id_clientes = string.Join(",", cliente_contrato.registros.Select(s => s.id_cliente).ToList());
+                    var cells = contratos.rows.Select(r => r.cell).ToList();
+                    var id_contratos = cells.Select(s => s[12]).ToList();
+                    string id_contratos_join = string.Join(",", id_contratos);
 
-                cliente cliente = await GetClientes(base_url, base64Credentials, id_clientes);
+                    cliente_contrato cliente_contrato = await GetClienteContratos(base_url, base64Credentials, id_contratos_join);
 
-                foreach (var registro in cliente.registros)
-                {
-                    integracao.AtualizaIntegracaoUsuarios(id_cliente, registro.email, registro.cnpj_cpf, registro.fantasia != "" ? registro.fantasia : registro.razao, 
-                        registro.telefone_celular, registro.ativo == "S");
+                    if (cliente_contrato.registros.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    string ids_clientes = string.Join(",", cliente_contrato.registros.Select(s => s.id_cliente));
+
+                    cliente cliente_erp = await GetClientes(base_url, base64Credentials, ids_clientes);
+
+                    if (cliente_erp.registros.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (var registro in cliente_erp.registros)
+                    {
+                        bool ativo = registro.ativo == "S";
+
+                        Regex regex = new Regex(@"[^\d]");
+                        string cnpj_cpf_formatado = regex.Replace(registro.cnpj_cpf, "");
+
+                        try
+                        {
+                            var data = integracao.AtualizaIntegracaoUsuarios(id_cliente, registro.email, cnpj_cpf_formatado,
+                            registro.fantasia != "" ? registro.fantasia : registro.razao, registro.telefone_celular, ativo);
+
+                            string id_usuario = data.Rows[0]["Id"].ToString();
+                            string id_subscriber = integracao.GenerateUniqueId(cnpj_cpf_formatado);
+
+                            integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, ativo);
+                        }
+                        catch (Exception ex)
+                        {
+                            retornoIntegracao.msg.Add($"ERRO, cliente_name: {cliente_name}, id_cliente: {id_cliente} " +
+                                $"EX {ex.Message}");
+                        }
+                    }
                 }
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, "OK!");
+            string retorno = string.Empty;
+
+            return Request.CreateResponse(HttpStatusCode.OK, retornoIntegracao);
+        }
+
+        public class RetornoIntegracao
+        {
+            public List<string> msg { get; set; } = new List<string>();
         }
 
         public async Task<view_vd_contratos_produtos_gen> GetContratos(string base_url, string base64Credentials, string id_produto)
@@ -93,7 +130,7 @@ namespace KL_API.Controllers.Integracao
             {
                 qtype = "view_vd_contratos_produtos_gen.id_produto",
                 query = id_produto,
-                oper = "IN",
+                oper = "=",
                 rp = "2000"
             };
 
@@ -126,12 +163,12 @@ namespace KL_API.Controllers.Integracao
             }
         }
 
-        public async Task<cliente_contrato> GetClienteContratos(string base_url, string base64Credentials, List<string> id_contratos)
+        public async Task<cliente_contrato> GetClienteContratos(string base_url, string base64Credentials, string id_contrato)
         {
             var body = new
             {
                 qtype = "cliente_contrato.id",
-                query = string.Join(",", id_contratos),
+                query = id_contrato,
                 oper = "IN"
             };
 

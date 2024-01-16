@@ -17,6 +17,20 @@ namespace KL_API.Models.Integracao
         public string conteudo { get; set; }
     }
 
+    public class UsuariosAtivar
+    {
+        public int id { get; set; }
+        public string id_subscriber { get; set; }
+        public int id_cliente { get; set; }
+        public int id_usuario { get; set; }
+        public int id_produto_relacionado { get; set; }
+        public string chave_ativacao { get; set; }
+        public int id_produto_kl { get; set;}
+        public string cd_produto_kl { get; set; }
+        public string qtd_licencas { get; set; }
+        public int id_cliente_it { get; set; }
+    }
+
     public class Integracao
     {
         public DataTable RetornaIntegracaoClientes()
@@ -59,6 +73,37 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
+        public DataTable RetornaIntegracaoLogin(string email, string cpf_cnpj)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@email", email),
+                db.retorna_parametros("@cpf_cnpj", cpf_cnpj),
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_login";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RetornaIntegracaoProdutos(string id_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_usuario", id_usuario)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_produtos";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
         public DataTable RetornaIntegracaoRelacaoProdutos(string id_cliente)
         {
             DataBase db = new DataBase();
@@ -74,7 +119,55 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable AtualizaIntegracaoUsuarios(string id_cliente, string email, string cpf, string nome, string cel, bool ativo)
+        public DataTable AtualizaIntegracaoAtivacaoChave(string id_cliente, string id_subscriber, string chave_ativacao, string id_produto_relacionado)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente),
+                db.retorna_parametros("@id_subscriber", id_subscriber),
+                db.retorna_parametros("@chave_ativacao", chave_ativacao),
+                db.retorna_parametros("@id_produto_relacionado", id_produto_relacionado),
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_atualiza_ativacao_chave";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RetornaIntegracaoAtivacaoUsuarios(string id_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_usuario", id_usuario)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_consulta_ativacoes_usuario";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable AtualizarIntegracaoEmailsEnviados(string id_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_usuario", id_usuario)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_consulta_atualiza_emails_enviados";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable AtualizaIntegracaoUsuarios(string id_cliente, string email, string cpf_cnpj, string nome, string cel, bool ativo)
         {
             DataBase db = new DataBase();
 
@@ -82,7 +175,7 @@ namespace KL_API.Models.Integracao
             {
                 db.retorna_parametros("@id_cliente", id_cliente),
                 db.retorna_parametros("@email", email),
-                db.retorna_parametros("@cpf", cpf),
+                db.retorna_parametros("@cpf_cnpj", cpf_cnpj),
                 db.retorna_parametros("@nome", nome),
                 db.retorna_parametros("@cel", cel),
                 db.retorna_parametros("@ativo", ativo.ToString())
@@ -91,6 +184,48 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_integracao_atualiza_usuario";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable AtualizaIntegracaoAtivacao(string id_subscriber, string id_cliente, string id_usuario, string id_produto_relacionado, bool ativo)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_subscriber", id_subscriber),
+                db.retorna_parametros("@id_cliente", id_cliente),
+                db.retorna_parametros("@id_usuario", id_usuario),
+                db.retorna_parametros("@id_produto_relacionado", id_produto_relacionado),
+                db.retorna_parametros("@ativo", ativo.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_atualiza_ativacao";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable InsereIntegracaoLog(string nm_log)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_log", nm_log)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_insere_log";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RelatorioAtivacoes()
+        {
+            DataBase db = new DataBase();
+
+            db.procedure = "p_integracao_relatorio_ativacoes";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 

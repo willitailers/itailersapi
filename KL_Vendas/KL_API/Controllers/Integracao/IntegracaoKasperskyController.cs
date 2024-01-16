@@ -1,6 +1,7 @@
 ﻿using BLL;
 using BLL.KL_API;
 using KL_API.Models;
+using KL_API.Models.Integracao;
 using KL_API.Models.Integracao.Entidades;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,12 @@ using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Policy;
+using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Web.Util;
+using System.Xml.Linq;
 
 namespace KL_API.Controllers.Integracao
 {
@@ -20,92 +24,146 @@ namespace KL_API.Controllers.Integracao
         [HttpPost]
         public HttpResponseMessage Post()
         {
+
+            ResponseIntegracaoKaspersky responseIntegracaoKaspersky = new ResponseIntegracaoKaspersky();
+
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
-            var usuarios_nao_ativados = integracao.RetornaIntegracaoUsuariosNaoAtivados();
 
-            List<t_integracao_usuario> usuarios = new List<t_integracao_usuario>();
+            integracao.InsereIntegracaoLog("Começando Integracao Kaspersky");
 
-            foreach (DataRow row in usuarios_nao_ativados.Rows)
+            DataTable usuarios_nao_ativados = new DataTable();
+            usuarios_nao_ativados = integracao.RetornaIntegracaoUsuariosNaoAtivados();
+
+            while (usuarios_nao_ativados != null && usuarios_nao_ativados.Rows.Count > 0)
             {
-                
-                t_integracao_usuario t_integracao_usuario = new t_integracao_usuario()
-                {
-                     id_cliente = Convert.ToInt32(row["id_cliente"]),
-                     id = Convert.ToInt32(row["id"])
-                };
-
-                usuarios.Add(t_integracao_usuario);
-            }
-
-            foreach (var id_cliente in usuarios.Select(s => s.id_cliente))
-            {
-                ClientInfo client = integracao.RetornaClientInfo(id_cliente.ToString());
-
-                List<object> comandos = new List<object>();
-                List<Controle_Envio> controle = new List<Controle_Envio>();
-                string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
-
-                foreach (var id_usuario in usuarios.Where(w => w.id_cliente == id_cliente).Select(s => s.id))
-                {
-
-                }
-
-                string xmlRequest, xmlContainer;
-
-                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-                container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado,
-                    client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
-
-                //log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.license_ativation);
-                //log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.license_ativation);
-                //log_inserir_provisionamento(client.id_cliente.ToString() + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.license_ativation);
-
                 try
                 {
-                    foreach (object obj in container.Items)
+                    List<UsuariosAtivar> integracao_usuarios = new List<UsuariosAtivar>();
+
+                    foreach (DataRow row in usuarios_nao_ativados.Rows)
                     {
-                        if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                        UsuariosAtivar t_integracao_usuario = new UsuariosAtivar()
                         {
-                            SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
-                            itens = (SubscriptionResponseItemCollection)obj;
+                            id_cliente = Convert.ToInt32(row["id_cliente"]),
+                            cd_produto_kl = row["cd_produto_kl"].ToString(),
+                            chave_ativacao = row["chave_ativacao"].ToString(),
+                            id_produto_kl = Convert.ToInt32(row["id_produto_kl"]),
+                            id_produto_relacionado = Convert.ToInt32(row["id_produto_relacionado"]),
+                            id_subscriber = row["id_subscriber"].ToString(),
+                            id_usuario = Convert.ToInt32(row["id_usuario"]),
+                            qtd_licencas = row["qtd_licencas"].ToString(),
+                            id_cliente_it = Convert.ToInt32(row["id_cliente_it"])
+                        };
 
-                            string id_provisionamento = string.Empty;
+                        integracao_usuarios.Add(t_integracao_usuario);
+                    }
 
-                            foreach (var item in itens.Items)
+                    List<int> clientes = integracao_usuarios.Take(150).Select(s => s.id_cliente_it).ToList();
+
+                    foreach (var id_cliente_it in clientes)
+                    {
+                        int count = 1;
+                        List<object> comandos = new List<object>();
+                        List<Controle_Envio> controle = new List<Controle_Envio>();
+                        string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+                        ClientInfo client = integracao.RetornaClientInfo(id_cliente_it.ToString());
+
+                        foreach (UsuariosAtivar integracao_usuario in integracao_usuarios.Where(w => w.id_cliente_it == id_cliente_it))
+                        {
+                            var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(integracao_usuario.qtd_licencas, integracao_usuario.cd_produto_kl,
+                                DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                                "indefinite",
+                                count.ToString(),
+                                false,
+                                integracao_usuario.id_subscriber);
+
+                            controle.Add(new Controle_Envio()
                             {
-                                if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                                comando = comando_kl.ativar,
+                                UnitId = count,
+                                SubscribeId = integracao_usuario.id_subscriber,
+                                id_produto_kl = integracao_usuario.id_produto_relacionado.ToString(),
+                                id_cliente_usuario = "0",
+                                urn_produto = "",
+                                id_cliente_licenca = id_cliente_it.ToString()
+                            });
+
+                            comandos.Add((object)ativacao_prod);
+                            count++;
+                        }
+
+                        try
+                        {
+                            string xmlRequest, xmlContainer;
+
+                            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+
+                            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado,
+                                client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer));
+                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest));
+                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container));
+
+                            foreach (object obj in container.Items)
+                            {
+                                if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
                                 {
-                                    try
+                                    SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                                    itens = (SubscriptionResponseItemCollection)obj;
+
+                                    string id_provisionamento = string.Empty;
+
+                                    foreach (var item in itens.Items)
                                     {
-                                        var controleEnvio = new Controle_Envio();
+                                        if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                                        {
+                                            try
+                                            {
+                                                var controleEnvio = new Controle_Envio();
 
-                                        var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
+                                                var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
 
-                                        controleEnvio = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+                                                controleEnvio = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                        id_provisionamento = InserirProvisionamento(controleEnvio.id_cliente_licenca, controleEnvio.id_cliente_usuario,
-                                            controleEnvio.SubscribeId, controleEnvio.id_produto_kl, itemDetalhe.ActivationCode, "", "", "", "", true, DateTime.Now);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        //log_inserir_provisionamento("Erro Provisionamento InserirProvisionamento - " + ex.Message, (int)Lista_Erro.license_ativation);
+                                                integracao.AtualizaIntegracaoAtivacaoChave(controleEnvio.id_cliente_licenca, controleEnvio.SubscribeId,
+                                                    itemDetalhe.ActivationCode, controleEnvio.id_produto_kl);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                responseIntegracaoKaspersky.log.Add("Erro AtualizaIntegracaoAtivacaoChave - " + ex.Message);
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            integracao.InsereIntegracaoLog($"Erro: id_cliente: {client.id_cliente} {ex.Message}");
+                        }
                     }
+
+                    usuarios_nao_ativados = integracao.RetornaIntegracaoUsuariosNaoAtivados();
+
+                    Thread.Sleep(120000); // Esperar 2 minutos antes de rodar o proximo pack de 150 clientes.
                 }
                 catch (Exception ex)
                 {
-                    //log_inserir_provisionamento(client.id_cliente.ToString() + " - Erro Provisionamento - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.license_ativation);
+                    integracao.InsereIntegracaoLog("Erro: " + ex.Message);
+                    usuarios_nao_ativados = null;
                 }
             }
 
-            //string uniqueID = integracao.GenerateUniqueId(row["email"].ToString());
+            integracao.InsereIntegracaoLog("Fim Integracao Kaspersky");
 
-            
+            return Request.CreateResponse(HttpStatusCode.OK, responseIntegracaoKaspersky);
+        }
 
-            return Request.CreateResponse(HttpStatusCode.OK, "OK!");
+        public class ResponseIntegracaoKaspersky
+        {
+            public List<string> log { get; set; } = new List<string>();
+            public List<object> comandos { get; set; } = new List<object>();
         }
     }
 }
