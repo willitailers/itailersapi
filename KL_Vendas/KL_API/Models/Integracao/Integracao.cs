@@ -152,6 +152,21 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
+        public DataTable RetornaApiAtivacaoUsuarios(string id_cliente_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_api_retorna_ativacoes_por_usuario";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
         public DataTable AtualizarIntegracaoEmailsEnviados(string id_usuario)
         {
             DataBase db = new DataBase();
@@ -164,6 +179,21 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_integracao_consulta_atualiza_emails_enviados";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable AtualizaApiEmailsEnviados(string id_cliente_usuario)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_usuario", id_cliente_usuario)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_api_atualiza_emails_enviados";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
@@ -226,6 +256,22 @@ namespace KL_API.Models.Integracao
             DataBase db = new DataBase();
 
             db.procedure = "p_integracao_relatorio_ativacoes";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RetornaEmailsEnviarAPI(string id_cliente)
+        {
+            DataBase db = new DataBase();
+
+            db.procedure = "p_api_get_emails_enviar_por_id_cliente";
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente)
+            };
+
+            db.parametros = par;
+            db.procedure = "p_api_get_emails_enviar_por_id_cliente";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
