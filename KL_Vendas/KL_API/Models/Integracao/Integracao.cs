@@ -259,11 +259,11 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable RetornaEmailsEnviarAPI(string id_cliente)
+        public DataTable RetornaEmailsEnviarAPI15(string id_cliente)
         {
             DataBase db = new DataBase();
 
-            db.procedure = "p_api_get_emails_enviar_por_id_cliente";
+            db.procedure = "p_api_get_emails_enviar_por_id_cliente_15";
 
             List<parametros> par = new List<parametros>
             {
@@ -271,7 +271,21 @@ namespace KL_API.Models.Integracao
             };
 
             db.parametros = par;
-            db.procedure = "p_api_get_emails_enviar_por_id_cliente";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RetornaEmailsEnviarAPISemanal(string id_cliente)
+        {
+            DataBase db = new DataBase();
+
+            db.procedure = "p_api_get_emails_enviar_por_id_cliente_semanal";
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente)
+            };
+
+            db.parametros = par;
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 

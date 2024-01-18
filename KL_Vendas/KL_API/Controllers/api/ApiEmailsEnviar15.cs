@@ -9,20 +9,20 @@ using System.Linq;
 
 namespace KL_API.Controllers.api
 {
-    public class Request
+    public class Request15
     {
         public string id_cliente { get; set; }
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class ApiEmailsEnviarController : ApiController
+    public class ApiEmailsEnviar15Controller : ApiController
     {
         [HttpPost]
-        public HttpResponseMessage Post([FromBody] Request obj)
+        public HttpResponseMessage Post([FromBody] Request15 obj)
         {
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
 
-            var emails_enviar = integracao.RetornaEmailsEnviarAPI(obj.id_cliente);
+            var emails_enviar = integracao.RetornaEmailsEnviarAPI15(obj.id_cliente);
 
             List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
 
