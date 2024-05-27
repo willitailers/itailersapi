@@ -40,7 +40,7 @@ namespace KL_API.Models
             List<Controle_Envio> controle = new List<Controle_Envio>();
             var produto_ativado = new List<Produto_Ativacao_Retorno>();
             
-            string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             int count = 1;
             List<string> subscriberIDsLista = new List<string>();

@@ -1125,6 +1125,78 @@ namespace BLL
 
         }
 
+        public SubscriptionResponseContainer GetInfoKaspersky(string _TransactionId, string _SubscriberId, string usernameCertificado, 
+            string passwordCertificado, string thumbprint, out string xmlContainer, out string xmlRequest)
+        {
+            SubscriptionRequestContainer requestContainer = new SubscriptionRequestContainer();
+            requestContainer.Timestamp = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
+            requestContainer.TransactionId = _TransactionId;
+
+            SubscriptionRequestRequest request = new SubscriptionRequestRequest();
+            request.AccessInfo = new AccessInfo() { UserName = usernameCertificado, Password = passwordCertificado };
+
+            List<object> lista = new List<object>();
+            int cont = 1;
+
+            SubscriptionRequestGetInfoItem activateItem = new SubscriptionRequestGetInfoItem();
+
+            activateItem.SubscriberId = _SubscriberId;
+            activateItem.UnitId = cont.ToString();;
+            activateItem.InfoSection = SubscriptionInfoType.SubscriptionSubscriptionUsage;
+            cont++;
+
+            lista.Add(activateItem);
+
+            requestContainer.SubscriptionRequest = lista.ToArray();
+            X509Certificate2 cert;
+            KasperskySubscriptionServicePortTypeClient client = new KasperskySubscriptionServicePortTypeClient();
+
+            if (System.Configuration.ConfigurationManager.AppSettings["ambiente_Producao"].ToString() == "1")
+            {
+                X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+                myX509Store.Open(OpenFlags.ReadOnly);
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == thumbprint);
+                client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
+            }
+
+            else
+            {
+                cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=freenet-itailers-br_20211111.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);
+                client.ClientCredentials.ClientCertificate.Certificate = cert;
+            }
+
+            ((BasicHttpBinding)client.Endpoint.Binding).Security.Mode = BasicHttpSecurityMode.Transport;
+            ((BasicHttpBinding)client.Endpoint.Binding).Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = client.SubscriptionRequest(request.AccessInfo, requestContainer);
+
+            XmlSerializer xsSubmit = new XmlSerializer(typeof(SubscriptionRequestContainer));
+
+            using (var sww = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(sww))
+                {
+                    xsSubmit.Serialize(writer, requestContainer);
+                    xmlContainer = sww.ToString(); // Your XML
+                }
+            }
+
+            XmlSerializer xsSubmitrequest = new XmlSerializer(typeof(SubscriptionRequestRequest));
+
+            using (var swwrequest = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(swwrequest))
+                {
+                    xsSubmitrequest.Serialize(writer, request);
+                    xmlRequest = swwrequest.ToString(); // Your XML
+                }
+            }
+
+            return container;
+
+        }
+
         public SubscriptionResponseContainer CancelamentoNeo(string _TransactionId, string _SubscriberId, out string xmlContainer, out string xmlRequest)
         {
             SubscriptionRequestContainer requestContainer = new SubscriptionRequestContainer();

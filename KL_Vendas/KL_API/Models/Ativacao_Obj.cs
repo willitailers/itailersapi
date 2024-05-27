@@ -2,24 +2,13 @@
 using BLL.KL_API;
 using DAL;
 using KL_API.Controllers.Provisionado;
-using Newtonsoft.Json;
 using Objetos;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Security.Policy;
-using System.Text;
-using System.Web;
-using System.Web.Helpers;
-using System.Web.Util;
-using System.Xml.Linq;
-using WebGrease.Extensions;
 
 namespace KL_API.Models
 {
@@ -29,14 +18,24 @@ namespace KL_API.Models
         license_cancel = 2001,
         usar_add = 2002,
         user_delete = 2003,
-        login = 2004
-
-
+        login = 2004,
+        get_info = 2005
     }
 
     public enum Tipo_autenticacao
     {
         mk = 1
+    }
+    public enum comando_kl
+    {
+        ativar = 1,
+        cancelar_hard = 2,
+        cancelar_soft = 3,
+        link_android = 4,
+        link_windows = 5,
+        link_iphone = 6,
+        link_mac = 7,
+        renovar = 8
     }
 
     public class Ativacao_Envio
@@ -70,6 +69,7 @@ namespace KL_API.Models
         public string UserDocument { set; get; }
         public string UserPlan { set; get; }
         public List<Produto_UserAdd> ProductList { set; get; }
+        public string MonthsToExpire { set; get; }
     }
 
     public class Produto_UserAdd
@@ -162,6 +162,7 @@ namespace KL_API.Models
         public int cod_retorno { get; set; }
         public string msg_retorno { set; get; }
         public bool autenticado { get; set; }
+        public int quantidade { get; set; }
     }
 
     public class AtivacaoRetorno
@@ -308,16 +309,16 @@ namespace KL_API.Models
         public List<Produto_Ativacao_Retorno> produtos { set; get; }
     }
 
-    public enum comando_kl
+    public class GetUsersInfoReturn
     {
-        ativar = 1,
-        cancelar_hard = 2,
-        cancelar_soft = 3,
-        link_android = 4,
-        link_windows = 5,
-        link_iphone = 6,
-        link_mac = 7,
-        renovar = 8
+        public string nm_cliente { get; set; }
+        public string nm_user_id { get; set; }
+        public string nm_email { get; set; }
+        public DateTime dt_start { get; set; }
+        public string nm_user_plan { get; set; }
+        public string cd_ativacao_kl { get; set; }
+        public string dt_ativacao { get; set; }
+        public string dt_cancelamento { get; set; }
     }
 
     public class Ativacao_Controle
@@ -364,7 +365,7 @@ namespace KL_API.Models
 
         public Controllers.Provisionado.Response GerenciaLicenca(Controllers.Provisionado.Request users, ClientInfo clientInfo)
         {
-            string TransactionId = 999 + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             List<object> comandos = new List<object>();
             List<Controle_Envio> controle = new List<Controle_Envio>();
@@ -607,7 +608,7 @@ namespace KL_API.Models
             List<object> comandos = new List<object>();
             int count = 1;
             List<Controle_Envio> controle = new List<Controle_Envio>();
-            string TransactionId = dt_produto_cliente.Rows[0]["nm_transaction_id"].ToString();
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
             // cancela os produtos em lote
             foreach (DataRow dr in dt_produto_cliente.Rows)
             {
@@ -623,7 +624,7 @@ namespace KL_API.Models
             string xmlRequest, xmlContainer;
 
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-            container = new KL_Conexao().Comando_KL(TransactionId + DateTime.Now.ToString("yyyyMMddHHmmssffffff"), client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
 
             log_inserir(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.user_delete);
             log_inserir(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.user_delete);
@@ -719,7 +720,7 @@ namespace KL_API.Models
             {
                 return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Usuario já cadastrado." };
             }
-            string TransactionId = dt_usuario.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             // looping do produto recebido
             var dt_produto_ativacao = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
@@ -743,15 +744,22 @@ namespace KL_API.Models
                 string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
 
                 string endTimeParam = "indefinite";
+                DateTime startTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
 
                 if (!String.IsNullOrEmpty(usuario.EndDate))
                 {
                     endTimeParam = usuario.EndDate;
                 }
 
+                if (!String.IsNullOrEmpty(usuario.MonthsToExpire))
+                {
+                    int.TryParse(usuario.MonthsToExpire, out int monthsToExpire);
+                    endTimeParam = startTime.AddMonths(monthsToExpire).ToLongDateString();
+                }
+
                 var ativacao = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
                                                                     dt_produto[0]["cd_produto_kl"].ToString(),
-                                                                    DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                                                                    startTime,
                                                                     endTimeParam,
                                                                     count.ToString(),
                                                                     false,
@@ -969,7 +977,7 @@ namespace KL_API.Models
             List<object> comandos = new List<object>();
             int count = 1;
             List<Controle_Envio> controle = new List<Controle_Envio>();
-            string TransactionId = dt_produto_cliente.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("HHmmssfff");
+            string TransactionId = DateTime.Now.ToString("HHmmssfff");
             // cancela os produtos em lote
             foreach (DataRow dr in dt_produto_cliente.Rows)
             {
@@ -1125,7 +1133,7 @@ namespace KL_API.Models
             }
 
             string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
-            string TransactionId = dt_usuario.Rows[0]["nm_transaction_id"].ToString() + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             string endTimeParam = "indefinite";
 
@@ -1357,7 +1365,7 @@ namespace KL_API.Models
             List<Controle_Envio> controle = new List<Controle_Envio>();
             var produto_ativado = new List<Produto_Ativacao_Retorno>();
 
-            string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             int count = 1;
             List<string> subscriberIDsLista = new List<string>();
@@ -1540,7 +1548,7 @@ namespace KL_API.Models
             List<Controle_Envio> controle = new List<Controle_Envio>();
             var produto_ativado = new List<Produto_Ativacao_Retorno>();
 
-            string TransactionId = id_cliente + DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             int count = 1;
             List<string> subscriberIDsLista = new List<string>();
@@ -2476,6 +2484,56 @@ namespace KL_API.Models
             return getProdutosRetorno;
         }
 
+        public List<GetUsersInfoReturn> GetUsersInfoReturn(string id_cliente)
+        {
+            List<GetUsersInfoReturn> listReturn = new List<GetUsersInfoReturn>();
+
+            DataBase db = new DataBase();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_get_users_info";
+            DataTable usersInfoTable = Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+
+            foreach (DataRow row in usersInfoTable.Rows)
+            {
+                GetUsersInfoReturn getUsersInfoReturn = new GetUsersInfoReturn()
+                {
+                    cd_ativacao_kl = row["cd_ativacao_kl"].ToString(),
+                    dt_ativacao = row["dt_ativacao"].ToString(),
+                    dt_cancelamento = row["dt_cancelamento"].ToString(),
+                    dt_start = Convert.ToDateTime(row["dt_start"]),
+                    nm_cliente = row["nm_cliente"].ToString(),
+                    nm_email = row["nm_email"].ToString(),
+                    nm_user_id = row["nm_user_id"].ToString(),
+                    nm_user_plan = row["nm_user_plan"].ToString()
+                };
+
+                listReturn.Add(getUsersInfoReturn);
+            }
+
+            return listReturn;
+        }
+
+        public string GetInfoKaspersky(string subscriber_id, string usernameCertificado, string passwordCertificado, 
+            string thumbprint)
+        {
+            // cancela cliente Neo
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = new KL_Conexao().GetInfoKaspersky(DateTime.Now.ToString("yyyyMMddHHmmss"), subscriber_id, 
+                usernameCertificado, passwordCertificado, thumbprint, out string xmlContainer, out string xmlRequest);
+
+            log_inserir("GetInfoContainer subscriber_id= " + subscriber_id + "- " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.get_info);
+            log_inserir("GetInfoRequest subscriber_id= " + subscriber_id + "- " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.get_info);
+            log_inserir("GetInfoResponse subscriber_id= " + subscriber_id + "- " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.get_info);
+
+            return "OK";
+        }
+
         #endregion
 
         #region token
@@ -2509,7 +2567,6 @@ namespace KL_API.Models
                 };
             }
         }
-
 
         #endregion
 

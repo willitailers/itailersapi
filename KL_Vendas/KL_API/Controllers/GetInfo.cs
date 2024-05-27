@@ -12,11 +12,36 @@ namespace KL_API.Controllers
 {
     public class GetInfoController : ApiController
     {
-        [HttpGet]
+        [HttpPost]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public HttpResponseMessage GetInfo()
+        public HttpResponseMessage GetInfo([FromBody] string subscriber_id)
         {
-            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "OK!!!");
+            var client = new ClientInfo();
+            if (Request.Headers.Contains("kl-token"))
+            {
+                string token = Request.Headers.GetValues("kl-token").First();
+                client = new Ativacao_Controle().ValidaToken(token);
+                if (client.valido)
+                {
+                    if (string.IsNullOrEmpty(subscriber_id))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.NotAcceptable, "Código do usuário é obrigatório");
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotAcceptable, "Token Inválido");
+                }
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.NotAcceptable, "Token Inválido");
+            }
+
+            var retorno = new Ativacao_Controle().GetInfoKaspersky(subscriber_id, client.nm_usuario_certificado, 
+                client.nm_senha_certificado, client.nm_thumbprint);
+
+            return Request.CreateResponse(HttpStatusCode.OK, retorno);
         }
     }
 }

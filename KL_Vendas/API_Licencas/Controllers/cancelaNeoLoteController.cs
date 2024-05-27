@@ -29,11 +29,9 @@ namespace API_Licencas.Controllers
             CancelaSubscriberIdLote login = new CancelaSubscriberIdLote();
             login = (CancelaSubscriberIdLote)obj;
 
-            var usuario = new KL_Neo().CancelamentoNeoLote(login.subscriber_id.ToArray());
+            new KL_Neo().CancelamentoNeoLote(login.subscriber_id.ToArray());
 
-            // var usuario = new Usuario_Neo();
-
-            return Request.CreateResponse(HttpStatusCode.OK, usuario);
+            return Request.CreateResponse(HttpStatusCode.OK, "OK!!!");
         }
 
         // PUT: api/cancelaNeo/5

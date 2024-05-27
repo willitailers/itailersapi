@@ -804,24 +804,35 @@ namespace API_Licencas.Models
             return cliente_neo(subscriber_id);
         }
 
-        public Usuario_Neo CancelamentoNeoLote(string[] subscriber_id_lote)
+        public void CancelamentoNeoLote(string[] subscriber_id_lote)
         {
-            string subscriber_id = string.Empty;
-            if (subscriber_id_lote.Count() > 0)
+            string subscriber_id_lote_join = string.Join(",", subscriber_id_lote);
+
+            try
             {
-                subscriber_id = subscriber_id_lote[0].Substring(0, subscriber_id_lote[0].IndexOf("-"));
+                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+                container = new KL_Conexao().CancelamentoNeoLote(DateTime.Now.ToString("yyyyMMddHHmmss"), subscriber_id_lote, out string xmlContainer, out string xmlRequest);
+
+                log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.cancelamento_neo_lote);
+                log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.cancelamento_neo_lote);
+                log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.cancelamento_neo_lote);
+
+                try
+                {
+                    foreach (var subscriber_id in subscriber_id_lote)
+                    {
+                        atualizar_dt_cancelamento_licenca(subscriber_id);
+                    }
+                }
+                catch (Exception)
+                {
+                    log_inserir("Erro CancelamentoNeoLote atualizar_dt_cancelamento_licenca subscriber_id= " + subscriber_id_lote_join, (int)Lista_Erro.cancelamento_neo_lote);
+                }
             }
-
-            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-            container = new KL_Conexao().CancelamentoNeoLote(subscriber_id + DateTime.Now.ToString("yyyyMMddHHmmss"), subscriber_id_lote, out string xmlContainer, out string xmlRequest);
-
-            string subscriber_id_lote_join = string.Join(" ", subscriber_id_lote);
-
-            log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.cancelamento_neo_lote);
-            log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.cancelamento_neo_lote);
-            log_inserir("CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.cancelamento_neo_lote);
-
-            return cliente_neo(subscriber_id);
+            catch (Exception)
+            {
+                log_inserir("Erro CancelamentoNeoLote subscriber_id= " + subscriber_id_lote_join, (int)Lista_Erro.cancelamento_neo_lote);
+            }
         }
 
         public string DadosNeo(string[] subscriber_id)
@@ -1213,6 +1224,22 @@ namespace API_Licencas.Models
         }
 
         #endregion inserir
+
+        public void atualizar_dt_cancelamento_licenca(string subscribe_ids)
+        {
+
+            DataBase db = new DataBase();
+            db.procedure = "p_atualizar_dt_cancelamento_licenca";
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@nm_subrscribe_kl", subscribe_ids)
+            };
+
+            db.parametros = par;
+
+            Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_AV);
+        }
 
         public string retorna_data(DateTime data)
         {

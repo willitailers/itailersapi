@@ -260,6 +260,7 @@
     <Compile Include="Controllers\api\ApiEmailsEnviar15.cs" />
     <Compile Include="Controllers\api\ApiEmailsEnviarSemanal.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
+    <Compile Include="Controllers\GetUsersInfo.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoKasperskyController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoRelatorioAtivacoesController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoProdutosController.cs" />
