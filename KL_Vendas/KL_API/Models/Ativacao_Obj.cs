@@ -321,6 +321,13 @@ namespace KL_API.Models
         public string dt_cancelamento { get; set; }
     }
 
+    public class ProdutosCliente
+    {
+        public string NomeProduto { get; set; }
+        public string Urn { get; set; }
+        public string QuantidadeLicencas { get; set; }
+    }
+
     public class Ativacao_Controle
     {
         LoginInterno loginInterno = new LoginInterno()
@@ -2532,6 +2539,20 @@ namespace KL_API.Models
             log_inserir("GetInfoResponse subscriber_id= " + subscriber_id + "- " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.get_info);
 
             return "OK";
+        }
+
+        public DataTable ConsultaProdutosCliente(int id_cliente)
+        {
+            DataBase db = new DataBase();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente.ToString())
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_consulta_produtos_cliente";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
         #endregion

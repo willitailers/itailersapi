@@ -42,7 +42,7 @@ namespace API_Licencas.Models
                 var usuario_neo = new Usuario_Neo();
                 usuario_neo.produto = new List<Produto_Neo>();
                 string id_cliente = "";
-                bool novo = false;
+                bool cliente_novo = false;
                 var response = client.PostAsync(@ConfigurationManager.AppSettings["link_login_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(login), Encoding.UTF8, "application/json")).Result;
 
                 string hashUsername = new Helper().GetHash(login.username, 15);
@@ -68,7 +68,7 @@ namespace API_Licencas.Models
                                 var novo_cliente = inserir_cliente(response_neo.subscriber_id, nm_itailers_kl);
 
                                 id_cliente = novo_cliente.Rows[0]["id_cliente_neo"].ToString();
-                                novo = true;
+                                cliente_novo = true;
                             }
                             else
                             {
@@ -76,7 +76,7 @@ namespace API_Licencas.Models
                             }
 
                             // consulta produtos
-                            if (novo)
+                            if (cliente_novo)
                             {
                                 var produto = consulta_produto("0");
 
@@ -207,12 +207,6 @@ namespace API_Licencas.Models
                                         if (obj_response_produto_auth.access)
                                         {
                                             usuario_neo.dv_ativo = 2;
-                                            // se ainda tiver, pega o link de download
-                                            //string link = @ConfigurationManager.AppSettings["link_download"] + produto_ativado.Rows[0]["activation_code"].ToString();
-                                            //string link_android = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "0" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.Android);
-                                            //string link_win = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "1" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.Windows);
-                                            //string link_mac = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "2" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.macOS);
-                                            //string link_ios = link_download_neo(nm_subrscribe_kl, usuario_neo.nm_subscribe_id + "3" + DateTime.Now.ToString("yyyyMMddHHmmss"), PlatformEnum.iOS);
 
                                             if (produto.Rows[0]["id_combo"].ToString() == "0")
                                             {
@@ -221,10 +215,6 @@ namespace API_Licencas.Models
                                                     id_produto_kl = int.Parse(produto.Rows[0]["id_produto_kl"].ToString()),
                                                     id_status = "2",
                                                     nm_produto_kl = produto.Rows[0]["nm_produto_kl"].ToString(),
-                                                    //nm_link_dowload_android = @link_android,
-                                                    //nm_link_dowload_windows = @link_win,
-                                                    //nm_link_dowload_mac = @link_mac,
-                                                    //nm_link_dowload_ios = @link_ios,
                                                     activation_code = produto_ativado.Rows[0]["activation_code"].ToString(),
                                                     dt_ativacao = retorna_data(DateTime.Parse(produto_ativado.Rows[0]["dt_ativacao"].ToString())),
                                                     link_image = "/images/" + produto.Rows[0]["nm_imagem"].ToString(),
@@ -256,10 +246,6 @@ namespace API_Licencas.Models
                                                         id_produto = int.Parse(dr["id_produto"].ToString()),
                                                         id_status = "2",
                                                         nm_produto_kl = dr["nm_produto"].ToString(),
-                                                        //nm_link_dowload_android = links.nm_link_dowload_android,
-                                                        //nm_link_dowload_windows = links.nm_link_dowload_windows,
-                                                        //nm_link_dowload_mac = links.nm_link_dowload_mac,
-                                                        //nm_link_dowload_ios = links.nm_link_dowload_ios,
                                                         activation_code = produto_ativado.Rows[0]["activation_code"].ToString(),
                                                         dt_ativacao = retorna_data(DateTime.Parse(produto_ativado.Rows[0]["dt_ativacao"].ToString())),
                                                         resource_id = dr["nm_urn"].ToString(),
@@ -461,7 +447,7 @@ namespace API_Licencas.Models
                     foreach (DataRow dr in produtos_Combo.Rows)
                     {
                         produtos.Add(new Neo_Produto_Combo() { _ProductId = dr["cd_produto"].ToString(),
-                            _SubscriberId = ativacao.subscriber_id + "-" + dr["id_produto"].ToString(),
+                            _SubscriberId = ativacao.subscriber_id + "-" + dr["id_produto"].ToString() + "-" + UnitId,
                             qtd_licencas = dr["qtd_licencas"].ToString(),
                             UnitId = UnitId.ToString(),
                             id_produto = dr["id_produto"].ToString(),
