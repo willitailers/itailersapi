@@ -36,16 +36,14 @@ namespace KL_API.Controllers.Integracao
             foreach (DataRow row_relatorio_ativacoes in relatorio_ativacoes.Rows)
             {
                 dados_relatorio_ativacoes += $"<tr>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["cd_produto"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["nome_produto"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["qtd_licencas"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["chave_ativacao"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["cliente"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["email"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["nome"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["cel"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["ativo"]}</td>" +
-                    $"<td style='border: 1px solid black' >{row_relatorio_ativacoes["email_enviado"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Conta"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Cliente"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Produto"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Codigo Produto"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Urn Produto"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Qtd Licencas"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Chave Ativacao"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Data Ativacao"]}</td>" +
                     $"</tr>";
             }
 

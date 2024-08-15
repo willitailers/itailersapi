@@ -263,6 +263,7 @@
     <Compile Include="Controllers\GetProdutosClienteController.cs" />
     <Compile Include="Controllers\GetUsersInfo.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoKasperskyController.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoRelatorioAtivacoes2Controller.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoRelatorioAtivacoesController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoProdutosController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoLoginController.cs" />
