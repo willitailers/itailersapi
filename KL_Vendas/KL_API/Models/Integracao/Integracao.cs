@@ -331,5 +331,20 @@ namespace KL_API.Models.Integracao
                 return hashString.Substring(0, Math.Min(hashString.Length, 30));
             }
         }
+
+        public DataTable RetornaProdutoPeloUrn(string urn)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@urn", urn)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_retorna_produtos_pelo_urn";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
     }
 }
