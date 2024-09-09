@@ -41,7 +41,7 @@ namespace KL_API.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Erro ao realizar o processo</response>
         [HttpPost]
-        public HttpResponseMessage Post([FromBody]UserAdd ativacao)
+        public HttpResponseMessage Post([FromBody]Activation ativacao)
         {
             string id_cliente_usuario = "";
             try
@@ -58,16 +58,10 @@ namespace KL_API.Controllers
                             return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Campo UserID é obrigatório" });
                         }
 
-                        if (ativacao.StartDate == DateTime.MinValue)
-                        {
-                            return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Campo de data StartDate é obrigatório" });
-                        }
-
-                        if (ativacao.ProductList == null || ativacao.ProductList.Count <= 0)
+                        if (ativacao.Products == null || ativacao.Products.Count <= 0)
                         {
                             return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "É obrigatório o envio de no mínimo um produto para ativação." });
                         }
-
                     }
                     else 
                     {
@@ -79,8 +73,16 @@ namespace KL_API.Controllers
                     return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
                 }
 
+                UserAdd userAdd = new UserAdd()
+                {
+                    UserID = ativacao.UserID,
+                    ProductList = ativacao.Products,
+                    StartDate = DateTime.Now,
+                    Email = ativacao.Email
+                };
+
                 // passou na validação
-                var dt_usuario = new Ativacao_Controle().addUser(ativacao, client);
+                var dt_usuario = new Ativacao_Controle().addUser(userAdd, client);
 
                 if (dt_usuario.Rows.Count <= 0)
                 {
@@ -91,7 +93,7 @@ namespace KL_API.Controllers
                     id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
                 }
 
-                var retorno = new Ativacao_Controle().addUserActivate(ativacao, client, dt_usuario);
+                var retorno = new Ativacao_Controle().LicenseActivation(ativacao, client, dt_usuario);
 
                 if (retorno.cod_retorno == 0)
                     return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.OK, retorno);

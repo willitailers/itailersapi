@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Web.UI.WebControls;
@@ -76,10 +77,17 @@ namespace KL_API.Models
         public string MonthsToExpire { set; get; }
     }
 
+    public class Activation
+    {
+        public string UserID { set; get; }
+        public string Email { set; get; }
+        public List<Produto_UserAdd> Products { get; set; }
+    }
+
     public class Produto_UserAdd
     {
         public string ProductID { set; get; }
-        public int Qtd { set; get; }
+        public int Qtd { get; set; }
     }
 
     public class UserAdd_Retorno
@@ -128,6 +136,7 @@ namespace KL_API.Models
         public DateTime? data_ativacao { get; set; }
         public string imagem_produto { get; set; }
         public string descricao { get; set; }
+        public int index { get; set; }
     }
 
     public class LicenseCancel_Retorno
@@ -811,11 +820,6 @@ namespace KL_API.Models
 
         }
 
-        public void Activation(UserAdd usuario, ClientInfo client)
-        {
-
-        }
-
         public DataTable addUser(UserAdd usuario, ClientInfo client)
         {
             // Cadastra usuario
@@ -961,12 +965,15 @@ namespace KL_API.Models
                         SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
                         itens = (SubscriptionResponseItemCollection)obj;
 
+                        int index_ativacao = 0;
+                        int index_links = 0;
                         foreach (var item in itens.Items)
                         {
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
                             {
                                 var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
                                 // cancelou corretamente a licença
+
                                 var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
                                 string id_cliente_licenca = ClienteLicencaInserir("0",
@@ -982,7 +989,8 @@ namespace KL_API.Models
                                     "",
                                     2);
 
-                                var produto = produto_ativado.Where(x => x.urn_produto == licenca.urn_produto).FirstOrDefault();
+                                var produto = produto_ativado.Where(w => w.urn_produto == licenca.urn_produto).First();
+                                index_ativacao++;
 
                                 produto.ativado = true;
                                 produto.chave_ativacao = itemDetalhe.ActivationCode;
@@ -994,10 +1002,9 @@ namespace KL_API.Models
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionGetDownloadLinks))
                             {
                                 var itemDetalhe = (SubscriptionResponseItemCollectionGetDownloadLinks)item;
-                                // cancelou corretamente a licença
-                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                var produto = produto_ativado.Where(x => x.urn_produto == licenca.urn_produto).FirstOrDefault();
+                                var produto = produto_ativado[index_links];
+                                index_links++;
 
                                 switch (itemDetalhe.Platform)
                                 {
@@ -1018,8 +1025,6 @@ namespace KL_API.Models
                                         break;
 
                                 }
-
-                                //log_inserir(client.id_cliente.ToString() + " - Licença ativada (novo usuario) - " + licenca.id, (int)Lista_Erro.usar_add);
                             }
                         }
 
@@ -1075,6 +1080,145 @@ namespace KL_API.Models
                                    "",
                                    2);
             }
+
+            return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "", produtos = produto_ativado };
+        }
+
+        public UserAdd_Retorno LicenseActivation(Activation activation, ClientInfo client, DataTable dt_usuario)
+        {
+            List<Produto_Ativacao_Retorno> produtos = new List<Produto_Ativacao_Retorno>();
+
+            string id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
+
+            bool usuarioExiste  = false;
+            if (id_cliente_usuario == "-1")
+            {
+                usuarioExiste = true;
+                //return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Usuario já cadastrado." };
+            }
+
+            var dt_produtos = seleciona_produto_cliente(client.id_cliente, client.id_cliente_certificado);
+
+            List<object> comandos = new List<object>();
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            var produto_ativado = new List<Produto_Ativacao_Retorno>();
+            int count_comandos = 1;
+            foreach (var product in activation.Products)
+            {
+                for (int i = 0; i < product.Qtd; i++)
+                {
+                    var dt_produto = dt_produtos.Select("nm_urn = '" + product.ProductID + "'");
+                    if (dt_produto == null || dt_produto.Length == 0)
+                    {
+                        // se nao achou, deleta o usuaro
+                        ClienteDeletar(id_cliente_usuario, 1);
+                        return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Produto " + product.ProductID + " não encontrado." };
+                    }
+
+                    string endTimeParam = "indefinite";
+                    DateTime startTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
+
+                    string subscription_id = Guid.NewGuid().ToString("N");
+
+                    var ativacao = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
+                                                                    dt_produto[0]["cd_produto_kl"].ToString(),
+                                                                    startTime,
+                                                                    endTimeParam,
+                                                                    count_comandos.ToString(),
+                                                                    false,
+                                                                    subscription_id);
+                    controle.Add(new Controle_Envio()
+                    {
+                        comando = comando_kl.ativar,
+                        UnitId = count_comandos,
+                        SubscribeId = subscription_id,
+                        id_produto_kl = dt_produto[0]["id_produto_kl"].ToString(),
+                        id_cliente_usuario = id_cliente_usuario,
+                        urn_produto = product.ProductID
+                    });
+
+                    comandos.Add((object)ativacao);
+                    count_comandos++;
+                }
+            }
+
+            string xmlRequest, xmlContainer;
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint,
+                comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.usar_add);
+
+            try
+            {
+                foreach (object obj in container.Items)
+                {
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                            {
+                                var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
+                                // cancelou corretamente a licença
+
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                string id_cliente_licenca = ClienteLicencaInserir("0",
+                                    licenca.id_cliente_usuario,
+                                    licenca.id_produto_kl,
+                                    itemDetalhe.ActivationCode,
+                                    licenca.SubscribeId,
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    "",
+                                    2);
+
+                                log_inserir(client.id_cliente.ToString() + " - Licença ativada (novo usuario) - " + id_cliente_licenca, (int)Lista_Erro.usar_add);
+                            }
+                        }
+                    }
+                    else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    {
+                        SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+
+                        itemErro = (SubscriptionResponseErrorCollection)obj;
+
+                        foreach (var erro in itemErro.Items)
+                        {
+                            var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
+                            log_inserir(client.id_cliente.ToString() + " - ERRO " + licenca.comando.ToString() + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.usar_add);
+                        }
+                    }
+                    else if (obj.GetType() == typeof(TransactionErrorType))
+                    {
+                        TransactionErrorType itemErro = new TransactionErrorType();
+
+                        itemErro = (TransactionErrorType)obj;
+                        log_inserir(client.id_cliente.ToString() + " - ERRO ao ativar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.usar_add);
+                        ClienteDeletar(id_cliente_usuario, 1);
+                        return new UserAdd_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de ativacao." };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log_inserir(client.id_cliente.ToString() + " - ERRO ao ativar - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.usar_add);
+                return new UserAdd_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro ao cadastrar o usuario." };
+            }
+
+            log_inserir(client.id_cliente.ToString() + "- ATIVOU " + Newtonsoft.Json.JsonConvert.SerializeObject(produto_ativado), (int)Lista_Erro.usar_add);
 
             return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "", produtos = produto_ativado };
         }
@@ -1168,7 +1312,7 @@ namespace KL_API.Models
                 }
             }
             catch (Exception ex)
-            {
+            { 
                 log_inserir(client.id_cliente.ToString() + " - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.license_cancel);
                 return new LicenseCancel_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
             }
