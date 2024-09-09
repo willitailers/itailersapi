@@ -2,13 +2,17 @@
 using BLL.KL_API;
 using DAL;
 using KL_API.Controllers.Provisionado;
+using KL_API.Models.Integracao.cliente;
 using Objetos;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Net.Http;
+using System.Web.UI.WebControls;
+using System.Web.Util;
 
 namespace KL_API.Models
 {
@@ -75,6 +79,7 @@ namespace KL_API.Models
     public class Produto_UserAdd
     {
         public string ProductID { set; get; }
+        public int Qtd { set; get; }
     }
 
     public class UserAdd_Retorno
@@ -704,6 +709,108 @@ namespace KL_API.Models
 
         }
 
+        public UserDelete_Retorno deleteUserSoft(UserDelete usuario, ClientInfo client)
+        {
+            // consulta de cliente existe e/ou o produto que ele te esta ativado
+            var dt_produto_cliente = seleciona_licenca_produto(client.id_cliente, usuario.UserID, "all");
+
+            if (dt_produto_cliente.Rows.Count == 0)
+            {
+                return new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Usuario não encontrado ou sem licenca ativa." };
+            }
+
+            List<object> comandos = new List<object>();
+            int count = 1;
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            // cancela os produtos em lote
+            foreach (DataRow dr in dt_produto_cliente.Rows)
+            {
+                var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_soft(dr["nm_subscriber_id"].ToString(),
+                                        DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                                        count.ToString());
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_soft, UnitId = count, SubscribeId = dr["nm_subscriber_id"].ToString(), id_cliente_licenca = dr["id_cliente_licenca"].ToString(), id_cliente_usuario = dr["id_cliente_usuario"].ToString() });
+                comandos.Add((object)cancelamento_licenca);
+                count++;
+            }
+
+            string xmlRequest, xmlContainer;
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+            log_inserir(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.user_delete);
+
+            try
+            {
+                foreach (object obj in container.Items)
+                {
+
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        // faz um looping nas solicitações
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(BaseResponseItemType))
+                            {
+                                var itemDetalhe = (BaseResponseItemType)item;
+                                // cancelou corretamente a licença
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                cancela_licenca_produto(licenca.id_cliente_licenca);
+
+                                log_inserir(client.id_cliente.ToString() + " - Licença cancelar soft- " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
+                            }
+                        }
+
+                    }
+                    else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    {
+                        SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+
+                        itemErro = (SubscriptionResponseErrorCollection)obj;
+
+                        foreach (var erro in itemErro.Items)
+                        {
+                            var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
+                            log_inserir(client.id_cliente.ToString() + " - ERRO ao cancelar Licença soft- " + licenca.id_cliente_licenca + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.user_delete);
+                        }
+
+                        return new UserDelete_Retorno() { cod_retorno = -2, msg_retorno = "Não foi possivel cancelar todas as licenças." };
+                    }
+                    else if (obj.GetType() == typeof(TransactionErrorType))
+                    {
+                        TransactionErrorType itemErro = new TransactionErrorType();
+
+                        itemErro = (TransactionErrorType)obj;
+                        log_inserir(client.id_cliente.ToString() + " - ERRO ao cancelar Licença soft- " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.license_cancel);
+
+                        return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                log_inserir(client.id_cliente.ToString() + " - ERRO ao cancelar Licença soft- " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.user_delete);
+                return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+            }
+
+            // Deleta usuario 
+            ClienteDeletar(dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString());
+            log_inserir(client.id_cliente.ToString() + " - USUARIO EXCLUIDO - " + controle[0].id_cliente_usuario.ToString(), (int)Lista_Erro.user_delete);
+
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "" };
+
+        }
+
         public void Activation(UserAdd usuario, ClientInfo client)
         {
 
@@ -727,6 +834,7 @@ namespace KL_API.Models
             {
                 return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Usuario já cadastrado." };
             }
+
             string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             // looping do produto recebido
@@ -748,8 +856,6 @@ namespace KL_API.Models
                     return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Produto " + produto.ProductID + " não encontrado." };
                 }
 
-                string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
-
                 string endTimeParam = "indefinite";
                 DateTime startTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
 
@@ -763,6 +869,8 @@ namespace KL_API.Models
                     int.TryParse(usuario.MonthsToExpire, out int monthsToExpire);
                     endTimeParam = startTime.AddMonths(monthsToExpire).ToLongDateString();
                 }
+
+                string subscription_id = Guid.NewGuid().ToString("N");
 
                 var ativacao = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
                                                                     dt_produto[0]["cd_produto_kl"].ToString(),
@@ -836,7 +944,8 @@ namespace KL_API.Models
             string xmlRequest, xmlContainer;
 
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, 
+                comandos.ToArray(), out xmlContainer, out xmlRequest);
 
             log_inserir(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.usar_add);
             log_inserir(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.usar_add);
@@ -846,7 +955,6 @@ namespace KL_API.Models
             {
                 foreach (object obj in container.Items)
                 {
-
                     if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
                     {
                         // faz um looping nas solicitações
