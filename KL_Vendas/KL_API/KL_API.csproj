@@ -270,6 +270,11 @@
     <Compile Include="Controllers\Integracao\IntegracaoLoginController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoEmailsController.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoController.cs" />
+    <Compile Include="Controllers\New\ReActivationController.cs" />
+    <Compile Include="Controllers\New\ActivationController.cs" />
+    <Compile Include="Controllers\New\GetUsers.cs" />
+    <Compile Include="Controllers\New\SoftCancelController.cs" />
+    <Compile Include="Controllers\New\HardCancelController.cs" />
     <Compile Include="Controllers\Provisionado\GerenciaLicencaController.cs" />
     <Compile Include="Controllers\SolicitarLicencas.cs" />
     <Compile Include="Controllers\GetProdutos.cs" />
@@ -278,7 +283,6 @@
     <Compile Include="Controllers\GetProviderInfo.cs" />
     <Compile Include="Controllers\LicenseActivationController.cs" />
     <Compile Include="Controllers\LicenseCancelController.cs" />
-    <Compile Include="Controllers\ActivationController.cs" />
     <Compile Include="Controllers\GetInfo.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\UserAddController.cs" />

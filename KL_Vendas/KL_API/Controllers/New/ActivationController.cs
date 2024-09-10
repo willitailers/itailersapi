@@ -1,49 +1,16 @@
 ﻿using KL_API.Models;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Description;
 
-namespace KL_API.Controllers
+namespace KL_API.Controllers.New
 {
     public class ActivationController : ApiController
     {
-        //GET: api/Activation
-        //public IEnumerable<string> Get()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
-
-        // GET: api/Activation/5
-        /// <summary>
-        /// Ativação de licença KL
-        /// </summary>
-        /// <param name="ativacao">Objeto de ativação KL</param>
-        /// <response code="200">OK</response>
-        /// <response code="406">Informações incorretas</response>
-        /// <response code="400">Bad Request</response>
-        /// <response code="500">Erro ao realizar o processo</response>
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
-
-        // POST: api/Activation
-        /// <summary>
-        /// Inclusão e usuario e ativação da licenca
-        /// </summary>
-        /// <param name="ativacao">Objeto de ativação KL</param>
-        /// <response code="200">OK</response>
-        /// <response code="406">Informações incorretas</response>
-        /// <response code="400">Bad Request</response>
-        /// <response code="500">Erro ao realizar o processo</response>
         [HttpPost]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public HttpResponseMessage Post([FromBody]UserAdd ativacao)
+        public HttpResponseMessage Post([FromBody]Activation activation)
         {
             string id_cliente_usuario = "";
             try
@@ -55,21 +22,15 @@ namespace KL_API.Controllers
                     client = new Ativacao_Controle().ValidaToken(token);
                     if (client.valido)
                     {
-                        if (string.IsNullOrEmpty(ativacao.UserID))
+                        if (string.IsNullOrEmpty(activation.UserID))
                         {
                             return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Campo UserID é obrigatório" });
                         }
 
-                        if (ativacao.StartDate == DateTime.MinValue)
-                        {
-                            return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Campo de data StartDate é obrigatório" });
-                        }
-
-                        if (ativacao.ProductList == null || ativacao.ProductList.Count <= 0)
+                        if (activation.Products == null || activation.Products.Count <= 0)
                         {
                             return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "É obrigatório o envio de no mínimo um produto para ativação." });
                         }
-
                     }
                     else 
                     {
@@ -81,8 +42,16 @@ namespace KL_API.Controllers
                     return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
                 }
 
+                UserAdd userAdd = new UserAdd()
+                {
+                    Email = activation.Email,
+                    ProductList = activation.Products,
+                    UserID = activation.UserID,
+                    StartDate = DateTime.Now
+                };
+
                 // passou na validação
-                var dt_usuario = new Ativacao_Controle().addUser(ativacao, client);
+                var dt_usuario = new Ativacao_Controle().addUser(userAdd, client);
 
                 if (dt_usuario.Rows.Count <= 0)
                 {
@@ -93,7 +62,7 @@ namespace KL_API.Controllers
                     id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
                 }
 
-                var retorno = new Ativacao_Controle().addUserActivate(ativacao, client, dt_usuario);
+                var retorno = new Ativacao_Controle().LicenseActivation(activation, client, dt_usuario);
 
                 if (retorno.cod_retorno == 0)
                     return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.OK, retorno);
