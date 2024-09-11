@@ -24,22 +24,22 @@ namespace KL_API.Controllers.New
                     {
                         if (string.IsNullOrEmpty(activation.UserID))
                         {
-                            return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Campo UserID é obrigatório" });
+                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
                         }
 
                         if (activation.Products == null || activation.Products.Count <= 0)
                         {
-                            return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "É obrigatório o envio de no mínimo um produto para ativação." });
+                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
                         }
                     }
                     else 
                     {
-                        return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                        return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
                     }
                 }
                 else 
                 {
-                    return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
                 }
 
                 UserAdd userAdd = new UserAdd()
@@ -55,7 +55,7 @@ namespace KL_API.Controllers.New
 
                 if (dt_usuario.Rows.Count <= 0)
                 {
-                    return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.BadRequest, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Solicitação não pode ser processada" });
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
                 }
                 else
                 {
@@ -65,29 +65,19 @@ namespace KL_API.Controllers.New
                 var retorno = new Ativacao_Controle().LicenseActivation(activation, client, dt_usuario);
 
                 if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.OK, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.OK, "Usuário Ativado!");
                 else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.BadRequest, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
                 else
-                    return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.NotAcceptable, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
             }
             catch (Exception ex)
             {
                 if (id_cliente_usuario != "")
                     new Ativacao_Controle().ClienteDeletar(id_cliente_usuario, 1);
                 new Ativacao_Controle().log_inserir("Erro ativacao " + ex.Message, (int)Lista_Erro.usar_add);
-                return Request.CreateResponse<UserAdd_Retorno>(HttpStatusCode.BadRequest, new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Solicitação não pode ser processada" });
+                return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
             }
         }
-
-        /* PUT: api/UserAdd/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE: api/UserAdd/5
-        public void Delete(int id)
-        {
-        }*/
     }
 }

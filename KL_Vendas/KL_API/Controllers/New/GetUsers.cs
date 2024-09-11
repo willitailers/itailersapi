@@ -12,7 +12,7 @@ namespace KL_API.Controllers.New
     {
         [HttpGet]
         [ApiExplorerSettings(IgnoreApi = false)]
-        public HttpResponseMessage GetUsers()
+        public HttpResponseMessage GetUsers([FromBody] User user)
         {
             var client = new ClientInfo();
             if (Request.Headers.Contains("kl-token"))
@@ -31,7 +31,7 @@ namespace KL_API.Controllers.New
             }
 
             Ativacao_Controle ativacao_Controle = new Ativacao_Controle();
-            List<GetUsersReturn> getUsersReturn = ativacao_Controle.GetUsersReturn(client.id_cliente.ToString());
+            List<GetUsersReturn> getUsersReturn = ativacao_Controle.GetUsersReturn(client.id_cliente.ToString(), user.UserID);
 
             return Request.CreateResponse(HttpStatusCode.OK, getUsersReturn);
         }

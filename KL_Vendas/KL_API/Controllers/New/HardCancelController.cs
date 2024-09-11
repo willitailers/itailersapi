@@ -34,33 +34,33 @@ namespace KL_API.Controllers.New
                     {
                         if(string.IsNullOrEmpty(userDelete.UserID))
                         {
-                            return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.NotAcceptable, new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Código UserID é obrigatório" });
+                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Código UserID é obrigatório");
                         }
                     }
                     else
                     {
-                        return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.NotAcceptable, new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                        return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido");
                     }
                 }
                 else
                 {
-                    return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.NotAcceptable, new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Token Inválido" });
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido");
                 }
 
                 // Passou da validação
                 var retorno = new Ativacao_Controle().deleteUser(userDelete, client);
 
                 if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.OK, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.OK, "Licença Cancelada!");
                 else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.BadRequest, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
                 else
-                    return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.NotAcceptable, retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
             }
             catch (Exception ex)
             {
                 new Ativacao_Controle().log_inserir("HARD CANCEL - ERRO " + ex.Message, (int)Lista_Erro.user_delete);
-                return Request.CreateResponse<UserDelete_Retorno>(HttpStatusCode.BadRequest, new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Solicitação não pode ser processada" });
+                return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
             }
         }
 

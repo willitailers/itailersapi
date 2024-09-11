@@ -89,6 +89,11 @@ namespace KL_API.Models
         public string UserID { set; get; }
     }
 
+    public class User
+    {
+        public string UserID { set; get; }
+    }
+
     public class Produto_UserAdd
     {
         public string ProductID { set; get; }
@@ -663,9 +668,9 @@ namespace KL_API.Models
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
             container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
 
-            log_inserir(client.id_cliente.ToString() + "-SOFT CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.user_delete);
-            log_inserir(client.id_cliente.ToString() + "-SOFT CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.user_delete);
-            log_inserir(client.id_cliente.ToString() + "-SOFT CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.user_delete);
 
             try
             {
@@ -688,7 +693,7 @@ namespace KL_API.Models
 
                                 cancela_licenca_produto(licenca.id_cliente_licenca);
 
-                                log_inserir(client.id_cliente.ToString() + "SOFT CANCEL - Licença cancelar - " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
+                                log_inserir(client.id_cliente.ToString() + "HARD CANCEL - Licença cancelar - " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
                             }
                         }
 
@@ -702,7 +707,7 @@ namespace KL_API.Models
                         foreach (var erro in itemErro.Items)
                         {
                             var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
-                            log_inserir(client.id_cliente.ToString() + "SOFT CANCEL - ERRO ao cancelar Licença - " + licenca.id_cliente_licenca + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.user_delete);
+                            log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + licenca.id_cliente_licenca + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.user_delete);
                         }
 
                         return new UserDelete_Retorno() { cod_retorno = -2, msg_retorno = "Não foi possivel cancelar todas as licenças." };
@@ -712,7 +717,7 @@ namespace KL_API.Models
                         TransactionErrorType itemErro = new TransactionErrorType();
 
                         itemErro = (TransactionErrorType)obj;
-                        log_inserir(client.id_cliente.ToString() + "SOFT CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.license_cancel);
+                        log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.license_cancel);
 
                         return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
 
@@ -722,15 +727,15 @@ namespace KL_API.Models
             }
             catch (Exception ex)
             {
-                log_inserir(client.id_cliente.ToString() + "SOFT CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.user_delete);
+                log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.user_delete);
                 return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
             }
 
             // Deleta usuario 
             ClienteDeletar(dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString());
-            log_inserir(client.id_cliente.ToString() + "SOFT CANCEL - USUARIO EXCLUIDO - " + controle[0].id_cliente_usuario.ToString(), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "HARD CANCEL - USUARIO EXCLUIDO - " + controle[0].id_cliente_usuario.ToString(), (int)Lista_Erro.user_delete);
 
-            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "Licença(s) cancelada(s)." };
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "Hard Cancel - Licença(s) cancelada(s)." };
 
         }
 
@@ -832,7 +837,7 @@ namespace KL_API.Models
             ClienteDeletar(dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString());
             log_inserir(client.id_cliente.ToString() + "SOFT CANCEL  - USUARIO PAUSADO - " + controle[0].id_cliente_usuario.ToString(), (int)Lista_Erro.user_delete);
 
-            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "Licença(s) pausada(s)" };
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "SOFT CANCEL - Licença(s) pausada(s)" };
         }
 
         public DataTable addUser(UserAdd usuario, ClientInfo client)
@@ -1141,7 +1146,26 @@ namespace KL_API.Models
             {
                 foreach (object obj in container.Items)
                 {
-                    if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(BaseResponseItemType))
+                            {
+                                var itemDetalhe = (BaseResponseItemType)item;
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                reativacao_licenca_produto(licenca.id_cliente_licenca);
+
+                                log_inserir(client.id_cliente.ToString() + "- RE-ATIVOU - " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
+                            }
+                        }
+
+                    }
+                    else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
                     {
                         SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
 
@@ -2686,6 +2710,23 @@ namespace KL_API.Models
             return;
         }
 
+        public void reativacao_licenca_produto(string id_cliente_licenca)
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_reativacao_cliente_licenca";
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString())
+            };
+
+            db.parametros = par;
+
+            Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
+
+            return;
+        }
+
         public DataTable retorna_licencas_usuario_soft_cancel(int id_cliente, string id_cliente_usuario)
         {
             DataBase db = new DataBase();
@@ -2899,14 +2940,15 @@ namespace KL_API.Models
             return listReturn;
         }
 
-        public List<GetUsersReturn> GetUsersReturn(string id_cliente)
+        public List<GetUsersReturn> GetUsersReturn(string id_cliente, string userID)
         {
             List<GetUsersReturn> listReturn = new List<GetUsersReturn>();
 
             DataBase db = new DataBase();
             List<parametros> par = new List<parametros>
             {
-                db.retorna_parametros("@id_cliente", id_cliente.ToString())
+                db.retorna_parametros("@id_cliente", id_cliente),
+                db.retorna_parametros("@userID", userID)
             };
 
             db.parametros = par;
