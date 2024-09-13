@@ -24,22 +24,22 @@ namespace KL_API.Controllers.New
                     {
                         if (string.IsNullOrEmpty(activation.UserID))
                         {
-                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Código UserID é obrigatório");
                         }
 
                         if (activation.Products == null || activation.Products.Count <= 0)
                         {
-                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                            return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "É obrigatório o envio de no mínimo um produto para ativação.");
                         }
                     }
                     else 
                     {
-                        return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                        return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido");
                     }
                 }
                 else 
                 {
-                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido");
                 }
 
                 UserAdd userAdd = new UserAdd()
@@ -65,11 +65,11 @@ namespace KL_API.Controllers.New
                 var retorno = new Ativacao_Controle().LicenseActivation(activation, client, dt_usuario);
 
                 if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<string>(HttpStatusCode.OK, "Usuário Ativado!");
+                    return Request.CreateResponse<string>(HttpStatusCode.OK, retorno.msg_retorno);
                 else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, retorno.msg_retorno);
                 else
-                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, retorno.msg_retorno);
             }
             catch (Exception ex)
             {

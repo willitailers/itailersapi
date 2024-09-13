@@ -735,7 +735,7 @@ namespace KL_API.Models
             ClienteDeletar(dt_produto_cliente.Rows[0]["id_cliente_licenca"].ToString());
             log_inserir(client.id_cliente.ToString() + "HARD CANCEL - USUARIO EXCLUIDO - " + controle[0].id_cliente_usuario.ToString(), (int)Lista_Erro.user_delete);
 
-            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "Hard Cancel - Licença(s) cancelada(s)." };
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
 
         }
 
@@ -858,7 +858,6 @@ namespace KL_API.Models
             {
                 return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Usuario já cadastrado." };
             }
-
             string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             // looping do produto recebido
@@ -880,6 +879,8 @@ namespace KL_API.Models
                     return new UserAdd_Retorno() { cod_retorno = -1, msg_retorno = "Produto " + produto.ProductID + " não encontrado." };
                 }
 
+                string subscription_id = "cad-" + client.id_cliente.ToString() + "-" + id_cliente_usuario + "-" + dt_produto[0]["id_produto_kl"].ToString();
+
                 string endTimeParam = "indefinite";
                 DateTime startTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
 
@@ -893,8 +894,6 @@ namespace KL_API.Models
                     int.TryParse(usuario.MonthsToExpire, out int monthsToExpire);
                     endTimeParam = startTime.AddMonths(monthsToExpire).ToLongDateString();
                 }
-
-                string subscription_id = Guid.NewGuid().ToString("N");
 
                 var ativacao = new KL_Conexao().KL_retorna_ativacao(dt_produto[0]["qtd_licencas"].ToString(),
                                                                     dt_produto[0]["cd_produto_kl"].ToString(),
@@ -968,8 +967,7 @@ namespace KL_API.Models
             string xmlRequest, xmlContainer;
 
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, 
-                comandos.ToArray(), out xmlContainer, out xmlRequest);
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
 
             log_inserir(client.id_cliente.ToString() + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.usar_add);
             log_inserir(client.id_cliente.ToString() + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.usar_add);
@@ -979,21 +977,19 @@ namespace KL_API.Models
             {
                 foreach (object obj in container.Items)
                 {
+
                     if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
                     {
                         // faz um looping nas solicitações
                         SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
                         itens = (SubscriptionResponseItemCollection)obj;
 
-                        int index_ativacao = 0;
-                        int index_links = 0;
                         foreach (var item in itens.Items)
                         {
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
                             {
                                 var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
                                 // cancelou corretamente a licença
-
                                 var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
                                 string id_cliente_licenca = ClienteLicencaInserir("0",
@@ -1009,8 +1005,7 @@ namespace KL_API.Models
                                     "",
                                     2);
 
-                                var produto = produto_ativado.Where(w => w.urn_produto == licenca.urn_produto).First();
-                                index_ativacao++;
+                                var produto = produto_ativado.Where(x => x.urn_produto == licenca.urn_produto).FirstOrDefault();
 
                                 produto.ativado = true;
                                 produto.chave_ativacao = itemDetalhe.ActivationCode;
@@ -1022,9 +1017,10 @@ namespace KL_API.Models
                             if (item.GetType() == typeof(SubscriptionResponseItemCollectionGetDownloadLinks))
                             {
                                 var itemDetalhe = (SubscriptionResponseItemCollectionGetDownloadLinks)item;
+                                // cancelou corretamente a licença
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                var produto = produto_ativado[index_links];
-                                index_links++;
+                                var produto = produto_ativado.Where(x => x.urn_produto == licenca.urn_produto).FirstOrDefault();
 
                                 switch (itemDetalhe.Platform)
                                 {
@@ -1045,6 +1041,8 @@ namespace KL_API.Models
                                         break;
 
                                 }
+
+                                //log_inserir(client.id_cliente.ToString() + " - Licença ativada (novo usuario) - " + licenca.id, (int)Lista_Erro.usar_add);
                             }
                         }
 
@@ -1123,7 +1121,8 @@ namespace KL_API.Models
                 {
                     comando = comando_kl.renovar,
                     UnitId = count_comandos,
-                    SubscribeId = subscription_id
+                    SubscribeId = subscription_id,
+                    id_cliente_licenca = row["id_cliente_licenca"].ToString()
                 });
 
                 comandos.Add((object)ativacao);
@@ -1163,7 +1162,6 @@ namespace KL_API.Models
                                 log_inserir(client.id_cliente.ToString() + "- RE-ATIVOU - " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
                             }
                         }
-
                     }
                     else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
                     {
@@ -1196,7 +1194,7 @@ namespace KL_API.Models
 
             log_inserir(client.id_cliente.ToString() + "- RE-ATIVOU " + Newtonsoft.Json.JsonConvert.SerializeObject(produto_ativado), (int)Lista_Erro.usar_add);
 
-            return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "", produtos = produto_ativado };
+            return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "REACTIVATION - Usuário Reativado!", produtos = produto_ativado };
         }
 
         public UserAdd_Retorno LicenseActivation(Activation activation, ClientInfo client, DataTable dt_usuario)
@@ -1263,9 +1261,9 @@ namespace KL_API.Models
             container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint,
                 comandos.ToArray(), out xmlContainer, out xmlRequest);
 
-            log_inserir(client.id_cliente.ToString() + "-REATIVACAO RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.usar_add);
-            log_inserir(client.id_cliente.ToString() + "-REATIVACAO RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.usar_add);
-            log_inserir(client.id_cliente.ToString() + "-REATIVACAO RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.usar_add);
 
             try
             {
@@ -1298,7 +1296,7 @@ namespace KL_API.Models
                                     "",
                                     2);
 
-                                log_inserir(client.id_cliente.ToString() + "REATIVACAO - Licença ativada (novo usuario) - " + id_cliente_licenca, (int)Lista_Erro.usar_add);
+                                log_inserir(client.id_cliente.ToString() + "ATIVACAO - Licença ativada (novo usuario) - " + id_cliente_licenca, (int)Lista_Erro.usar_add);
                             }
                         }
                     }
@@ -1311,7 +1309,7 @@ namespace KL_API.Models
                         foreach (var erro in itemErro.Items)
                         {
                             var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
-                            log_inserir(client.id_cliente.ToString() + "REATIVACAO - ERRO " + licenca.comando.ToString() + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.usar_add);
+                            log_inserir(client.id_cliente.ToString() + "ATIVACAO - ERRO " + licenca.comando.ToString() + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.usar_add);
                         }
                     }
                     else if (obj.GetType() == typeof(TransactionErrorType))
@@ -1319,7 +1317,7 @@ namespace KL_API.Models
                         TransactionErrorType itemErro = new TransactionErrorType();
 
                         itemErro = (TransactionErrorType)obj;
-                        log_inserir(client.id_cliente.ToString() + "REATIVACAO - ERRO ao ativar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.usar_add);
+                        log_inserir(client.id_cliente.ToString() + "ATIVACAO - ERRO ao ativar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.usar_add);
                         ClienteDeletar(id_cliente_usuario, 1);
                         return new UserAdd_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de ativacao." };
                     }
@@ -1327,13 +1325,13 @@ namespace KL_API.Models
             }
             catch (Exception ex)
             {
-                log_inserir(client.id_cliente.ToString() + "REATIVACAO - ERRO ao ativar - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.usar_add);
+                log_inserir(client.id_cliente.ToString() + "ATIVACAO - ERRO ao ativar - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.usar_add);
                 return new UserAdd_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro ao cadastrar o usuario." };
             }
 
-            log_inserir(client.id_cliente.ToString() + "-REATIVACAO ATIVOU " + Newtonsoft.Json.JsonConvert.SerializeObject(produto_ativado), (int)Lista_Erro.usar_add);
+            log_inserir(client.id_cliente.ToString() + "-ATIVACAO ATIVOU " + Newtonsoft.Json.JsonConvert.SerializeObject(produto_ativado), (int)Lista_Erro.usar_add);
 
-            return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "", produtos = produto_ativado };
+            return new UserAdd_Retorno { cod_retorno = 0, msg_retorno = "ACTIVATION - Usuário Ativado!", produtos = produto_ativado };
         }
 
         public LicenseCancel_Retorno cancelar_assinatura(LicenseCancel licenseCancel, ClientInfo client)

@@ -51,11 +51,11 @@ namespace KL_API.Controllers.New
                 var retorno = new Ativacao_Controle().deleteUser(userDelete, client);
 
                 if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<string>(HttpStatusCode.OK, "Licença Cancelada!");
+                    return Request.CreateResponse<string>(HttpStatusCode.OK, retorno.msg_retorno);
                 else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, retorno.msg_retorno);
                 else
-                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Solicitação não pode ser processada");
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, retorno.msg_retorno);
             }
             catch (Exception ex)
             {

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Collections.Generic;
+using Microsoft.Ajax.Utilities;
 
 namespace KL_API.Controllers.New
 {
@@ -30,8 +31,14 @@ namespace KL_API.Controllers.New
                 return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido" );
             }
 
+            string userId = string.Empty;
+            if (user != null)
+            {
+                userId = user.UserID;
+            }
+
             Ativacao_Controle ativacao_Controle = new Ativacao_Controle();
-            List<GetUsersReturn> getUsersReturn = ativacao_Controle.GetUsersReturn(client.id_cliente.ToString(), user.UserID);
+            List<GetUsersReturn> getUsersReturn = ativacao_Controle.GetUsersReturn(client.id_cliente.ToString(), userId);
 
             return Request.CreateResponse(HttpStatusCode.OK, getUsersReturn);
         }
