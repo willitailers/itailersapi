@@ -27,7 +27,7 @@ namespace KL_API.Controllers.api
             List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
 
             var retornarIntegracaoTemplate = integracao.RetornaIntegracaoTemplate();
-            DataRow[] template_data = retornarIntegracaoTemplate.Select("id_cliente = 15");
+            DataRow[] template_data = retornarIntegracaoTemplate.Select($"id_cliente = {obj.id_cliente}");
             string conteudo = template_data[0]["conteudo"].ToString();
 
             foreach (DataRow row in emails_enviar.Rows)
