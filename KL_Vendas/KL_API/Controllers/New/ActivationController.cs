@@ -42,12 +42,13 @@ namespace KL_API.Controllers.New
                     return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, "Token Inválido");
                 }
 
+                Ativacao_Controle ativacao_Controle = new Ativacao_Controle();
                 UserAdd userAdd = new UserAdd()
                 {
                     Email = activation.Email,
                     ProductList = activation.Products,
                     UserID = activation.UserID,
-                    StartDate = DateTime.Now
+                    StartDate = ativacao_Controle.PegaHoraBrasilia()
                 };
 
                 // passou na validação

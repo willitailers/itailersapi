@@ -373,6 +373,8 @@ namespace KL_API.Models
             password = "34091b705f83484"
         };
 
+        public DateTime PegaHoraBrasilia() => TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
+
         private string RetornaSubscriberProvisionado(ClientInfo clientInfo, string user, out string id_cliente_usuario_str)
         {
             var cliente_usuario = seleciona_cliente_usuario(clientInfo.id_cliente, user);
@@ -650,12 +652,12 @@ namespace KL_API.Models
             List<object> comandos = new List<object>();
             int count = 1;
             List<Controle_Envio> controle = new List<Controle_Envio>();
-            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
             // cancela os produtos em lote
             foreach (DataRow dr in dt_produto_cliente.Rows)
             {
                 var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_hard(dr["nm_subscriber_id"].ToString(),
-                                        DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                                        DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z"),
                                         count.ToString());
 
                 controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_hard, UnitId = count, SubscribeId = dr["nm_subscriber_id"].ToString(), id_cliente_licenca = dr["id_cliente_licenca"].ToString(), id_cliente_usuario = dr["id_cliente_usuario"].ToString() });
@@ -752,12 +754,12 @@ namespace KL_API.Models
             List<object> comandos = new List<object>();
             int count = 1;
             List<Controle_Envio> controle = new List<Controle_Envio>();
-            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
             // cancela os produtos em lote
             foreach (DataRow dr in dt_produto_cliente.Rows)
             {
                 var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_soft(dr["nm_subscriber_id"].ToString(),
-                                        DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),
+                                        DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z"),
                                         count.ToString());
 
                 controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_soft, UnitId = count, SubscribeId = dr["nm_subscriber_id"].ToString(), id_cliente_licenca = dr["id_cliente_licenca"].ToString(), id_cliente_usuario = dr["id_cliente_usuario"].ToString() });
@@ -1227,7 +1229,7 @@ namespace KL_API.Models
                     }
 
                     string endTimeParam = "indefinite";
-                    DateTime startTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
+                    DateTime startTime = DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z");
 
                     string subscription_id = Guid.NewGuid().ToString("N");
 
@@ -1257,7 +1259,7 @@ namespace KL_API.Models
 
             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
 
-            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
             container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint,
                 comandos.ToArray(), out xmlContainer, out xmlRequest);
 
@@ -1292,7 +1294,7 @@ namespace KL_API.Models
                                     "",
                                     "",
                                     "",
-                                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    PegaHoraBrasilia().ToString("yyyy-MM-dd HH:mm:ss"),
                                     "",
                                     2);
 
@@ -2681,7 +2683,8 @@ namespace KL_API.Models
 
             List<parametros> par = new List<parametros>
             {
-                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString())
+                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()),
+                db.retorna_parametros("@dt_cancelamento", PegaHoraBrasilia().ToString("yyyy-MM-dd HH:mm:ss")),
             };
 
             db.parametros = par;
@@ -2698,7 +2701,8 @@ namespace KL_API.Models
 
             List<parametros> par = new List<parametros>
             {
-                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString())
+                db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()),
+                db.retorna_parametros("@dt_cancelamento", PegaHoraBrasilia().ToString("yyyy-MM-dd HH:mm:ss")),
             };
 
             db.parametros = par;
@@ -2961,7 +2965,7 @@ namespace KL_API.Models
                     cd_activation = row["cd_ativacao_kl"].ToString(),
                     dt_ativacao = row["dt_ativacao"].ToString(),
                     dt_hard_cancel = row["dt_cancelamento"].ToString(),
-                    dt_soft_cancel = row["dt_cancelamento"].ToString(),
+                    dt_soft_cancel = row["dt_soft_cancel"].ToString(),
                     email = row["nm_email"].ToString(),
                     users_id = row["nm_user_id"].ToString(),
                     product = row["nm_produto_kl"].ToString()
