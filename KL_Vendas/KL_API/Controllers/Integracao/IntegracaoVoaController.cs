@@ -51,7 +51,7 @@ namespace KL_API.Controllers.Integracao
                         //Voa integracao_cliente = id = 4
                         var data = integracao.AtualizaIntegracaoUsuarios(id_cliente, row.email, "", row.name, "", true);
                         string id_usuario = data.Rows[0]["Id"].ToString();
-                        string id_subscriber = integracao.GenerateUniqueId(row.id);
+                        string id_subscriber = Guid.NewGuid().ToString();
                         integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, relacao_produto_id, true);
                     }
                 }

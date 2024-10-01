@@ -37,7 +37,7 @@ namespace KL_API.Controllers.Integracao
                 string ativacoes_html = string.Empty;
                 foreach (DataRow ativacao in ativacao_usuarios.Rows)
                 {
-                    ativacoes_html += $"<p>{ativacao["chave_ativacao"]}</p>";
+                    ativacoes_html += $"<p style=\"font-size:1rem;line-height:1.5rem;margin:16p2P3JJx 0;background-color:rgb(250,251,251);text-align:center;\">{ativacao["chave_ativacao"]}</p>";
                 }
 
                 conteudo = conteudo.Replace("[[chave_ativacao]]", ativacoes_html);
