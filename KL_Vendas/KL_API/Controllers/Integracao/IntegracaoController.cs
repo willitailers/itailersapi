@@ -90,6 +90,17 @@ namespace KL_API.Controllers.Integracao
 
                     foreach (var registro in cliente_erp.registros)
                     {
+                        bool contrato_ativo = false;
+                        if (cliente_contrato.registros.Where(w => w.id_cliente == registro.id) != null)
+                        {
+                            cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault();
+
+                            bool cliente_contrato_status = cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault().status == "A";
+                            bool cliente_contrato_status_internet = cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault().status_internet == "A";
+
+                            contrato_ativo = (cliente_contrato_status == true && cliente_contrato_status_internet == true);
+                        }
+
                         bool ativo = registro.ativo == "S";
 
                         Regex regex = new Regex(@"[^\d]");
@@ -103,12 +114,12 @@ namespace KL_API.Controllers.Integracao
                             string id_usuario = data.Rows[0]["Id"].ToString();
                             string id_subscriber = integracao.GenerateUniqueId(cnpj_cpf_formatado);
 
-                            integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, ativo);
+                            integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, contrato_ativo);
                         }
                         catch (Exception ex)
                         {
-                            retornoIntegracao.msg.Add($"ERRO, cliente_name: {cliente_name}, id_cliente: {id_cliente} " +
-                                $"EX {ex.Message}");
+                            retornoIntegracao.msg.Add($"ERRO, cliente_name: {cliente_name}, id_cliente: {id_cliente} " + $"EX {ex.Message} " +
+                                $"CNPJ_CPF: {cnpj_cpf_formatado} Fantasia: {registro.fantasia} Razao: {registro.razao} Email: {registro.email}");
                         }
                     }
                 }
@@ -126,12 +137,15 @@ namespace KL_API.Controllers.Integracao
 
         public async Task<view_vd_contratos_produtos_gen> GetContratos(string base_url, string base64Credentials, string id_produto)
         {
+            var view_vd_contratos_produtos_gen = new view_vd_contratos_produtos_gen();
+            
             var body = new
             {
                 qtype = "view_vd_contratos_produtos_gen.id_produto",
                 query = id_produto,
                 oper = "=",
-                rp = "2000"
+                page = 1,
+                rp = 9999999
             };
 
             using (HttpClient client = new HttpClient())
@@ -154,22 +168,34 @@ namespace KL_API.Controllers.Integracao
 
                     var responseObj = Newtonsoft.Json.JsonConvert.DeserializeObject<view_vd_contratos_produtos_gen>(content);
 
-                    return responseObj;
+                    if (responseObj.rows.Count > 0)
+                    {
+                        view_vd_contratos_produtos_gen.rows.AddRange(responseObj.rows);
+                    }
                 }
-                else
-                {
-                    return new view_vd_contratos_produtos_gen();
-                }
+            }
+
+            if (view_vd_contratos_produtos_gen.rows != null && view_vd_contratos_produtos_gen.rows.Count > 0)
+            {
+                return view_vd_contratos_produtos_gen;
+            }
+            else
+            {
+                return new view_vd_contratos_produtos_gen();
             }
         }
 
         public async Task<cliente_contrato> GetClienteContratos(string base_url, string base64Credentials, string id_contrato)
         {
+            var cliente_contrato = new cliente_contrato();
+
             var body = new
             {
                 qtype = "cliente_contrato.id",
                 query = id_contrato,
-                oper = "IN"
+                oper = "IN",
+                page = 1,
+                rp = 9999999
             };
 
             using (HttpClient client = new HttpClient())
@@ -192,22 +218,34 @@ namespace KL_API.Controllers.Integracao
 
                     var responseObj = Newtonsoft.Json.JsonConvert.DeserializeObject<cliente_contrato>(content);
 
-                    return responseObj;
+                    if (responseObj.registros.Count > 0)
+                    {
+                        cliente_contrato.registros.AddRange(responseObj.registros);
+                    }
                 }
-                else
-                {
-                    return new cliente_contrato();
-                }
+            }
+
+            if (cliente_contrato.registros != null && cliente_contrato.registros.Count > 0)
+            {
+                return cliente_contrato;
+            }
+            else
+            {
+                return new cliente_contrato();
             }
         }
 
         public async Task<cliente> GetClientes(string base_url, string base64Credentials, string id_clientes)
         {
+            var cliente = new cliente();
+
             var body = new
             {
                 qtype = "cliente.id",
                 query = id_clientes,
                 oper = "IN",
+                page = 1,
+                rp = 9999999
             };
 
             using (HttpClient client = new HttpClient())
@@ -222,7 +260,6 @@ namespace KL_API.Controllers.Integracao
                     await client.PostAsync($"{base_url}cliente",
                     contentBody);
 
-                // Verifique o status da resposta
                 if (response.IsSuccessStatusCode)
                 {
                     // Processar a resposta aqui
@@ -230,12 +267,20 @@ namespace KL_API.Controllers.Integracao
 
                     var responseObj = Newtonsoft.Json.JsonConvert.DeserializeObject<cliente>(content);
 
-                    return responseObj;
+                    if (responseObj.registros.Count > 0)
+                    {
+                        cliente.registros.AddRange(responseObj.registros);
+                    }
                 }
-                else
-                {
-                    return new cliente();
-                }
+            }
+
+            if (cliente.registros != null && cliente.registros.Count > 0)
+            {
+                return cliente;
+            }
+            else
+            {
+                return new cliente();
             }
         }
     }

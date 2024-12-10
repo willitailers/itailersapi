@@ -57,7 +57,7 @@ namespace KL_API.Controllers.Integracao
                 }
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, "Ok");
+            return Request.CreateResponse(HttpStatusCode.OK, "Ok", "text/plain");
         }
 
         public class ResponseVoa

@@ -6,7 +6,7 @@ namespace KL_API.Models.Integracao
     {
         public string page { get; set; }
         public string total { get; set; }
-        public List<Row> rows { get; set; }
+        public List<Row> rows { get; set; } = new List<Row>();
 
         public string type { get; set; }
         public string message { get; set; }
@@ -15,7 +15,7 @@ namespace KL_API.Models.Integracao
     public class Row
     {
         public string id { get; set; }
-        public List<string> cell { get; set; }
+        public List<string> cell { get; set; } = new List<string>();
     }
 
     

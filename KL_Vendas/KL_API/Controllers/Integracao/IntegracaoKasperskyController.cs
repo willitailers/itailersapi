@@ -24,7 +24,6 @@ namespace KL_API.Controllers.Integracao
         [HttpPost]
         public HttpResponseMessage Post()
         {
-
             ResponseIntegracaoKaspersky responseIntegracaoKaspersky = new ResponseIntegracaoKaspersky();
 
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
@@ -58,7 +57,7 @@ namespace KL_API.Controllers.Integracao
                         integracao_usuarios.Add(t_integracao_usuario);
                     }
 
-                    List<int> clientes = integracao_usuarios.Take(150).Select(s => s.id_cliente_it).ToList();
+                    List<int> clientes = integracao_usuarios.Select(s => s.id_cliente_it).Distinct().ToList();
 
                     foreach (var id_cliente_it in clientes)
                     {
@@ -68,7 +67,7 @@ namespace KL_API.Controllers.Integracao
                         string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
                         ClientInfo client = integracao.RetornaClientInfo(id_cliente_it.ToString());
 
-                        foreach (UsuariosAtivar integracao_usuario in integracao_usuarios.Where(w => w.id_cliente_it == id_cliente_it))
+                        foreach (UsuariosAtivar integracao_usuario in integracao_usuarios.Where(w => w.id_cliente_it == id_cliente_it).Take(150))
                         {
                             var ativacao_prod = new KL_Conexao().KL_retorna_ativacao(integracao_usuario.qtd_licencas, integracao_usuario.cd_produto_kl,
                                 DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z"),

@@ -112,6 +112,16 @@ namespace KL_API.Models
         public string UserID { set; get; }
     }
 
+    public class UserDeleteLote
+    {
+        public string[] UsersID { set; get; }
+    }
+
+    public class IntegracaoUserDeleteLote
+    {
+        public string[] SubscriberId { set; get; }
+    }
+
     public class UserDelete_Retorno
     {
         public int cod_retorno { set; get; }
@@ -739,6 +749,206 @@ namespace KL_API.Models
 
             return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
 
+        }
+        public UserDelete_Retorno IntegracaoDeleteUserLote(IntegracaoUserDeleteLote usuarioLote, ClientInfo client)
+        {
+            Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
+            List<object> comandos = new List<object>();
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            int count = 1;
+            foreach (var subscriberId in usuarioLote.SubscriberId)
+            {
+                var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_hard(subscriberId,
+                                        DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z"),
+                                        count.ToString());
+
+                controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_hard, UnitId = count, SubscribeId = subscriberId });
+                comandos.Add((object)cancelamento_licenca);
+                count++;
+            }
+
+            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
+
+            string xmlRequest, xmlContainer;
+
+            decimal d = comandos.Count / 150;
+            int loop = (int)Math.Ceiling(d);
+            int take = 150;
+            int skip = 0;
+            for (int i = 0; i < loop; i++)
+            {
+                comandos = comandos.Skip(skip).Take(take).ToList();
+                skip += 150;
+
+                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+                container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer));
+                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest));
+                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container));
+
+                try
+                {
+                    foreach (object obj in container.Items)
+                    {
+
+                        if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                        {
+                            // faz um looping nas solicitações
+                            SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                            itens = (SubscriptionResponseItemCollection)obj;
+
+                            foreach (var item in itens.Items)
+                            {
+                                if (item.GetType() == typeof(BaseResponseItemType))
+                                {
+                                    var itemDetalhe = (BaseResponseItemType)item;
+                                    // cancelou corretamente a licença
+                                    var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                    integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - Licença cancelar SubscribeId- " + licenca.SubscribeId);
+                                }
+                            }
+
+                        }
+                        else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                        {
+                            SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+
+                            itemErro = (SubscriptionResponseErrorCollection)obj;
+
+                            foreach (var erro in itemErro.Items)
+                            {
+                                var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
+                                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar SubscribeId - " + licenca.SubscribeId + " - " + erro.ErrorCode + "-" + erro.ErrorMessage);
+                            }
+
+                            return new UserDelete_Retorno() { cod_retorno = -2, msg_retorno = "Não foi possivel cancelar todas as licenças." };
+                        }
+                        else if (obj.GetType() == typeof(TransactionErrorType))
+                        {
+                            TransactionErrorType itemErro = new TransactionErrorType();
+
+                            itemErro = (TransactionErrorType)obj;
+                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar SubscribeId - " + controle[0].SubscribeId.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage);
+
+                            return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message);
+                    return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+                }
+            }
+
+            
+
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
+        }
+
+        public UserDelete_Retorno DeleteUserLote(UserDeleteLote usuarioLote, ClientInfo client)
+        {
+            List<object> comandos = new List<object>();
+            List<Controle_Envio> controle = new List<Controle_Envio>();
+            int count = 1;
+            foreach (var usuario in usuarioLote.UsersID)
+            {
+                // consulta de cliente existe e/ou o produto que ele te esta ativado
+                var dt_produto_cliente = seleciona_licenca_produto(client.id_cliente, usuario, "all");
+
+                if (dt_produto_cliente.Rows.Count == 0)
+                {
+                    return new UserDelete_Retorno() { cod_retorno = -1, msg_retorno = "Usuario não encontrado ou sem licenca ativa." };
+                }
+                
+                // cancela os produtos em lote
+                foreach (DataRow dr in dt_produto_cliente.Rows)
+                {
+                    var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_hard(dr["nm_subscriber_id"].ToString(),
+                                            DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z"),
+                                            count.ToString());
+
+                    controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_hard, UnitId = count, SubscribeId = dr["nm_subscriber_id"].ToString(), id_cliente_licenca = dr["id_cliente_licenca"].ToString(), id_cliente_usuario = dr["id_cliente_usuario"].ToString() });
+                    comandos.Add((object)cancelamento_licenca);
+                    count++;
+                }
+            }
+
+            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
+
+            string xmlRequest, xmlContainer;
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.user_delete);
+            log_inserir(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.user_delete);
+
+            try
+            {
+                foreach (object obj in container.Items)
+                {
+
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                    {
+                        // faz um looping nas solicitações
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
+
+                        foreach (var item in itens.Items)
+                        {
+                            if (item.GetType() == typeof(BaseResponseItemType))
+                            {
+                                var itemDetalhe = (BaseResponseItemType)item;
+                                // cancelou corretamente a licença
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                cancela_licenca_produto(licenca.id_cliente_licenca);
+
+                                log_inserir(client.id_cliente.ToString() + "HARD CANCEL - Licença cancelar - " + licenca.id_cliente_licenca, (int)Lista_Erro.user_delete);
+                            }
+                        }
+
+                    }
+                    else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    {
+                        SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+
+                        itemErro = (SubscriptionResponseErrorCollection)obj;
+
+                        foreach (var erro in itemErro.Items)
+                        {
+                            var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
+                            log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + licenca.id_cliente_licenca + " - " + erro.ErrorCode + "-" + erro.ErrorMessage, (int)Lista_Erro.user_delete);
+                        }
+
+                        return new UserDelete_Retorno() { cod_retorno = -2, msg_retorno = "Não foi possivel cancelar todas as licenças." };
+                    }
+                    else if (obj.GetType() == typeof(TransactionErrorType))
+                    {
+                        TransactionErrorType itemErro = new TransactionErrorType();
+
+                        itemErro = (TransactionErrorType)obj;
+                        log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage, (int)Lista_Erro.license_cancel);
+
+                        return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                log_inserir(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message, (int)Lista_Erro.user_delete);
+                return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+            }
+
+            return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
         }
 
         public UserDelete_Retorno DeleteUserSoft(UserDelete usuario, ClientInfo client)
@@ -2685,6 +2895,23 @@ namespace KL_API.Models
             {
                 db.retorna_parametros("@id_cliente_licenca", id_cliente_licenca.ToString()),
                 db.retorna_parametros("@dt_cancelamento", PegaHoraBrasilia().ToString("yyyy-MM-dd HH:mm:ss")),
+            };
+
+            db.parametros = par;
+
+            Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_API);
+
+            return;
+        }
+
+        public void IntegracaoDeletaUser(string id_subscriber)
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_integracao_deleta_ativacao_por_subscriber_id";
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_subscriber", id_subscriber),
             };
 
             db.parametros = par;

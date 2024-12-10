@@ -9,7 +9,7 @@ namespace KL_API.Models.Integracao.cliente
     {
         public string page { get; set; }
         public string total { get; set; }
-        public List<registros> registros { get; set; }
+        public List<registros> registros { get; set; } = new List<registros>();
     }
 
     public class registros
