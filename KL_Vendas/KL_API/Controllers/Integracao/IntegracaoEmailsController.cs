@@ -35,10 +35,18 @@ namespace KL_API.Controllers.Integracao
 
                 var ativacao_usuarios = integracao.RetornaIntegracaoAtivacaoUsuarios(id_usuario);
                 string ativacoes_html = string.Empty;
+                bool enviar = true;
                 foreach (DataRow ativacao in ativacao_usuarios.Rows)
                 {
+                    if (ativacao["chave_ativacao"].ToString().Trim() == "" || ativacao["chave_ativacao"].ToString().Trim() == "-")
+                    {
+                        enviar = false;
+                    }
+
                     ativacoes_html += $"<p style=\"font-size:1rem;line-height:1.5rem;margin:16p2P3JJx 0;background-color:rgb(250,251,251);text-align:center;\">{ativacao["chave_ativacao"]}</p>";
                 }
+
+                if (enviar == false) continue;
 
                 conteudo = conteudo.Replace("[[chave_ativacao]]", ativacoes_html);
 

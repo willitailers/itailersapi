@@ -14,6 +14,8 @@ using System.Web.Http.Description;
 using KL_API.Models.Integracao.Entidades;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Microsoft.Win32;
+using System.Xml;
 
 namespace KL_API.Controllers.Integracao
 {
@@ -60,7 +62,7 @@ namespace KL_API.Controllers.Integracao
 
                     if (!string.IsNullOrEmpty(contratos.message))
                     {
-                        retornoIntegracao.msg.Add(contratos.message);
+                        integracao.InsereIntegracaoLog(contratos.message);
                     }
 
                     if (contratos.rows is null || contratos.rows.Count == 0)
@@ -106,19 +108,21 @@ namespace KL_API.Controllers.Integracao
                         Regex regex = new Regex(@"[^\d]");
                         string cnpj_cpf_formatado = regex.Replace(registro.cnpj_cpf, "");
 
+                        string nome = registro.fantasia != "" ? registro.fantasia + " - " + registro.razao : registro.razao + " - " + registro.fantasia;
+
                         try
                         {
-                            var data = integracao.AtualizaIntegracaoUsuarios(id_cliente, registro.email, cnpj_cpf_formatado,
-                            registro.fantasia != "" ? registro.fantasia : registro.razao, registro.telefone_celular, ativo);
+                            var data = await integracao.AtualizaIntegracaoUsuarios(id_cliente, registro.email, cnpj_cpf_formatado,
+                                nome, registro.telefone_celular, ativo);
 
                             string id_usuario = data.Rows[0]["Id"].ToString();
-                            string id_subscriber = integracao.GenerateUniqueId(cnpj_cpf_formatado);
+                            string id_subscriber = $"{id_cliente}_{id_usuario}";
 
-                            integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, contrato_ativo);
+                            await integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, contrato_ativo);
                         }
                         catch (Exception ex)
                         {
-                            retornoIntegracao.msg.Add($"ERRO, cliente_name: {cliente_name}, id_cliente: {id_cliente} " + $"EX {ex.Message} " +
+                            integracao.InsereIntegracaoLog($"ERRO, cliente_name: {cliente_name}, id_cliente: {id_cliente} " + $"EX {ex.Message} " +
                                 $"CNPJ_CPF: {cnpj_cpf_formatado} Fantasia: {registro.fantasia} Razao: {registro.razao} Email: {registro.email}");
                         }
                     }

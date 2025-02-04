@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace KL_API.Controllers.New
@@ -21,7 +22,7 @@ namespace KL_API.Controllers.New
         /// <response code="400">Bad Request</response>
         /// <response code="500">Erro ao realizar o processo</response>
         [HttpPost]
-        public HttpResponseMessage Post([FromBody] IntegracaoUserDeleteLote userDelete)
+        public async Task<HttpResponseMessage> Post([FromBody] IntegracaoUserDeleteLote userDelete)
         {
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
 
@@ -54,12 +55,12 @@ namespace KL_API.Controllers.New
                 // Passou da validação
                 var retorno = new Ativacao_Controle().IntegracaoDeleteUserLote(userDelete, client);
 
-                if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<string>(HttpStatusCode.OK, retorno.msg_retorno);
-                else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, retorno.msg_retorno);
+                if (retorno.Result.cod_retorno == 0)
+                    return Request.CreateResponse(HttpStatusCode.OK);
+                else if (retorno.Result.cod_retorno == -4 || retorno.Result.cod_retorno == -3)
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, retorno.Result.msg_retorno);
                 else
-                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, retorno.msg_retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, retorno.Result.msg_retorno);
             }
             catch (Exception ex)
             {

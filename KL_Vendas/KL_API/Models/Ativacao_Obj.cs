@@ -4,6 +4,7 @@ using DAL;
 using KL_API.Controllers.Provisionado;
 using KL_API.Models.Integracao.cliente;
 using Objetos;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,6 +13,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using System.Web.Util;
 
@@ -750,7 +753,7 @@ namespace KL_API.Models
             return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
 
         }
-        public UserDelete_Retorno IntegracaoDeleteUserLote(IntegracaoUserDeleteLote usuarioLote, ClientInfo client)
+        public async Task<UserDelete_Retorno> IntegracaoDeleteUserLote(IntegracaoUserDeleteLote usuarioLote, ClientInfo client)
         {
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
             List<object> comandos = new List<object>();
@@ -758,8 +761,9 @@ namespace KL_API.Models
             int count = 1;
             foreach (var subscriberId in usuarioLote.SubscriberId)
             {
+                DateTime endtime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd") + "T" + DateTime.Now.ToString("HH:mm:ss.ffffff") + "Z");
                 var cancelamento_licenca = new KL_Conexao().KL_retorna_cancelamento_hard(subscriberId,
-                                        DateTime.Parse(PegaHoraBrasilia().ToString("yyyy-MM-dd") + "T" + PegaHoraBrasilia().ToString("HH:mm:ss.ffffff") + "Z"),
+                                        endtime,
                                         count.ToString());
 
                 controle.Add(new Controle_Envio() { comando = comando_kl.cancelar_hard, UnitId = count, SubscribeId = subscriberId });
@@ -767,85 +771,74 @@ namespace KL_API.Models
                 count++;
             }
 
-            string TransactionId = PegaHoraBrasilia().ToString("yyyyMMddHHmmssffffff");
+            string TransactionId = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
             string xmlRequest, xmlContainer;
 
-            decimal d = comandos.Count / 150;
-            int loop = (int)Math.Ceiling(d);
-            int take = 150;
-            int skip = 0;
-            for (int i = 0; i < loop; i++)
+            comandos = comandos.Take(150).ToList();
+
+            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+            container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
+
+            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer));
+            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest));
+            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container));
+
+            try
             {
-                comandos = comandos.Skip(skip).Take(take).ToList();
-                skip += 150;
-
-                SubscriptionResponseContainer container = new SubscriptionResponseContainer();
-                container = new KL_Conexao().Comando_KL(TransactionId, client.nm_usuario_certificado, client.nm_senha_certificado, client.nm_thumbprint, comandos.ToArray(), out xmlContainer, out xmlRequest);
-
-                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer));
-                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest));
-                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "-HARD CANCEL RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container));
-
-                try
+                foreach (object obj in container.Items)
                 {
-                    foreach (object obj in container.Items)
+                    if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
                     {
+                        // faz um looping nas solicitações
+                        SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+                        itens = (SubscriptionResponseItemCollection)obj;
 
-                        if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                        foreach (var item in itens.Items)
                         {
-                            // faz um looping nas solicitações
-                            SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
-                            itens = (SubscriptionResponseItemCollection)obj;
-
-                            foreach (var item in itens.Items)
+                            if (item.GetType() == typeof(BaseResponseItemType))
                             {
-                                if (item.GetType() == typeof(BaseResponseItemType))
-                                {
-                                    var itemDetalhe = (BaseResponseItemType)item;
-                                    // cancelou corretamente a licença
-                                    var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+                                var itemDetalhe = (BaseResponseItemType)item;
+                                // cancelou corretamente a licença
+                                var licenca = controle.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
 
-                                    integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - Licença cancelar SubscribeId- " + licenca.SubscribeId);
-                                }
+                                integracao.DeletaAtivacaoPorSubscriberId(licenca.SubscribeId);
+                                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - Licença cancelar SubscribeId- " + licenca.SubscribeId);
                             }
-
                         }
-                        else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    }
+                    else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                    {
+                        SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+
+                        itemErro = (SubscriptionResponseErrorCollection)obj;
+
+                        foreach (var erro in itemErro.Items)
                         {
-                            SubscriptionResponseErrorCollection itemErro = new SubscriptionResponseErrorCollection();
+                            var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
+                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL SubscriptionResponseErrorCollection - ERRO ao cancelar SubscribeId - " + licenca.SubscribeId + " - " + erro.ErrorCode + "-" + erro.ErrorMessage);
 
-                            itemErro = (SubscriptionResponseErrorCollection)obj;
-
-                            foreach (var erro in itemErro.Items)
-                            {
-                                var licenca = controle.Where(x => x.UnitId.ToString() == erro.UnitId).FirstOrDefault();
-                                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar SubscribeId - " + licenca.SubscribeId + " - " + erro.ErrorCode + "-" + erro.ErrorMessage);
-                            }
-
-                            return new UserDelete_Retorno() { cod_retorno = -2, msg_retorno = "Não foi possivel cancelar todas as licenças." };
+                            //integracao.DeletaAtivacaoPorSubscriberId(licenca.SubscribeId);
                         }
-                        else if (obj.GetType() == typeof(TransactionErrorType))
-                        {
-                            TransactionErrorType itemErro = new TransactionErrorType();
+                    }
+                    else if (obj.GetType() == typeof(TransactionErrorType))
+                    {
+                        TransactionErrorType itemErro = new TransactionErrorType();
 
-                            itemErro = (TransactionErrorType)obj;
-                            integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar SubscribeId - " + controle[0].SubscribeId.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage);
+                        itemErro = (TransactionErrorType)obj;
+                        integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL TransactionErrorType - ERRO ao cancelar SubscribeId - " + controle[0].SubscribeId.ToString() + " - " + itemErro.ErrorCode + "-" + itemErro.ErrorMessage);
 
-                            return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
-
-                        }
+                        return new UserDelete_Retorno() { cod_retorno = -3, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
 
                     }
-                }
-                catch (Exception ex)
-                {
-                    integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message);
-                    return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+
                 }
             }
-
-            
+            catch (Exception ex)
+            {
+                integracao.InsereIntegracaoLog(client.id_cliente.ToString() + "HARD CANCEL - ERRO ao cancelar Licença - " + controle[0].id_cliente_usuario.ToString() + " - " + ex.Message);
+                return new UserDelete_Retorno() { cod_retorno = -4, msg_retorno = "Ocorreu um erro na solicitação de cancelamento." };
+            }
 
             return new UserDelete_Retorno() { cod_retorno = 0, msg_retorno = "HARD CANCEL - Licença(s) cancelada(s)." };
         }

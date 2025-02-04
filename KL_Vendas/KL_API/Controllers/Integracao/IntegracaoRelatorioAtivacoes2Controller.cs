@@ -30,7 +30,8 @@ namespace KL_API.Controllers.Integracao
                     UrnProduto = row_relatorio_ativacoes["Urn Produto"].ToString(),
                     QtdLicenca = row_relatorio_ativacoes["Qtd Licencas"].ToString(),
                     ChaveAtivacao = row_relatorio_ativacoes["Chave Ativacao"].ToString(),
-                    DataAtivacao = row_relatorio_ativacoes["Data Ativacao"].ToString()
+                    DataAtualizacao = row_relatorio_ativacoes["Data Atualizacao"].ToString(),
+                    DataCriacao = row_relatorio_ativacoes["Data Criacao"].ToString()
                 };
 
                 relatorioAtivacoesResponse.Add(ativacao);
@@ -48,7 +49,8 @@ namespace KL_API.Controllers.Integracao
             public string UrnProduto { get; set; }
             public string QtdLicenca { get; set; }
             public string ChaveAtivacao { get; set; }
-            public string DataAtivacao { get; set; }
+            public string DataAtualizacao { get; set; }
+            public string DataCriacao { get; set; }
         }
     }
 }

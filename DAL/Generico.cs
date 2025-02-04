@@ -46,8 +46,34 @@ namespace DAL
                     conn.Close();
                 }
             }
-
         }
+
+        public static async Task Exec_sem_retornoAsync(Objetos.DataBase Database, string conexao)
+        {
+            using (SqlConnection conn = new SqlConnection(conexao))
+            {
+                await conn.OpenAsync();
+
+                using (SqlCommand comando = new SqlCommand(Database.procedure, conn))
+                {
+                    comando.CommandType = CommandType.StoredProcedure;
+
+                    if (Database.parametros != null)
+                    {
+                        foreach (Objetos.parametros par in Database.parametros)
+                        {
+                            if (string.IsNullOrEmpty(par.vl_parametro))
+                                comando.Parameters.AddWithValue(par.nm_parametro, DBNull.Value);
+                            else
+                                comando.Parameters.AddWithValue(par.nm_parametro, par.vl_parametro);
+                        }
+                    }
+
+                    await comando.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
 
         public static void gerar_url_amigavel(string url_amigavel, string url_link)
         {
@@ -143,6 +169,38 @@ namespace DAL
 
                     SqlDataAdapter Dp = new SqlDataAdapter(comando);
                     Dp.Fill(Dt);
+                }
+            }
+
+            return Dt;
+        }
+
+        public static async Task<DataTable> Exec_tabelaAsync(Objetos.DataBase Database, string conexao)
+        {
+            DataTable Dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(conexao))
+            {
+                await conn.OpenAsync();
+
+                using (SqlCommand comando = new SqlCommand(Database.procedure, conn))
+                {
+                    comando.CommandType = CommandType.StoredProcedure;
+
+                    if (Database.parametros != null)
+                    {
+                        foreach (Objetos.parametros par in Database.parametros)
+                        {
+                            if (string.IsNullOrEmpty(par.vl_parametro))
+                                comando.Parameters.AddWithValue(par.nm_parametro, DBNull.Value);
+                            else
+                                comando.Parameters.AddWithValue(par.nm_parametro, par.vl_parametro);
+                        }
+                    }
+
+                    using (SqlDataAdapter Dp = new SqlDataAdapter(comando))
+                    {
+                        await Task.Run(() => Dp.Fill(Dt));
+                    }
                 }
             }
 

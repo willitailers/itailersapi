@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace KL_API.Models.Integracao
 {
@@ -65,12 +66,12 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable RetornaIntegracaoUsuariosNaoAtivados()
+        public async Task<DataTable> RetornaIntegracaoUsuariosNaoAtivados()
         {
             DataBase db = new DataBase();
 
             db.procedure = "p_integracao_consulta_usuarios_nao_ativados";
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+            return await Generico.Exec_tabelaAsync(db, DAL.Constantes_DAL.Conexao_API);
         }
 
         public DataTable RetornaIntegracaoLogin(string email, string cpf_cnpj)
@@ -119,7 +120,7 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable AtualizaIntegracaoAtivacaoChave(string id_cliente, string id_subscriber, string chave_ativacao, string id_produto_relacionado)
+        public async Task AtualizaIntegracaoAtivacaoChave(string id_cliente, string id_subscriber, string chave_ativacao, string id_produto_relacionado)
         {
             DataBase db = new DataBase();
 
@@ -134,7 +135,7 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_integracao_atualiza_ativacao_chave";
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+            await Generico.Exec_sem_retornoAsync(db, DAL.Constantes_DAL.Conexao_API);
         }
 
         public DataTable RetornaIntegracaoAtivacaoUsuarios(string id_usuario)
@@ -197,7 +198,7 @@ namespace KL_API.Models.Integracao
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable AtualizaIntegracaoUsuarios(string id_cliente, string email, string cpf_cnpj, string nome, string cel, bool ativo)
+        public async Task<DataTable> AtualizaIntegracaoUsuarios(string id_cliente, string email, string cpf_cnpj, string nome, string cel, bool ativo)
         {
             DataBase db = new DataBase();
 
@@ -214,10 +215,10 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_integracao_atualiza_usuario";
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+            return await Generico.Exec_tabelaAsync(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable AtualizaIntegracaoAtivacao(string id_subscriber, string id_cliente, string id_usuario, string id_produto_relacionado, bool ativo)
+        public async Task<DataTable> AtualizaIntegracaoAtivacao(string id_subscriber, string id_cliente, string id_usuario, string id_produto_relacionado, bool ativo)
         {
             DataBase db = new DataBase();
 
@@ -233,16 +234,17 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_integracao_atualiza_ativacao";
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+            return await Generico.Exec_tabelaAsync(db, DAL.Constantes_DAL.Conexao_API);
         }
 
-        public DataTable InsereIntegracaoLog(string nm_log)
+        public DataTable InsereIntegracaoLog(string nm_log, string json = "")
         {
             DataBase db = new DataBase();
 
             List<parametros> par = new List<parametros>
             {
-                db.retorna_parametros("@nm_log", nm_log)
+                db.retorna_parametros("@nm_log", nm_log),
+                db.retorna_parametros("@json", json),
             };
 
             db.parametros = par;
@@ -325,7 +327,12 @@ namespace KL_API.Models.Integracao
             using (SHA256 sha256 = SHA256.Create())
             {
                 byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-                string hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                string hashString = BitConverter.ToString(hashBytes)
+                                                .Replace("+", "")
+                                                .Replace("/", "")
+                                                .Replace("=", "")
+                                                .Replace("-", "")
+                                                .ToLower();
 
                 // Pegar os primeiros 30 caracteres do hash
                 return hashString.Substring(0, Math.Min(hashString.Length, 30));
@@ -344,6 +351,21 @@ namespace KL_API.Models.Integracao
             db.parametros = par;
 
             db.procedure = "p_retorna_produtos_pelo_urn";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable DeletaAtivacaoPorSubscriberId(string id_subscriber)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_subscriber", id_subscriber)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_deleta_ativacao_por_subscriber_id";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
     }
