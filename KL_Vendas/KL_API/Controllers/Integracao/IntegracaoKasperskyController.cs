@@ -186,6 +186,8 @@ namespace KL_API.Controllers.Integracao
 
                                         await integracao.AtualizaIntegracaoAtivacaoChave(controleEnvio.id_cliente_licenca, controleEnvio.SubscribeId,
                                                     "-", controleEnvio.id_produto_kl);
+
+
                                     }
                                 }
                             }

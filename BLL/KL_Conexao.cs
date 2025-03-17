@@ -538,7 +538,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -622,7 +622,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -698,7 +698,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -756,7 +756,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -1082,7 +1082,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -1224,7 +1224,7 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
@@ -1363,11 +1363,10 @@ namespace BLL
             {
                 X509Store myX509Store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 myX509Store.Open(OpenFlags.ReadOnly);
-                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "a4d005daac3176f25478d3ee3dc0f3f76c8570c6");
+                X509Certificate2 myCertificate = myX509Store.Certificates.OfType<X509Certificate2>().FirstOrDefault(certi => certi.Thumbprint.ToLower() == "f8d70209272bdc21ca55200132a438476d50341a");
                 client.ClientCredentials.ClientCertificate.Certificate = myCertificate;
                 //client.ClientCredentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "b14be2f3364e4ff886ef5c07c1074b1898653fa7");
             }
-
             else
             {
                 cert = new X509Certificate2(@"F:/certificado/kss_cert_CN=freenet-itailers-br_20211111.pfx", "@Itailers2021", X509KeyStorageFlags.PersistKeySet);

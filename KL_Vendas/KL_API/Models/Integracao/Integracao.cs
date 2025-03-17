@@ -6,6 +6,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 
 namespace KL_API.Models.Integracao
 {
@@ -16,6 +17,7 @@ namespace KL_API.Models.Integracao
         public string nome_cliente { get; set; }
         public string email { get; set; }
         public string conteudo { get; set; }
+        public string assunto_email { get; set; }
     }
 
     public class UsuariosAtivar
@@ -55,6 +57,21 @@ namespace KL_API.Models.Integracao
             DataBase db = new DataBase();
 
             db.procedure = "p_integracao_consulta_emails_enviar";
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
+        }
+
+        public DataTable RetornaIntegracaoEmailsEnviarPorCliente(string id_cliente)
+        {
+            DataBase db = new DataBase();
+
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@id_cliente", id_cliente)
+            };
+
+            db.parametros = par;
+
+            db.procedure = "p_integracao_consulta_emails_enviar_por_cliente";
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_API);
         }
 

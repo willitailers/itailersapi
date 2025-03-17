@@ -10,14 +10,14 @@ using System.Linq;
 namespace KL_API.Controllers.Integracao
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class IntegracaoEmailsController : ApiController
+    public class IntegracaoEmailsPorClienteController : ApiController
     {
         [HttpPost]
-        public HttpResponseMessage Post()
+        public HttpResponseMessage Post([FromBody] string id_cliente_param)
         {
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
 
-            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviar();
+            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviarPorCliente(id_cliente_param);
 
             List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
             foreach (DataRow row in emails_enviar.Rows)

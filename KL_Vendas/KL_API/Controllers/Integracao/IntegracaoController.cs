@@ -92,6 +92,13 @@ namespace KL_API.Controllers.Integracao
 
                     foreach (var registro in cliente_erp.registros)
                     {
+                        if (string.IsNullOrEmpty(registro.email))
+                        {
+                            integracao.InsereIntegracaoLog($"ERRO: email nao pode ser nulo ou vazio, cliente_name: {cliente_name}, id_cliente: {id_cliente} " +
+                                $"Fantasia: {registro.fantasia} Razao: {registro.razao} Email: {registro.email}");
+                            continue;
+                        }
+
                         bool contrato_ativo = false;
                         if (cliente_contrato.registros.Where(w => w.id_cliente == registro.id) != null)
                         {
@@ -107,7 +114,6 @@ namespace KL_API.Controllers.Integracao
 
                         Regex regex = new Regex(@"[^\d]");
                         string cnpj_cpf_formatado = regex.Replace(registro.cnpj_cpf, "");
-
                         string nome = registro.fantasia != "" ? registro.fantasia + " - " + registro.razao : registro.razao + " - " + registro.fantasia;
 
                         try
