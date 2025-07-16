@@ -28,14 +28,20 @@ namespace KL_API.Controllers.api
 
             var retornarIntegracaoTemplate = integracao.RetornaIntegracaoTemplate();
             DataRow[] template_data = retornarIntegracaoTemplate.Select($"id_cliente = {obj.id_cliente}");
-            string conteudo = template_data[0]["conteudo"].ToString();
 
             foreach (DataRow row in emails_enviar.Rows)
             {
+                string conteudo = template_data[0]["conteudo"].ToString();
                 var email = row["nm_email"].ToString();
                 var id_cliente_usuario = row["id_cliente_usuario"].ToString();
                 var nm_user_id = row["nm_user_id"].ToString();
+                var nomeCliente = row["nm_cliente"].ToString();
                 var ativacao_usuarios = integracao.RetornaApiAtivacaoUsuarios(id_cliente_usuario);
+
+                if (!ativacao_usuarios.AsEnumerable().Any())
+                {
+                    continue;
+                }
 
                 string ativacoes_html = string.Empty;
                 foreach (DataRow ativacao in ativacao_usuarios.Rows)
@@ -55,7 +61,8 @@ namespace KL_API.Controllers.api
                 {
                     conteudo = conteudo,
                     email = email,
-                    id_cliente = obj.id_cliente
+                    id_cliente = obj.id_cliente,
+                    nome_cliente = nomeCliente
                 };
 
                 emailsEnviar.Add(cliente);

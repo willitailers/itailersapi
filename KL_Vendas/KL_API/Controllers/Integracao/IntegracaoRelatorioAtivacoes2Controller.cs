@@ -25,6 +25,7 @@ namespace KL_API.Controllers.Integracao
                 {
                     NomeConta = row_relatorio_ativacoes["Nome Conta"].ToString(),
                     NomeCliente = row_relatorio_ativacoes["Nome Cliente"].ToString(),
+                    Email = row_relatorio_ativacoes["Email"].ToString(),
                     NomeProduto = row_relatorio_ativacoes["Nome Produto"].ToString(),
                     CodigoProduto = row_relatorio_ativacoes["Codigo Produto"].ToString(),
                     UrnProduto = row_relatorio_ativacoes["Urn Produto"].ToString(),
@@ -44,6 +45,7 @@ namespace KL_API.Controllers.Integracao
         {
             public string NomeConta { get; set; }
             public string NomeCliente { get; set; }
+            public string Email { get; set; }
             public string NomeProduto { get; set; }
             public string CodigoProduto { get; set; }
             public string UrnProduto { get; set; }

@@ -38,12 +38,13 @@ namespace KL_API.Controllers.Integracao
                 dados_relatorio_ativacoes += $"<tr>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Conta"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Cliente"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Email"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Nome Produto"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Codigo Produto"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Urn Produto"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Qtd Licencas"]}</td>" +
                     $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Chave Ativacao"]}</td>" +
-                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Data Ativacao"]}</td>" +
+                    $"<td style='border: 1px solid black'>{row_relatorio_ativacoes["Data Criacao"]}</td>" +
                     $"</tr>";
             }
 

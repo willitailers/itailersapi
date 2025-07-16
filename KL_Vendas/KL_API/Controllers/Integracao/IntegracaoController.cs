@@ -14,8 +14,6 @@ using System.Web.Http.Description;
 using KL_API.Models.Integracao.Entidades;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Microsoft.Win32;
-using System.Xml;
 
 namespace KL_API.Controllers.Integracao
 {
@@ -102,8 +100,6 @@ namespace KL_API.Controllers.Integracao
                         bool contrato_ativo = false;
                         if (cliente_contrato.registros.Where(w => w.id_cliente == registro.id) != null)
                         {
-                            cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault();
-
                             bool cliente_contrato_status = cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault().status == "A";
                             bool cliente_contrato_status_internet = cliente_contrato.registros.Where(w => w.id_cliente == registro.id).FirstOrDefault().status_internet == "A";
 
@@ -124,7 +120,7 @@ namespace KL_API.Controllers.Integracao
                             string id_usuario = data.Rows[0]["Id"].ToString();
                             string id_subscriber = $"{id_cliente}_{id_usuario}";
 
-                            await integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, contrato_ativo);
+                            var dataAtualizacao = await integracao.AtualizaIntegracaoAtivacao(id_subscriber, id_cliente, id_usuario, t_integracao_relacao_produto.id, contrato_ativo);
                         }
                         catch (Exception ex)
                         {

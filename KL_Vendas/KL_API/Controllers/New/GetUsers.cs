@@ -38,9 +38,9 @@ namespace KL_API.Controllers.New
             }
 
             Ativacao_Controle ativacao_Controle = new Ativacao_Controle();
-            List<GetUsersReturn> getUsersReturn = ativacao_Controle.GetUsersReturn(client.id_cliente.ToString(), userId);
+            List<User_Activation> userActivations = ativacao_Controle.GetUsersActivationsByUserID(client.id_cliente.ToString(), userId);
 
-            return Request.CreateResponse(HttpStatusCode.OK, getUsersReturn);
+            return Request.CreateResponse(HttpStatusCode.OK, userActivations);
         }
     }
 }

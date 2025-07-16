@@ -43,39 +43,17 @@ namespace KL_API.Controllers.New
                 }
 
                 Ativacao_Controle ativacao_Controle = new Ativacao_Controle();
-                UserAdd userAdd = new UserAdd()
-                {
-                    Email = activation.Email,
-                    ProductList = activation.Products,
-                    UserID = activation.UserID,
-                    StartDate = ativacao_Controle.PegaHoraBrasilia()
-                };
 
-                // passou na validação
-                var dt_usuario = new Ativacao_Controle().addUser(userAdd, client);
+                var retorno = new Ativacao_Controle().LicenseActivation(activation, client);
 
-                if (dt_usuario.Rows.Count <= 0)
-                {
-                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
-                }
+                if (retorno.Count > 0)
+                    return Request.CreateResponse(HttpStatusCode.OK, retorno);
                 else
-                {
-                    id_cliente_usuario = dt_usuario.Rows[0]["id_cliente_usuario"].ToString();
-                }
-
-                var retorno = new Ativacao_Controle().LicenseActivation(activation, client, dt_usuario);
-
-                if (retorno.cod_retorno == 0)
-                    return Request.CreateResponse<string>(HttpStatusCode.OK, retorno.msg_retorno);
-                else if (retorno.cod_retorno == -4 || retorno.cod_retorno == -3)
-                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, retorno.msg_retorno);
-                else
-                    return Request.CreateResponse<string>(HttpStatusCode.NotAcceptable, retorno.msg_retorno);
+                    return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Não foi possível processar sua solicitação");
             }
             catch (Exception ex)
             {
-                if (id_cliente_usuario != "")
-                    new Ativacao_Controle().ClienteDeletar(id_cliente_usuario, 1);
+                
                 new Ativacao_Controle().log_inserir("Erro ativacao " + ex.Message, (int)Lista_Erro.usar_add);
                 return Request.CreateResponse<string>(HttpStatusCode.BadRequest, "Solicitação não pode ser processada");
             }

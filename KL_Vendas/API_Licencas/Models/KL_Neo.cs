@@ -14,12 +14,48 @@ using System.Xml.Linq;
 using System.ComponentModel;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 //using System.Data.Entity;
 //using SqlKata.Execution;
 
-
 namespace API_Licencas.Models
 {
+    public class LogLogin
+    {
+        public int id { get; set; }
+        public string idp { get; set; } = string.Empty;
+        public string comando { get; set; } = string.Empty;
+        public string subscriber_id { get; set; } = string.Empty;
+        public string id_usuario { get; set; } = string.Empty;
+        public string request { get; set; } = string.Empty;
+        public string container { get; set; } = string.Empty;
+        public string response { get; set; } = string.Empty;
+        public string activation_code { get; set; } = string.Empty;
+        public string username { get; set; } = string.Empty;
+        public string password { get; set; } = string.Empty;
+        public string controller { get; set; } = string.Empty;
+        public string acesso_neo { get; set; } = string.Empty;
+        public bool exception { get; set; }
+        public string exception_message { get; set; } = string.Empty;
+        public bool erro_tratado { get; set; }
+    }
+
+    public class NeoAcesso
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Idp { get; set; }
+        public bool LoginAcesso { get; set; }
+
+        public List<ProdutosAcesso> ProdutosAcesso { get; set; } = null;
+    }
+
+    public class ProdutosAcesso
+    {
+        public string URN { get; set; }
+        public bool Acesso { get; set; }
+    }
+
     public class KL_Neo
     {
         public enum Lista_Erro
@@ -37,15 +73,34 @@ namespace API_Licencas.Models
         #region Ações
         public Usuario_Neo login(Login_Neo login)
         {
+            NeoAcesso neoAcesso = new NeoAcesso()
+            {
+                Idp = login.idp,
+                Username = login.username,
+                Password = login.password
+            };
+
+
+            neoAcesso.ProdutosAcesso = new List<ProdutosAcesso>();
+
+            LogLogin logLogin = new LogLogin()
+            {
+                idp = login.idp,
+                username = login.username,
+                password = login.password,
+                controller = "login",
+            };
+
             using (var client = new HttpClient())
             {
                 var usuario_neo = new Usuario_Neo();
                 usuario_neo.produto = new List<Produto_Neo>();
                 string id_cliente = "";
                 bool cliente_novo = false;
-                var response = client.PostAsync(@ConfigurationManager.AppSettings["link_login_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(login), Encoding.UTF8, "application/json")).Result;
+                var response = client.PostAsync(@ConfigurationManager.AppSettings["link_login_neo"], 
+                    new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(login), Encoding.UTF8, "application/json")).Result;
 
-                string hashUsername = new Helper().GetHash(login.username, 15);
+                string hashUsername = new Helper().GetHash(DateTime.Now.ToString(), 15);
                 string nm_itailers_kl = $"{login.idp}_{hashUsername}";
 
                 if (response.Content != null)
@@ -56,12 +111,16 @@ namespace API_Licencas.Models
                     {
                         var response_neo = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(responseContent);
 
+                        neoAcesso.LoginAcesso = response_neo.access;
+                        logLogin.subscriber_id = response_neo.subscriber_id != null ? response_neo.subscriber_id : string.Empty;
+
                         if (response_neo.access)
                         {
                             // consulta usuario
                             var cliente = consulta_cliente(response_neo.subscriber_id);
                             usuario_neo.dv_ativo = 1;
                             usuario_neo.nm_subscribe_id = response_neo.subscriber_id;
+                            
                             // insere se nao tiver
                             if (cliente.Rows.Count == 0)
                             {
@@ -75,205 +134,187 @@ namespace API_Licencas.Models
                                 id_cliente = cliente.Rows[0]["id_cliente_neo"].ToString();
                             }
 
-                            // consulta produtos
-                            if (cliente_novo)
+                            logLogin.id_usuario = id_cliente;
+
+                            var dt_produtos_ativados = consulta_cliente_ativacao(id_cliente);
+                            var produtos = consulta_produto("0");
+
+                            List<Produtos> produtos_todos = produtos.ConvertToList<Produtos>();
+                            List<ProdutoAtivado> produtos_ativados = dt_produtos_ativados.ConvertToList<ProdutoAtivado>();
+
+                            int UnitId = 1;
+                            List<Neo_Produto_Combo> neo_produtos_combo = new List<Neo_Produto_Combo>();
+
+                            foreach (var produto in produtos_todos)
                             {
-                                var produto = consulta_produto("0");
+                                Produto_Consulta_Neo prod =
+                                    new Produto_Consulta_Neo() { subscriber_id = usuario_neo.nm_subscribe_id, resource_id = produto.nm_urn };
 
-                                foreach (DataRow dr in produto.Rows)
+                                var response_produto = client.PostAsync(@ConfigurationManager.AppSettings["link_produto_neo"],
+                                    new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(prod), Encoding.UTF8, "application/json")).Result;
+
+                                if (response_produto.Content != null)
                                 {
-                                    Produto_Consulta_Neo prod = new Produto_Consulta_Neo() { subscriber_id = usuario_neo.nm_subscribe_id, resource_id = dr["nm_urn"].ToString() };
-                                    var response_produto = client.PostAsync(@ConfigurationManager.AppSettings["link_produto_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(prod), Encoding.UTF8, "application/json")).Result;
+                                    var response_produto_auth = response_produto.Content.ReadAsStringAsync().Result;
 
-                                    if (response_produto.Content != null)
+                                    var obj_response_produto_auth = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(response_produto_auth);
+
+                                    neoAcesso.ProdutosAcesso.Add(new ProdutosAcesso()
                                     {
-                                        var response_produto_auth = response_produto.Content.ReadAsStringAsync().Result;
+                                        Acesso = obj_response_produto_auth.access,
+                                        URN = produto.nm_urn,
+                                    });
 
-                                        var obj_response_produto_auth = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(response_produto_auth);
-
-                                        if (obj_response_produto_auth.access)
-                                        {
-                                            if (dr["id_combo"].ToString() == "0")
-                                            {
-                                                usuario_neo.produto.Add(new Produto_Neo()
-                                                {
-                                                    id_produto_kl = int.Parse(dr["id_produto_kl"].ToString()),
-                                                    resource_id = dr["nm_urn"].ToString(),
-                                                    id_status = "1",
-                                                    nm_produto_kl = dr["nm_produto_kl"].ToString(),
-                                                    link_image = "/images/" + dr["nm_imagem"].ToString(),
-                                                    nm_descricao = dr["descricao"].ToString()
-                                                });
-                                            }
-                                            else
-                                            {
-                                                // buscar os produtos do combo e monta o objeto
-
-                                                var produtos_combo = consulta_combo(dr["id_combo"].ToString());
-
-                                                foreach (DataRow dr_combo in produtos_combo.Rows)
-                                                {
-                                                    usuario_neo.produto.Add(new Produto_Neo()
-                                                    {
-                                                        combo_id = dr_combo["id_combo"].ToString(),
-                                                        id_produto_kl = int.Parse(dr_combo["id_produto"].ToString()),
-                                                        resource_id = dr["nm_urn"].ToString(),
-                                                        id_status = "1",
-                                                        nm_produto_kl = dr_combo["nm_produto"].ToString(),
-                                                        link_image = "/images/" + dr_combo["nm_imagem"].ToString(),
-                                                        nm_descricao = dr_combo["descricao"].ToString(),
-                                                    });
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                }
-
-                                return usuario_neo;
-                            }
-                            else
-                            {
-                                var produto_ativado = consulta_cliente_ativacao(id_cliente);
-
-                                if (produto_ativado.Rows.Count == 0)
-                                {
-                                    var produto = consulta_produto("0");
-
-                                    foreach (DataRow dr in produto.Rows)
+                                    if (obj_response_produto_auth.access)
                                     {
-                                        Produto_Consulta_Neo prod = new Produto_Consulta_Neo() { subscriber_id = usuario_neo.nm_subscribe_id, resource_id = dr["nm_urn"].ToString() };
-                                        var response_produto = client.PostAsync(@ConfigurationManager.AppSettings["link_produto_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(prod), Encoding.UTF8, "application/json")).Result;
-
-                                        if (response_produto.Content != null)
+                                        if (!produtos_ativados.Where(w => w.id_produto_kl.Equals(produto.id_produto_kl)).Any())
                                         {
-                                            var response_produto_auth = response_produto.Content.ReadAsStringAsync().Result;
-
-                                            var obj_response_produto_auth = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(response_produto_auth);
-
-                                            if (obj_response_produto_auth.access)
+                                            if (produto.id_produto_kl == 4) // COMBO
                                             {
-                                                if (dr["id_combo"].ToString() == "0")
-                                                {
-                                                    usuario_neo.produto.Add(new Produto_Neo()
-                                                    {
-                                                        id_produto_kl = int.Parse(dr["id_produto_kl"].ToString()),
-                                                        resource_id = dr["nm_urn"].ToString(),
-                                                        id_status = "1",
-                                                        nm_produto_kl = dr["nm_produto_kl"].ToString(),
-                                                        link_image = "/images/" + dr["nm_imagem"].ToString(),
-                                                        nm_descricao = dr["descricao"].ToString()
-                                                    });
-                                                }
-                                                else
-                                                {
-                                                    // buscar os produtos do combo e monta o objeto
-
-                                                    var produtos_combo = consulta_combo(dr["id_combo"].ToString());
-
-                                                    foreach (DataRow dr_combo in produtos_combo.Rows)
-                                                    {
-                                                        usuario_neo.produto.Add(new Produto_Neo()
-                                                        {
-                                                            combo_id = dr_combo["id_combo"].ToString(),
-                                                            id_produto_kl = int.Parse(dr_combo["id_produto"].ToString()),
-                                                            resource_id = dr["nm_urn"].ToString(),
-                                                            id_status = "1",
-                                                            nm_produto_kl = dr_combo["nm_produto"].ToString(),
-                                                            link_image = "/images/" + dr_combo["nm_imagem"].ToString(),
-                                                            nm_descricao = dr_combo["descricao"].ToString(),
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    return usuario_neo;
-                                }
-                                else // retorna o produto ja cadastrado se tiver
-                                {
-                                    //verifica se produto ainda esta ativo
-                                    var produto = consulta_produto(produto_ativado.Rows[0]["id_produto_kl"].ToString());
-                                    Produto_Consulta_Neo prod = new Produto_Consulta_Neo() { subscriber_id = usuario_neo.nm_subscribe_id, resource_id = produto.Rows[0]["nm_urn"].ToString() };
-                                    var response_produto = client.PostAsync(@ConfigurationManager.AppSettings["link_produto_neo"], new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(prod), Encoding.UTF8, "application/json")).Result;
-                                    string nm_subrscribe_kl = produto_ativado.Rows[0]["nm_subrscribe_kl"].ToString();
-                                    if (response_produto.Content != null)
-                                    {
-                                        var response_produto_auth = response_produto.Content.ReadAsStringAsync().Result;
-
-                                        var obj_response_produto_auth = Newtonsoft.Json.JsonConvert.DeserializeObject<response_auth_neo>(response_produto_auth);
-
-                                        if (obj_response_produto_auth.access)
-                                        {
-                                            usuario_neo.dv_ativo = 2;
-
-                                            if (produto.Rows[0]["id_combo"].ToString() == "0")
-                                            {
-                                                usuario_neo.produto.Add(new Produto_Neo()
-                                                {
-                                                    id_produto_kl = int.Parse(produto.Rows[0]["id_produto_kl"].ToString()),
-                                                    id_status = "2",
-                                                    nm_produto_kl = produto.Rows[0]["nm_produto_kl"].ToString(),
-                                                    activation_code = produto_ativado.Rows[0]["activation_code"].ToString(),
-                                                    dt_ativacao = retorna_data(DateTime.Parse(produto_ativado.Rows[0]["dt_ativacao"].ToString())),
-                                                    link_image = "/images/" + produto.Rows[0]["nm_imagem"].ToString(),
-                                                    resource_id = produto.Rows[0]["nm_urn"].ToString(),
-                                                    nm_descricao = produto.Rows[0]["descricao"].ToString()
-                                                });
-                                            }
-                                            else
-                                            {
-                                                var produtos_Combo = consulta_combo(produto.Rows[0]["id_combo"].ToString());
-
-                                                if (produtos_Combo.Rows.Count <= 0)
-                                                {
-                                                    usuario_neo.msg_erro = "Erro durante a consulta de comnbo[5]";
-                                                    return usuario_neo;
-                                                }
-
-                                                List<Lista_Produto> nm_subrscribe_kls = new List<Lista_Produto>();
-
+                                                //ativar todos os produtos do combo
+                                                var produtos_Combo = consulta_combo("1");
 
                                                 foreach (DataRow dr in produtos_Combo.Rows)
                                                 {
-                                                    nm_subrscribe_kls.Add(new Lista_Produto() { subscribe_id = nm_subrscribe_kl, id_produto = int.Parse(produtos_Combo.Rows[0]["id_produto"].ToString()) });
-
-                                                    usuario_neo.produto.Add(new Produto_Neo()
+                                                    neo_produtos_combo.Add(new Neo_Produto_Combo()
                                                     {
-                                                        combo_id = produto.Rows[0]["id_combo"].ToString(),
-                                                        id_produto_kl = int.Parse(produto_ativado.Rows[0]["id_produto_kl"].ToString()),
-                                                        id_produto = int.Parse(dr["id_produto"].ToString()),
-                                                        id_status = "2",
-                                                        nm_produto_kl = dr["nm_produto"].ToString(),
-                                                        activation_code = produto_ativado.Rows[0]["activation_code"].ToString(),
-                                                        dt_ativacao = retorna_data(DateTime.Parse(produto_ativado.Rows[0]["dt_ativacao"].ToString())),
-                                                        resource_id = dr["nm_urn"].ToString(),
-                                                        link_image = "/images/" + dr["nm_imagem"].ToString(),
-                                                        nm_descricao = dr["descricao"].ToString()
+                                                        _ProductId = dr["cd_produto"].ToString(),
+                                                        _SubscriberId = $"{usuario_neo.nm_subscribe_id}-{dr["id_produto"]}",
+                                                        qtd_licencas = dr["qtd_licencas"].ToString(),
+                                                        UnitId = UnitId.ToString(),
+                                                        id_produto = dr["id_produto"].ToString(),
+                                                        id_produto_kl = produto.id_produto_kl.ToString(),
+                                                        nm_produto = dr["nm_produto"].ToString()
                                                     });
+
+                                                    UnitId++;
                                                 }
                                             }
-                                        }
-                                        else
-                                        {
-                                            // cancel produto
+                                            else // NAO É COMBO
+                                            {
+                                                neo_produtos_combo.Add(new Neo_Produto_Combo()
+                                                {
+                                                    _ProductId = produto.cd_produto_kl,
+                                                    _SubscriberId = usuario_neo.nm_subscribe_id,
+                                                    qtd_licencas = produto.qtd_licencas,
+                                                    UnitId = UnitId.ToString(),
+                                                    id_produto_kl = produto.id_produto_kl.ToString(),
+                                                    id_produto = "0"
+                                                });
+
+                                                UnitId++;
+                                            }
                                         }
                                     }
-                                    return usuario_neo;
                                 }
                             }
 
+                            logLogin.acesso_neo = Newtonsoft.Json.JsonConvert.SerializeObject(neoAcesso);
+                            logLogin.comando = "ATIVACAO";
+
+                            KL_Conexao con = new KL_Conexao();
+
+                            SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+                            container = con.AtivacaoNeoLote(DateTime.Now.ToString("yyMMddHHmmss"), neo_produtos_combo, DateTime.Now, out string xmlContainer, out string xmlRequest);
+
+                            log_inserir(id_cliente + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
+                            log_inserir(id_cliente + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo_lote);
+                            log_inserir(id_cliente + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.ativacao_neo_lote);
+
+                            logLogin.container = Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer);
+                            logLogin.request = Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest);
+                            logLogin.response = Newtonsoft.Json.JsonConvert.SerializeObject(container);
+
+                            foreach (object obj in container.Items)
+                            {
+                                if (obj is null) continue;
+                                logLogin.exception_message += $"F1-";
+                                if (obj.GetType() == typeof(SubscriptionResponseItemCollection))
+                                {
+                                    logLogin.exception_message += $"F2-";
+                                    // faz um looping nas solicitações
+                                    SubscriptionResponseItemCollection itens = new SubscriptionResponseItemCollection();
+
+                                    itens = (SubscriptionResponseItemCollection)obj;
+                                    if (itens is null) continue; if (itens.Items is null) continue; if (itens.Items.Count() == 0) continue;
+                                    foreach (var item in itens.Items)
+                                    {
+                                        if (item.GetType() == typeof(SubscriptionResponseItemCollectionActivate))
+                                        {
+                                            var itemDetalhe = (SubscriptionResponseItemCollectionActivate)item;
+
+                                            var licenca = neo_produtos_combo.Where(x => x.UnitId.ToString() == itemDetalhe.UnitId).FirstOrDefault();
+
+                                            logLogin.activation_code = $"{logLogin.activation_code},{licenca.nm_produto}:{itemDetalhe.ActivationCode}";
+
+                                            var cliente_ativar = inserir_cliente_ativacao(id_cliente, "0", itemDetalhe.SubscriberId, itemDetalhe.ActivationCode,
+                                                licenca.id_produto_kl, licenca.id_produto);
+
+                                            usuario_neo.dv_ativo = 2;
+                                            usuario_neo.produto.Add(new Produto_Neo()
+                                            {
+                                                activation_code = itemDetalhe.ActivationCode,
+                                                id_produto_kl = int.Parse(licenca.id_produto_kl),
+                                                id_status = "2",
+                                                qtd_licencas = licenca.qtd_licencas,
+                                                nm_produto_kl = licenca.nm_produto,
+                                                dt_ativacao = retorna_data(DateTime.Now),
+                                                combo_id = "0"
+                                            });
+                                            logLogin.exception_message += $"F8-";
+                                            log_inserir_login(logLogin);
+                                            log_inserir("Codigo Ativado pela KL " + itemDetalhe.SubscriberId + " - " + itemDetalhe.ActivationCode, (int)Lista_Erro.ativação_produto_neo);
+                                        }
+                                    }
+                                }
+                                else if (obj.GetType() == typeof(SubscriptionResponseErrorCollection))
+                                {
+                                    logLogin.exception_message += $"F9-";
+                                    logLogin.erro_tratado = true;
+                                    logLogin.exception_message += "SubscriptionResponseErrorCollection";
+                                    log_inserir_login(logLogin);
+                                }
+                                else if (obj.GetType() == typeof(TransactionErrorType))
+                                {
+                                    logLogin.exception_message += $"F10-";
+                                    logLogin.erro_tratado = true;
+                                    logLogin.exception_message += "TransactionErrorType";
+                                }
+                            }
+                            logLogin.exception_message += $"FODA";
+
+                            log_inserir_login(logLogin);
                             return usuario_neo;
                         }
                         else
                         {
+                            if (usuario_neo.produto.Count > 0)
+                            {
+                                return usuario_neo;
+                            }
+
                             return new Usuario_Neo() { dv_ativo = 0 };
                         }
                     }
                     catch (Exception ex)
                     {
+                        StackTrace stackTrace = new StackTrace(ex, true);
+                        StackFrame frame = stackTrace.GetFrame(0); // Obtém o primeiro frame da pilha
+
+                        string stacktrace = $"Erro: {ex.Message} - Método: {frame.GetMethod().Name} - Arquivo: {frame.GetFileName()} " +
+                            $"- Linha: {frame.GetFileLineNumber()} - Coluna: {frame.GetFileColumnNumber()} - Stacktrace: {ex.StackTrace} - " +
+                            $"Inner Exception: {ex.InnerException}";
+
+                        logLogin.exception = true;
+                        logLogin.exception_message += stacktrace;
+                        log_inserir_login(logLogin);
                         log_inserir("json nao convertido: " + responseContent + " - " + ex.Message, (int)Lista_Erro.erro_neo);
+
+                        if (usuario_neo.produto.Count > 0)
+                        {
+                            return usuario_neo;
+                        }
+                        
                         return new Usuario_Neo() { dv_ativo = 0 };
                     }
                 }
@@ -1073,20 +1114,6 @@ namespace API_Licencas.Models
             return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_AV);
         }
 
-        public DataTable consulta_operadora(string id_operadora_neo)
-        {
-            DataBase db = new DataBase();
-            db.procedure = "p_operadora_lista";
-
-            parametros p = new parametros();
-            List<parametros> par = new List<parametros>();
-            par.Add(db.retorna_parametros("@id_operadora_neo", id_operadora_neo));
-
-            db.parametros = par;
-
-            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_AV);
-        }
-
         public List<Operadora_Neo> consulta_operadora_dinamico()
         {
             var operadoras = new List<Operadora_Neo>();
@@ -1162,6 +1189,23 @@ namespace API_Licencas.Models
             parametros p = new parametros();
             List<parametros> par = new List<parametros>();
             par.Add(db.retorna_parametros("@id_cliente_neo", id_cliente_neo));
+
+            db.parametros = par;
+
+            return Generico.Exec_tabela(db, DAL.Constantes_DAL.Conexao_AV);
+        }
+
+        public DataTable consulta_produto_urn_qtd_licencas(string urn, int qtd_licencas)
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_produto_urn";
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@urn", urn),
+                db.retorna_parametros("@qtd_licencas", qtd_licencas.ToString())
+            };
 
             db.parametros = par;
 
@@ -1285,6 +1329,36 @@ namespace API_Licencas.Models
 
             par.Add(db.retorna_parametros("@nm_log", nm_log));
             par.Add(db.retorna_parametros("@id_tipo_log", id_tipo_log.ToString()));
+            db.parametros = par;
+
+            Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_AV);
+        }
+
+        public void log_inserir_login(LogLogin logLogin)
+        {
+            DataBase db = new DataBase();
+            db.procedure = "p_insere_log_login";
+
+            parametros p = new parametros();
+            List<parametros> par = new List<parametros>
+            {
+                db.retorna_parametros("@idp", logLogin.idp),
+                db.retorna_parametros("@comando", logLogin.comando),
+                db.retorna_parametros("@subscriber_id", logLogin.subscriber_id),
+                db.retorna_parametros("@id_usuario", logLogin.id_usuario.ToString()),
+                db.retorna_parametros("@request", logLogin.request),
+                db.retorna_parametros("@container", logLogin.container),
+                db.retorna_parametros("@response", logLogin.response),
+                db.retorna_parametros("@activation_code", logLogin.activation_code),
+                db.retorna_parametros("@username", logLogin.username),
+                db.retorna_parametros("@password", logLogin.password),
+                db.retorna_parametros("@controller", logLogin.controller),
+                db.retorna_parametros("@acesso_neo", logLogin.acesso_neo),
+                db.retorna_parametros("@exception", logLogin.exception.ToString()),
+                db.retorna_parametros("@exception_message", logLogin.exception_message),
+                db.retorna_parametros("@erro_tratado", logLogin.erro_tratado.ToString())
+            };
+
             db.parametros = par;
 
             Generico.Exec_sem_retorno(db, DAL.Constantes_DAL.Conexao_AV);

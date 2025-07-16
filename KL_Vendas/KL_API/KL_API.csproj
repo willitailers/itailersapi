@@ -260,6 +260,12 @@
     <Compile Include="Controllers\api\ApiEmailsEnviar15.cs" />
     <Compile Include="Controllers\api\ApiEmailsEnviarSemanal.cs" />
     <Compile Include="Controllers\AtivarLicenca.cs" />
+    <Compile Include="Controllers\CampSoft\GetProdutosCampSoftController.cs" />
+    <Compile Include="Controllers\CampSoft\LoginCampSoftController.cs" />
+    <Compile Include="Controllers\CampSoft\GetIspsController.cs" />
+    <Compile Include="Controllers\New\ActivationWithValidationController.cs" />
+    <Compile Include="Models\Campsoft\Produtos.cs" />
+    <Compile Include="Models\Campsoft\Isps.cs" />
     <Compile Include="Controllers\GetProdutosClienteController.cs" />
     <Compile Include="Controllers\GetUsersInfo.cs" />
     <Compile Include="Controllers\Integracao\IntegracaoEmailsPorClienteController.cs" />
@@ -296,6 +302,8 @@
     </Compile>
     <Compile Include="Models\AddRequiredHeaderParameter .cs" />
     <Compile Include="Models\Ativacao_Obj.cs" />
+    <Compile Include="Models\Campsoft\Campsoft.cs" />
+    <Compile Include="Models\Campsoft\Login.cs" />
     <Compile Include="Models\Integracao\cliente.cs" />
     <Compile Include="Models\Integracao\cliente_contrato.cs" />
     <Compile Include="Models\Integracao\Entidades\t_integracao_ativacao.cs" />

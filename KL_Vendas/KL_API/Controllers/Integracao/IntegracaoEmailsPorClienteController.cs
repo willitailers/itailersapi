@@ -12,12 +12,17 @@ namespace KL_API.Controllers.Integracao
     [ApiExplorerSettings(IgnoreApi = true)]
     public class IntegracaoEmailsPorClienteController : ApiController
     {
+        public class ClienteRequest
+        {
+            public string id_cliente_param { get; set; }
+        }
+
         [HttpPost]
-        public HttpResponseMessage Post([FromBody] string id_cliente_param)
+        public HttpResponseMessage Post([FromBody] ClienteRequest clienteRequest)
         {
             Models.Integracao.Integracao integracao = new Models.Integracao.Integracao();
 
-            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviarPorCliente(id_cliente_param);
+            var emails_enviar = integracao.RetornaIntegracaoEmailsEnviarPorCliente(clienteRequest.id_cliente_param);
 
             List<EmailsEnviar> emailsEnviar = new List<EmailsEnviar>();
             foreach (DataRow row in emails_enviar.Rows)
