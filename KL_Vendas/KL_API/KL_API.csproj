@@ -263,6 +263,9 @@
     <Compile Include="Controllers\CampSoft\GetProdutosCampSoftController.cs" />
     <Compile Include="Controllers\CampSoft\LoginCampSoftController.cs" />
     <Compile Include="Controllers\CampSoft\GetIspsController.cs" />
+    <Compile Include="Controllers\Guardiao\GerenciarLicencaGuardiaoController.cs" />
+    <Compile Include="Controllers\Guardiao\RetornaUsuariosGuardiaoController.cs" />
+    <Compile Include="Controllers\Hotmart\HotmartWebhookController.cs" />
     <Compile Include="Controllers\New\ActivationWithValidationController.cs" />
     <Compile Include="Models\Campsoft\Produtos.cs" />
     <Compile Include="Models\Campsoft\Isps.cs" />
@@ -304,6 +307,12 @@
     <Compile Include="Models\Ativacao_Obj.cs" />
     <Compile Include="Models\Campsoft\Campsoft.cs" />
     <Compile Include="Models\Campsoft\Login.cs" />
+    <Compile Include="Models\Guardiao\GuardiaoDAL.cs" />
+    <Compile Include="Models\Guardiao\GuardiaoClientes.cs" />
+    <Compile Include="Models\Guardiao\GuardiaoLog.cs" />
+    <Compile Include="Models\Guardiao\Service\GuardiaoResponse.cs" />
+    <Compile Include="Models\Guardiao\Service\GuardiaoService.cs" />
+    <Compile Include="Models\Guardiao\GuardiaoUsuario.cs" />
     <Compile Include="Models\Integracao\cliente.cs" />
     <Compile Include="Models\Integracao\cliente_contrato.cs" />
     <Compile Include="Models\Integracao\Entidades\t_integracao_ativacao.cs" />
