@@ -266,6 +266,10 @@
     <Compile Include="Controllers\Guardiao\GerenciarLicencaGuardiaoController.cs" />
     <Compile Include="Controllers\Guardiao\RetornaUsuariosGuardiaoController.cs" />
     <Compile Include="Controllers\Hotmart\HotmartWebhookController.cs" />
+    <Compile Include="Controllers\Kiddlepass\GetAllUserKiddlepassController.cs" />
+    <Compile Include="Controllers\Kiddlepass\GetUserKiddlepassController.cs" />
+    <Compile Include="Controllers\Kiddlepass\UpdateUserKiddlepassController.cs" />
+    <Compile Include="Controllers\Kiddlepass\InsertUserKiddlepassController.cs" />
     <Compile Include="Controllers\New\ActivationWithValidationController.cs" />
     <Compile Include="Models\Campsoft\Produtos.cs" />
     <Compile Include="Models\Campsoft\Isps.cs" />
@@ -321,6 +325,11 @@
     <Compile Include="Models\Integracao\Entidades\t_integracao_usuario.cs" />
     <Compile Include="Models\Integracao\Integracao.cs" />
     <Compile Include="Models\Integracao\view_vd_contratos_produtos_gen.cs" />
+    <Compile Include="Models\Kiddlepass\KiddlepassCliente.cs" />
+    <Compile Include="Models\Kiddlepass\KiddlepassDAL.cs" />
+    <Compile Include="Models\Kiddlepass\KiddlepassLog.cs" />
+    <Compile Include="Models\Kiddlepass\KiddlepassUsuario.cs" />
+    <Compile Include="Models\Kiddlepass\Service\KiddlepassService.cs" />
     <Compile Include="Models\SolicitarLicencas.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

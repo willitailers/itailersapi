@@ -80,7 +80,6 @@ namespace API_Licencas.Models
                 Password = login.password
             };
 
-
             neoAcesso.ProdutosAcesso = new List<ProdutosAcesso>();
 
             LogLogin logLogin = new LogLogin()
@@ -145,6 +144,8 @@ namespace API_Licencas.Models
                             int UnitId = 1;
                             List<Neo_Produto_Combo> neo_produtos_combo = new List<Neo_Produto_Combo>();
 
+                            StringBuilder sb = new StringBuilder();
+
                             foreach (var produto in produtos_todos)
                             {
                                 Produto_Consulta_Neo prod =
@@ -206,6 +207,20 @@ namespace API_Licencas.Models
                                             }
                                         }
                                     }
+                                    else
+                                    {
+                                        //Cancelar produtos sem acesso e que está ativo.
+                                        if (produtos_ativados.Select(s => s.id_produto_kl).Contains(produto.id_produto_kl))
+                                        {
+                                            CancelamentoNeo(usuario_neo.nm_subscribe_id);
+                                            atualizar_dt_cancelamento_licenca(usuario_neo.nm_subscribe_id);
+                                        }
+                                    }
+
+                                    sb.AppendLine($"Urn Produto: {produto.nm_urn}");
+                                    sb.AppendLine($"Acesso: {obj_response_produto_auth.access}");
+                                    sb.AppendLine("");
+                                    sb.AppendLine("---");
                                 }
                             }
 
@@ -215,6 +230,13 @@ namespace API_Licencas.Models
                             KL_Conexao con = new KL_Conexao();
 
                             SubscriptionResponseContainer container = new SubscriptionResponseContainer();
+
+                            if (neo_produtos_combo.Any() == false)
+                            {
+                                usuario_neo.dv_ativo = 2;
+                                return usuario_neo;
+                            }
+
                             container = con.AtivacaoNeoLote(DateTime.Now.ToString("yyMMddHHmmss"), neo_produtos_combo, DateTime.Now, out string xmlContainer, out string xmlRequest);
 
                             log_inserir(id_cliente + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
@@ -281,7 +303,8 @@ namespace API_Licencas.Models
                                     logLogin.exception_message += "TransactionErrorType";
                                 }
                             }
-                            logLogin.exception_message += $"FODA";
+
+                            logLogin.exception_message += $"F11-";
 
                             log_inserir_login(logLogin);
                             return usuario_neo;
