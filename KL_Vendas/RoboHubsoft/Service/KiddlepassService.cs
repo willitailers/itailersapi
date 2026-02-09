@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KL_API.Models.Kiddlepass.Service
+namespace RoboHubsoft.Service
 {
     public sealed class KiddlepassApiClient : IDisposable
     {
@@ -28,6 +28,7 @@ namespace KL_API.Models.Kiddlepass.Service
 
         public async Task<HttpResponseMessage> PostInsertUserAsync (
             string id,
+            string associated_company,
             string associatedCompanyExternalId,
             string productType,
             string email,
@@ -39,7 +40,9 @@ namespace KL_API.Models.Kiddlepass.Service
                 id = id,
                 associated_company_external_id = associatedCompanyExternalId,
                 productType = productType,
-                communication = new
+                communication = string.IsNullOrWhiteSpace(email)
+                ? null
+                : new
                 {
                     email = email,
                     name = name

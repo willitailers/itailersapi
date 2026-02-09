@@ -266,6 +266,7 @@
     <Compile Include="Controllers\Guardiao\GerenciarLicencaGuardiaoController.cs" />
     <Compile Include="Controllers\Guardiao\RetornaUsuariosGuardiaoController.cs" />
     <Compile Include="Controllers\Hotmart\HotmartWebhookController.cs" />
+    <Compile Include="Controllers\Integracao\IntegracaoHubsoftKiddleController.cs" />
     <Compile Include="Controllers\Kiddlepass\GetAllUserKiddlepassController.cs" />
     <Compile Include="Controllers\Kiddlepass\GetUserKiddlepassController.cs" />
     <Compile Include="Controllers\Kiddlepass\UpdateUserKiddlepassController.cs" />
