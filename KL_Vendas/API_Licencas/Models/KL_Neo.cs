@@ -239,6 +239,11 @@ namespace API_Licencas.Models
 
                             container = con.AtivacaoNeoLote(DateTime.Now.ToString("yyMMddHHmmss"), neo_produtos_combo, DateTime.Now, out string xmlContainer, out string xmlRequest);
 
+                            if (container == null)
+                            {
+                                log_inserir(id_cliente + "- Erro Login AtivacaoNeoLote " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
+                            }
+
                             log_inserir(id_cliente + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
                             log_inserir(id_cliente + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo_lote);
                             log_inserir(id_cliente + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.ativacao_neo_lote);
@@ -525,6 +530,11 @@ namespace API_Licencas.Models
                     SubscriptionResponseContainer container = new SubscriptionResponseContainer();
                     container = con.AtivacaoNeoLote(subscriber_id_kl + DateTime.Now.ToString("yyMMddHHmmss"), produtos, DateTime.Now.Date.AddDays(210), out string xmlContainer, out string xmlRequest);
 
+                    if (container == null)
+                    {
+                        log_inserir(id_cliente_neo + "- ERRO AtivacaoNeoLote" + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
+                    }
+
                     log_inserir(id_cliente_neo + "- RETORNO Container " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlContainer), (int)Lista_Erro.ativacao_neo_lote);
                     log_inserir(id_cliente_neo + "- RETORNO Request " + Newtonsoft.Json.JsonConvert.SerializeObject(xmlRequest), (int)Lista_Erro.ativacao_neo_lote);
                     log_inserir(id_cliente_neo + "- RETORNO Response " + Newtonsoft.Json.JsonConvert.SerializeObject(container), (int)Lista_Erro.ativacao_neo_lote);
@@ -603,7 +613,6 @@ namespace API_Licencas.Models
                             return usuario_neo;
                         }
                     }
-
 
                     return usuario_neo;
                 }

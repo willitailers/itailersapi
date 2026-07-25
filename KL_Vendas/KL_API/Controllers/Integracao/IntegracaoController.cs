@@ -36,6 +36,8 @@ namespace KL_API.Controllers.Integracao
                 string cliente_name = row["cliente"].ToString();
                 string id_cliente = row["id"].ToString();
 
+                if (id_cliente != "5") continue;
+
                 string base64Credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
 
                 var relacao_produtos = integracao.RetornaIntegracaoRelacaoProdutos(id_cliente);

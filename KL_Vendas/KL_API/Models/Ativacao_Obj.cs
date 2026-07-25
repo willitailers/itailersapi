@@ -84,6 +84,7 @@ namespace KL_API.Models
     {
         public string UserID { set; get; }
         public string Email { set; get; }
+        public DateTime EndDate { get; set; }
         public List<Produto_UserAdd> Products { get; set; }
     }
 
